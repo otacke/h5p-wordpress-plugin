@@ -40,3 +40,9 @@ add_action('plugins_loaded', array('H5P_Plugin', 'get_instance'));
 if (is_admin()) {
   add_action('plugins_loaded', array('H5P_Plugin_Admin', 'get_instance'));
 }
+
+  if ( is_multisite() ) {
+    add_action( 'plugins_loaded', function () {
+      new H5P_Network_Admin();
+    } );
+  }
