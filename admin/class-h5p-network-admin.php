@@ -64,6 +64,7 @@ class H5P_Network_Admin {
     $migrate = new H5P_Network_Migrate_To_Network();
 
     try {
+      // TODO: Should run in batches and give progress info
       $migrate->migrateToNetwork();
     }
     catch (Exception $exception) {
