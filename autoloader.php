@@ -10,7 +10,7 @@ function h5p_autoloader($class) {
   if (!isset($classmap)) {
     $classmap = array(
       // Plugin
-      'H5PConstants' => 'h5p-constants.php',
+      'H5PCommons' => 'h5p-common.php',
 
       // Core
       'H5PCore' => 'h5p-php-library/h5p.classes.php',

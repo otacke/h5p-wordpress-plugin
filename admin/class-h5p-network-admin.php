@@ -57,7 +57,7 @@ class H5P_Network_Admin {
     if (!current_user_can('manage_network')) {
       wp_send_json_error(
         array('message' => __('Permission denied.', 'h5p')),
-        H5PConstants::HTTP_FORBIDDEN
+        H5PCommons::HTTP_FORBIDDEN
       );
     }
 
@@ -68,8 +68,9 @@ class H5P_Network_Admin {
       $migrate->migrateToNetwork();
     }
     catch (Exception $exception) {
-      $demigrate = new H5P_Network_Migrate_To_Local();
-      $demigrate->migrateToLocal();
+      // TODO: It will depend on where we exited!!!
+      //$demigrate = new H5P_Network_Migrate_To_Local();
+      //$demigrate->migrateToLocal();
 
       set_transient(
         'h5p_network_migration_error',
@@ -79,7 +80,7 @@ class H5P_Network_Admin {
 
       wp_send_json_error(
         array('message' => $exception->getMessage()),
-        H5PConstants::HTTP_OK
+        H5PCommons::HTTP_OK
       );
       return;
     }
@@ -104,7 +105,7 @@ class H5P_Network_Admin {
     if (!current_user_can('manage_network')) {
       wp_send_json_error(
         array('message' => __('Permission denied.', 'h5p')),
-        H5PConstants::HTTP_FORBIDDEN
+        H5PCommons::HTTP_FORBIDDEN
       );
     }
 

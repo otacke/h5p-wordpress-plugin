@@ -865,8 +865,8 @@ class H5PWordPress implements H5PFrameworkInterface {
       "UPDATE {$wpdb->prefix}h5p_contents
           SET filtered = ''
         WHERE id IN (
-              SELECT DISTINCT content_id 
-              FROM {$wpdb->prefix}h5p_contents_libraries 
+              SELECT DISTINCT content_id
+              FROM {$wpdb->prefix}h5p_contents_libraries
               WHERE library_id IN (" . implode(',', array_map('intval', $library_ids)) . ")
         )"
     );

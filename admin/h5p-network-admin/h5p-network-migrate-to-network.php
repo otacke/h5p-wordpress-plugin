@@ -15,13 +15,12 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    * @throws Exception If something fails.
    */
   public function migrateToNetwork() {
-    // TODO: Sync blog h5p_contents and h5p_contents_libraries
     // TODO: CachedAssets!?!?
-    // TODO: Delete libraries and database entries from blogs
     // TODO: Ensure all files can now be served from libraries_network
 
     $network_libraries_installed = $this->migrateLibrariesToNetwork();
-    $this->migrateDatabaseTablesToNetwork($network_libraries_installed);
+    $network_libraries_installed = $this->migrateDatabaseTablesToNetwork($network_libraries_installed);
+    $this->updateBlogsDatabase($network_libraries_installed);
   }
 
   /**
@@ -32,6 +31,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    */
   public function migrateLibrariesToNetwork() {
     $this->ensureNetworkLibrariesDir();
+    $this->ensureNetworkCachedassetsDir();
 
     $upload_directory = wp_upload_dir();
     $network_libraries_path = $this->getNetworkLibrariesPath();
@@ -102,16 +102,25 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Get libraries directory path for given blog.
+   * Ensure network-level cachedassets directory exists.
    *
-   * @param int     $blog_id               Blog ID.
-   * @param string  $upload_base_directory WordPress upload directory base path.
-   * @return string Libraries directory for given blog.
+   * @throws Exception If directory cannot be created.
    */
-  protected function getLibrariesDirForBlogId($blog_id, $upload_base_directory) {
-    return ($blog_id == 1) ?
-      "{$upload_base_directory}/h5p/libraries" :
-      "{$upload_base_directory}/sites/{$blog_id}/h5p/libraries";
+  protected function ensureNetworkCachedassetsDir() {
+    $network_cachedassets_path = $this->getNetworkCachedassetsPath();
+    if (is_dir($network_cachedassets_path)) {
+      return;
+    }
+
+    if (!mkdir($network_cachedassets_path, 0755, true)) {
+      throw new Exception(
+        sprintf(
+          /* translators: %s: network cachedassets directory path */
+          __('Failed to create network cachedassets directory: %s', 'h5p'),
+          $network_cachedassets_path
+        )
+      );
+    }
   }
 
   /**
@@ -178,20 +187,13 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     global $wpdb;
     require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-    $network_table_libraries = $this->getNetworkLibrariesTableName();
-    $network_table_libraries_cachedassets = $this->getNetworkLibrariesCachedAssetsTableName();
-    $network_table_libraries_languages = $this->getNetworkLibrariesLanguagesTableName();
-    $network_table_libraries_libraries = $this->getNetworkLibrariesLibrariesTableName();
-
-    $this->createNetworkTable($network_table_libraries, "{$wpdb->prefix}h5p_libraries");
-    $this->createNetworkTable($network_table_libraries_cachedassets, "{$wpdb->prefix}h5p_libraries_cachedassets");
-    $this->createNetworkTable($network_table_libraries_languages, "{$wpdb->prefix}h5p_libraries_languages");
-    $this->createNetworkTable($network_table_libraries_libraries, "{$wpdb->prefix}h5p_libraries_libraries");
-
-    // Build a set of network table columns (excluding auto-increment id).
-    $network_columns = $wpdb->get_col("DESCRIBE {$network_table_libraries}", 0);
-    $network_columns_set = array_flip($network_columns);
-    unset($network_columns_set['id']);
+    foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
+      $this->createTableFromExisting(
+        H5PCommons::build_full_db_table_name_singlesite($table_name),
+        H5PCommons::build_full_db_table_name_multisite($table_name),
+        true
+      );
+    }
 
     $sites = get_sites(array('fields' => 'ids'));
 
@@ -208,12 +210,13 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         }
 
         foreach ($blog_libraries as $versioned_machine_name => $info) {
-          $network_library_id = $this->insertLibrary($info['machine_name'], $network_table_libraries);
+          $network_library_id = $this->insertBlogLibraryToNetwork($info['machine_name']);
+
           if (!$network_library_id) {
             continue;
           }
 
-          $this->insertLibraryLanguages($info['machine_name'], $network_library_id, $network_table_libraries_languages);
+          $this->insertBlogLibraryToNetworkLanguages($info['machine_name'], $network_library_id);
         }
 
       }
@@ -222,7 +225,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       }
     }
 
-    $this->copyLibraryDependenciesToNetwork($network_table_libraries_libraries, $sites);
+    $this->copyLibraryDependenciesToNetwork();
 
     return $network_libraries_installed;
   }
@@ -235,7 +238,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   public function buildIdLookupTable() {
     global $wpdb;
 
-    $network_table_libraries = $this->getNetworkLibrariesTableName();
+    $network_table_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries');
     $lookup = array();
 
     $sites = get_sites(array('fields' => 'ids'));
@@ -244,12 +247,11 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       switch_to_blog($blog_id);
 
       try {
-
-        $local_libraries = $wpdb->get_results(
+        $blog_libraries = $wpdb->get_results(
           "SELECT id, name, major_version, minor_version FROM {$wpdb->prefix}h5p_libraries"
         );
 
-        foreach ($local_libraries as $blog_library_entry) {
+        foreach ($blog_libraries as $blog_library_entry) {
           $row = $wpdb->get_row(
             $wpdb->prepare(
               "SELECT id FROM {$network_table_libraries} WHERE name = %s AND major_version = %d AND minor_version = %d",
@@ -275,14 +277,15 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
   /**
    * Copy dependency entries (h5p_libraries_libraries) from each blog to the network-level table.
-   *
-   * @param string $network_table_name Network-level table name.
-   * @param array  $sites              Array of blog IDs.
    */
-  protected function copyLibraryDependenciesToNetwork($network_table_name, $sites) {
+  protected function copyLibraryDependenciesToNetwork() {
     global $wpdb;
 
+    $network_table_libraries_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries_libraries');
+
     $lookup = $this->buildIdLookupTable();
+
+    $sites = get_sites(array('fields' => 'ids'));
 
     foreach ($sites as $blog_id) {
       switch_to_blog($blog_id);
@@ -302,7 +305,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         // Skip if this dependency entry already exists in the network table. Same entry from different blogs
         $existing = $wpdb->get_row(
           $wpdb->prepare(
-            "SELECT 1 FROM {$network_table_name} "
+            "SELECT 1 FROM {$network_table_libraries_libraries} "
             . "WHERE library_id = %d AND required_library_id = %d "
             . "AND dependency_type = %s",
             $new_library_id,
@@ -315,7 +318,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         }
 
         $wpdb->insert(
-          $network_table_name,
+          $network_table_libraries_libraries,
           array(
             'library_id'          => $new_library_id,
             'required_library_id' => $new_required_id,
@@ -329,44 +332,158 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
+   * Update library_id references in blog-level h5p_contents tables.
+   *
+   * Replaces old blog-level library IDs with the corresponding network-level
+   * library IDs using the lookup table built by buildIdLookupTable.
+   *
+   * @param string $network_table_libraries Network-level libraries table name.
+   * @param array  $sites Array of blog IDs.
+   */
+  protected function updateBlogsLibraryIds($network_table_libraries, $sites) {
+    $lookup = $this->buildIdLookupTable();
+    foreach ($sites as $blog_id) {
+      try {
+        switch_to_blog($blog_id);
+
+        $this->updateBlogContentsLibraryIds($blog_id, $lookup);
+        $this->updateBlogContentsLibrariesLibraryIds($blog_id, $lookup);
+      }
+      finally {
+        restore_current_blog();
+      }
+    }
+  }
+
+  /**
+   * Update library_id references in blog-level table using 2-phase sentinel update to avoid cascading mapping issues.
+   *
+   * @param string $table Table name (without prefix).
+   * @param string $where Column used in the WHERE clause of Phase 1.
+   * @param array  $mappings  Mapping of old_id => new_id.
+   */
+  protected function updateLibraryIdsInTable($table, $mappings) {
+    global $wpdb;
+    $temp_offset = 1000000000; // Large to avoid conflicts, but not fail-safe!
+
+    // Phase 1: old_id -> temp(new_id)
+    foreach ($mappings as $old_id => $new_id) {
+      $wpdb->update(
+        "{$wpdb->prefix}{$table}",
+        array('library_id' => (int) $new_id + $temp_offset),
+        array('library_id' => $old_id),
+        array('%d'),
+        array('%d')
+      );
+    }
+
+    // Phase 2: temp(new_id) -> final new_id
+    foreach ($mappings as $old_id => $new_id) {
+      $wpdb->update(
+        "{$wpdb->prefix}{$table}",
+        array('library_id' => (int) $new_id),
+        array('library_id' => (int) $new_id + $temp_offset),
+        array('%d'),
+        array('%d')
+      );
+    }
+  }
+
+  /**
+   * Update library_id references in blog-level h5p_contents table.
+   *
+   * Replaces old blog-level library IDs with the corresponding network-level
+   * library IDs using the lookup table.
+   *
+   * @param int   $blog_id Blog ID.
+   * @param array $lookup  Lookup table mapping blog_id → (old_id → new_id).
+   */
+  protected function updateBlogContentsLibraryIds($blog_id, $lookup) {
+    $mappings = $lookup[$blog_id] ?? [];
+    if (empty($mappings)) {
+      return;
+    }
+
+    $this->updateLibraryIdsInTable('h5p_contents', $mappings);
+  }
+
+  /**
+   * Update library_id references in blog-level h5p_contents_libraries table.
+   *
+   * @param int   $blog_id Blog ID.
+   * @param array $lookup  Lookup table mapping blog_id → (old_id → new_id).
+   */
+  protected function updateBlogContentsLibrariesLibraryIds($blog_id, $lookup) {
+    $mappings = $lookup[$blog_id] ?? [];
+    if (empty($mappings)) {
+      return;
+    }
+    $this->updateLibraryIdsInTable('h5p_contents_libraries', $mappings);
+  }
+
+  /**
+   * Update blog-level library_id references and drop obsolete tables.
+   *
+   * @param array $network_libraries_installed Stuff that was installed on network level.
+   */
+  protected function updateBlogsDatabase($network_libraries_installed) {
+    global $wpdb;
+
+    $sites = get_sites(array('fields' => 'ids'));
+    $this->updateBlogsLibraryIds($network_libraries_installed, $sites);
+    $this->dropBlogsTables();
+  }
+
+  /**
+   * Drop all blog-level H5P tables that are not needed on every site.
+   */
+  protected function dropBlogsTables() {
+    global $wpdb;
+
+    $sites = get_sites(array('fields' => 'ids'));
+    foreach ($sites as $blog_id) {
+      switch_to_blog($blog_id);
+      try {
+        $blog_tables = array(
+          "{$wpdb->prefix}h5p_libraries",
+          "{$wpdb->prefix}h5p_libraries_cachedassets",
+          "{$wpdb->prefix}h5p_libraries_languages",
+          "{$wpdb->prefix}h5p_libraries_libraries",
+        );
+        foreach ($blog_tables as $table) {
+          $wpdb->query("DROP TABLE IF EXISTS {$table}");
+        }
+      }
+      finally {
+        restore_current_blog();
+      }
+    }
+  }
+
+  /**
    * Create network-level table by copying the schema from blog-level table.
    *
    * @param string $network_table_name Network-level table name.
    * @param string $source_table_name  Existing blog-level table name.
    */
   protected function createNetworkTable($network_table_name, $source_table_name) {
-    global $wpdb;
-
-    $row = $wpdb->get_row(
-      "SHOW CREATE TABLE {$source_table_name}",
-      ARRAY_N
+    $this->createTableFromExisting(
+      $source_table_name,
+      $network_table_name,
+      true
     );
-
-    if ($row === null || count($row) < 2) {
-      throw new Exception(
-        "Failed to retrieve schema for source table: {$source_table_name}"
-      );
-    }
-
-    $create_statement = $row[1];
-    $create_statement = str_replace(
-      "CREATE TABLE `{$source_table_name}`",
-      "CREATE TABLE IF NOT EXISTS `{$network_table_name}`",
-      $create_statement
-    );
-
-    $wpdb->query($create_statement);
   }
 
   /**
    * Insert library entry from blog-level table into network-level table.
    *
-   * @param string $machine_name  Machine name of library.
-   * @param string $network_table_libraries Network-level libraries table name.
+   * @param string $machine_name Machine name of library.
    * @return int Network library ID.
    */
-  protected function insertLibrary($machine_name, $network_table_libraries) {
+  protected function insertBlogLibraryToNetwork($machine_name) {
     global $wpdb;
+
+    $network_table_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries');
 
     $blog_library = $wpdb->get_row(
       $wpdb->prepare(
@@ -408,15 +525,10 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Copy language translations for library to network-level table.
    *
-   * @param string $machine_name  Machine name of library.
+   * @param string $machine_name     Machine name of library.
    * @param int    $network_library_id Network library ID.
-   * @param string $network_table_libraries_languages Network-level languages table name.
    */
-  protected function insertLibraryLanguages(
-    $machine_name,
-    $network_library_id,
-    $network_table_libraries_languages
-  ) {
+  protected function insertBlogLibraryToNetworkLanguages($machine_name, $network_library_id) {
     global $wpdb;
 
     $blog_library = $wpdb->get_row(
@@ -438,7 +550,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     );
     foreach ($languages as $language) {
       $wpdb->insert(
-        $network_table_libraries_languages,
+        H5PCommons::build_full_db_table_name_multisite('h5p_libraries_languages'),
         array(
           'library_id'    => $network_library_id,
           'language_code' => $language->language_code,
