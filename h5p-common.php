@@ -39,6 +39,14 @@ class H5PCommons {
 	 */
 	private static $is_network_enabled = null;
 
+	public static function is_network_enabled() {
+		if (null === self::$is_network_enabled) {
+			self::$is_network_enabled = get_site_option('h5p_network_enabled', false);
+		}
+
+		return self::$is_network_enabled;
+	}
+
 	/**
 	 * Build full database table name, including correct prefix.
 	 *
@@ -46,11 +54,7 @@ class H5PCommons {
 	 * @return string Full table name.
 	 */
 	public static function build_full_db_table_name($table_name) {
-		if (null === self::$is_network_enabled) {
-			self::$is_network_enabled = get_site_option('h5p_network_enabled', false);
-		}
-
-		return (self::$is_network_enabled)
+		return (self::is_network_enabled())
 			? H5PCommons::build_full_db_table_name_multisite($table_name)
 			: H5PCommons::build_full_db_table_name_singlesite($table_name);
 	}
