@@ -100,10 +100,12 @@ class H5PContentAdmin {
 
     $this->content = $plugin->get_content($id);
     if (!is_string($this->content)) {
+      $table_contents_tags = H5PCommons::build_full_db_table_name('h5p_contents_tags');
+      $table_tags = H5PCommons::build_full_db_table_name('h5p_tags');
       $tags = $wpdb->get_results($wpdb->prepare(
           "SELECT t.name
-             FROM {$wpdb->prefix}h5p_contents_tags ct
-             JOIN {$wpdb->prefix}h5p_tags t ON ct.tag_id = t.id
+             FROM {$table_contents_tags} ct
+             JOIN {$table_tags} t ON ct.tag_id = t.id
             WHERE ct.content_id = %d",
           $id
       ));
@@ -433,10 +435,12 @@ class H5PContentAdmin {
       }
 
       // Find out if tag exists and is linked to content
+      $table_tags = H5PCommons::build_full_db_table_name('h5p_tags');
+      $table_contents_tags = H5PCommons::build_full_db_table_name('h5p_contents_tags');
       $exists = $wpdb->get_row($wpdb->prepare(
           "SELECT t.id, ct.content_id
-             FROM {$wpdb->prefix}h5p_tags t
-        LEFT JOIN {$wpdb->prefix}h5p_contents_tags ct ON ct.content_id = %d AND ct.tag_id = t.id
+             FROM {$table_tags} t
+        LEFT JOIN {$table_contents_tags} ct ON ct.content_id = %d AND ct.tag_id = t.id
             WHERE t.name = %s",
           $content_id, $tag
       ));
@@ -444,7 +448,7 @@ class H5PContentAdmin {
       if (empty($exists)) {
         // Create tag
         $exists = array('name' => $tag);
-        $wpdb->insert("{$wpdb->prefix}h5p_tags", $exists, array('%s'));
+        $wpdb->insert($table_tags, $exists, array('%s'));
         $exists = (object) $exists;
         $exists->id = $wpdb->insert_id;
       }
@@ -452,16 +456,16 @@ class H5PContentAdmin {
 
       if (empty($exists->content_id)) {
         // Connect to content
-        $wpdb->insert("{$wpdb->prefix}h5p_contents_tags", array('content_id' => $content_id, 'tag_id' => $exists->id), array('%d', '%d'));
+        $wpdb->insert($table_contents_tags, array('content_id' => $content_id, 'tag_id' => $exists->id), array('%d', '%d'));
       }
     }
 
     // Remove tags that are not connected to content (old tags)
     $and_where = empty($tag_ids) ? '' : " AND tag_id NOT IN (". implode(',', $tag_ids) .")";
-    $wpdb->query("DELETE FROM {$wpdb->prefix}h5p_contents_tags WHERE content_id = {$content_id}{$and_where}");
+    $wpdb->query("DELETE FROM {$table_contents_tags} WHERE content_id = {$content_id}{$and_where}");
 
     // Maintain tags table by remove unused tags
-    $wpdb->query("DELETE t.* FROM {$wpdb->prefix}h5p_tags t LEFT JOIN {$wpdb->prefix}h5p_contents_tags ct ON t.id = ct.tag_id WHERE ct.content_id IS NULL");
+    $wpdb->query("DELETE t.* FROM {$table_tags} t LEFT JOIN {$table_contents_tags} ct ON t.id = ct.tag_id WHERE ct.content_id IS NULL");
   }
 
   /**
@@ -533,7 +537,8 @@ class H5PContentAdmin {
   private function has_libraries() {
     global $wpdb;
 
-    return $wpdb->get_var("SELECT id FROM {$wpdb->prefix}h5p_libraries WHERE runnable = 1 LIMIT 1") !== NULL;
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+    return $wpdb->get_var("SELECT id FROM {$table_libraries} WHERE runnable = 1 LIMIT 1") !== NULL;
   }
 
   /**
@@ -745,10 +750,12 @@ class H5PContentAdmin {
     }
 
     // Get content info for log
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
     $content = $wpdb->get_row($wpdb->prepare("
         SELECT c.title, l.name, l.major_version, l.minor_version
-          FROM {$wpdb->prefix}h5p_contents c
-          JOIN {$wpdb->prefix}h5p_libraries l ON l.id = c.library_id
+          FROM {$table_contents} c
+          JOIN {$table_libraries} l ON l.id = c.library_id
          WHERE c.id = %d
         ", $content_id));
 

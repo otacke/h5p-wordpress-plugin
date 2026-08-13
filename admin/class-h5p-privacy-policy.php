@@ -92,6 +92,8 @@ class H5PPrivacyPolicy {
   function get_user_results($wpid, $page) {
     global $wpdb;
 
+    $table_results = H5PCommons::build_full_db_table_name('h5p_results');
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
     return $wpdb->get_results($wpdb->prepare(
       "
       SELECT
@@ -104,8 +106,8 @@ class H5PPrivacyPolicy {
         res.time,
         con.title
       FROM
-        {$wpdb->prefix}h5p_results AS res,
-        {$wpdb->prefix}h5p_contents AS con
+        {$table_results} AS res,
+        {$table_contents} AS con
       WHERE
         res.user_id = %d AND
         res.content_id = con.id
@@ -129,6 +131,8 @@ class H5PPrivacyPolicy {
   function get_user_saved_content_state($wpid, $page) {
     global $wpdb;
 
+    $table_contents_user_data = H5PCommons::build_full_db_table_name('h5p_contents_user_data');
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
     return $wpdb->get_results($wpdb->prepare(
       "
       SELECT
@@ -142,8 +146,8 @@ class H5PPrivacyPolicy {
         scs.updated_at,
         con.title
       FROM
-        {$wpdb->prefix}h5p_contents_user_data AS scs,
-        {$wpdb->prefix}h5p_contents AS con
+        {$table_contents_user_data} AS scs,
+        {$table_contents} AS con
       WHERE
         scs.user_id = %d AND
         scs.content_id = con.id
@@ -167,12 +171,13 @@ class H5PPrivacyPolicy {
   function get_user_events($wpid, $page) {
     global $wpdb;
 
+    $table_events = H5PCommons::build_full_db_table_name('h5p_events');
     return $wpdb->get_results($wpdb->prepare(
       "
       SELECT
         *
       FROM
-        {$wpdb->prefix}h5p_events
+        {$table_events}
       WHERE
         user_id = %d
       LIMIT
@@ -195,6 +200,8 @@ class H5PPrivacyPolicy {
   function get_user_contents($wpid, $page) {
     global $wpdb;
 
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
     return $wpdb->get_results($wpdb->prepare(
       "
       SELECT
@@ -212,8 +219,8 @@ class H5PPrivacyPolicy {
         con.content_type,
         lib.title AS library_title
       FROM
-        {$wpdb->prefix}h5p_contents AS con,
-        {$wpdb->prefix}h5p_libraries AS lib
+        {$table_contents} AS con,
+        {$table_libraries} AS lib
       WHERE
         con.user_id = %d AND
         con.library_id = lib.id
@@ -549,25 +556,29 @@ class H5PPrivacyPolicy {
 
     $wp_user = get_user_by('email', $email);
     if ($wp_user) {
+      $table_results = H5PCommons::build_full_db_table_name('h5p_results');
+      $table_contents_user_data = H5PCommons::build_full_db_table_name('h5p_contents_user_data');
+      $table_events = H5PCommons::build_full_db_table_name('h5p_events');
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
       $length = array();
       $length[] = $wpdb->query($wpdb->prepare(
-        "DELETE FROM {$wpdb->prefix}h5p_results WHERE user_id = %d LIMIT %d",
+        "DELETE FROM {$table_results} WHERE user_id = %d LIMIT %d",
         $wp_user->ID,
         self::PAGE_LENGTH
       ));
       $length[] = $wpdb->query($wpdb->prepare(
-        "DELETE FROM {$wpdb->prefix}h5p_contents_user_data WHERE user_id = %d LIMIT %d",
+        "DELETE FROM {$table_contents_user_data} WHERE user_id = %d LIMIT %d",
         $wp_user->ID,
         self::PAGE_LENGTH
       ));
       $length[] = $wpdb->query($wpdb->prepare(
-        "DELETE FROM {$wpdb->prefix}h5p_events WHERE user_id = %d LIMIT %d",
+        "DELETE FROM {$table_events} WHERE user_id = %d LIMIT %d",
         $wp_user->ID,
         self::PAGE_LENGTH
       ));
       $length[] = $wpdb->query($wpdb->prepare(
         // Only anonymize data by linking them to the admin
-        "UPDATE {$wpdb->prefix}h5p_contents SET user_id = %d WHERE user_id = %d LIMIT %d",
+        "UPDATE {$table_contents} SET user_id = %d WHERE user_id = %d LIMIT %d",
         $admin_prime_id,
         $wp_user->ID,
         self::PAGE_LENGTH

@@ -42,7 +42,7 @@ class H5P_Event extends H5PEventBase {
     $format[] = '%d';
 
     // Insert into DB
-    $wpdb->insert("{$wpdb->prefix}h5p_events", $data, $format);
+    $wpdb->insert(H5PCommons::build_full_db_table_name('h5p_events'), $data, $format);
     $this->id = $wpdb->insert_id;
     return $this->id;
   }
@@ -54,9 +54,10 @@ class H5P_Event extends H5PEventBase {
     global $wpdb;
 
     $type = $this->type . ' ' . $this->sub_type;
+    $table_counters = H5PCommons::build_full_db_table_name('h5p_counters');
     $current_num = $wpdb->get_var($wpdb->prepare(
         "SELECT num
-           FROM {$wpdb->prefix}h5p_counters
+           FROM {$table_counters}
           WHERE type = '%s'
             AND library_name = '%s'
             AND library_version = '%s'
@@ -64,7 +65,7 @@ class H5P_Event extends H5PEventBase {
 
     if ($current_num === NULL) {
       // Insert
-      $wpdb->insert("{$wpdb->prefix}h5p_counters", array(
+      $wpdb->insert($table_counters, array(
         'type' => $type,
         'library_name' => $this->library_name,
         'library_version' => $this->library_version,
@@ -74,7 +75,7 @@ class H5P_Event extends H5PEventBase {
     else {
       // Update num+1
       $wpdb->query($wpdb->prepare(
-          "UPDATE {$wpdb->prefix}h5p_counters
+          "UPDATE {$table_counters}
               SET num = num + 1
             WHERE type = '%s'
               AND library_name = '%s'

@@ -92,9 +92,10 @@ class H5PLibraryAdmin {
     }
 
     // Try to find content with $id.
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
     $this->library = $wpdb->get_row($wpdb->prepare(
         "SELECT id, title, name, major_version, minor_version, patch_version, runnable, fullscreen
-          FROM {$wpdb->prefix}h5p_libraries
+          FROM {$table_libraries}
           WHERE id = %d",
         $id
       )
@@ -355,10 +356,12 @@ class H5PLibraryAdmin {
     }
     else {
       // List content which uses this library
+      $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
       $contents = $wpdb->get_results($wpdb->prepare(
           "SELECT DISTINCT hc.id, hc.title
-            FROM {$wpdb->prefix}h5p_contents_libraries hcl
-            JOIN {$wpdb->prefix}h5p_contents hc ON hcl.content_id = hc.id
+            FROM {$table_contents_libraries} hcl
+            JOIN {$table_contents} hc ON hcl.content_id = hc.id
             WHERE hcl.library_id = %d
             ORDER BY hc.title",
           $library->id
@@ -399,10 +402,11 @@ class H5PLibraryAdmin {
     $core = $plugin->get_h5p_instance('core');
     $interface = $plugin->get_h5p_instance('interface');
 
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
     $versions = $wpdb->get_results($wpdb->prepare(
         "SELECT hl2.id, hl2.name, hl2.title, hl2.major_version, hl2.minor_version, hl2.patch_version
-          FROM {$wpdb->prefix}h5p_libraries hl1
-          JOIN {$wpdb->prefix}h5p_libraries hl2
+          FROM {$table_libraries} hl1
+          JOIN {$table_libraries} hl2
             ON hl2.name = hl1.name
           WHERE hl1.id = %d
           ORDER BY hl2.title ASC, hl2.major_version ASC, hl2.minor_version ASC",
@@ -487,9 +491,10 @@ class H5PLibraryAdmin {
     // Do as many as we can in five seconds.
     $start = microtime(TRUE);
 
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
     $contents = $wpdb->get_results(
       "SELECT id
-        FROM {$wpdb->prefix}h5p_contents
+        FROM {$table_contents}
         WHERE filtered = ''"
     );
 
@@ -556,9 +561,10 @@ class H5PLibraryAdmin {
     }
 
     // Get the library we're upgrading to
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
     $to_library = $wpdb->get_row($wpdb->prepare(
       "SELECT id, name, major_version, minor_version
-        FROM {$wpdb->prefix}h5p_libraries
+        FROM {$table_libraries}
         WHERE id = %d",
       filter_input(INPUT_POST, 'libraryId')
     ));
@@ -594,8 +600,9 @@ class H5PLibraryAdmin {
         $format[] = '%d'; // library_id
         $format[] = '%s'; // filtered
 
+        $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
         $wpdb->update(
-          $wpdb->prefix . 'h5p_contents',
+          $table_contents,
           $fields,
           array('id' => $id),
           $format,
@@ -604,7 +611,7 @@ class H5PLibraryAdmin {
 
         // Log content upgrade successful
         new H5P_Event('content', 'upgrade',
-          $id, $wpdb->get_var($wpdb->prepare("SELECT title FROM {$wpdb->prefix}h5p_contents WHERE id = %d", $id)),
+          $id, $wpdb->get_var($wpdb->prepare("SELECT title FROM {$table_contents} WHERE id = %d", $id)),
           $to_library->name, $to_library->major_version . '.' . $to_library->minor_version);
       }
     }
@@ -635,11 +642,12 @@ class H5PLibraryAdmin {
       $skip_query = empty($skipped) ? '' : " AND id NOT IN ($skipped)";
 
       // Find the 40 first contents using library and add to params
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
       $contents = $wpdb->get_results($wpdb->prepare(
         "SELECT id, parameters AS params, title, authors, source, license,
                 license_version, license_extras, year_from, year_to, changes,
                 author_comments, default_language, a11y_title
-           FROM {$wpdb->prefix}h5p_contents
+           FROM {$table_contents}
           WHERE library_id = %d
                 {$skip_query}
           LIMIT 40",
@@ -734,7 +742,7 @@ class H5PLibraryAdmin {
     }
 
     $wpdb->update(
-      $wpdb->prefix . 'h5p_libraries',
+      H5PCommons::build_full_db_table_name('h5p_libraries'),
       array('restricted' => $restricted),
       array('id' => $library_id),
       array('%d'),

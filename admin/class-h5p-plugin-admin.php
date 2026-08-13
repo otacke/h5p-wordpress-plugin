@@ -765,16 +765,16 @@ class H5P_Plugin_Admin {
     }
 
     $user_id = get_current_user_id();
+    $table_results = H5PCommons::build_full_db_table_name('h5p_results');
     $result_id = $wpdb->get_var($wpdb->prepare(
         "SELECT id
-        FROM {$wpdb->prefix}h5p_results
+        FROM {$table_results}
         WHERE user_id = %d
         AND content_id = %d",
         $user_id,
         $content_id
     ));
 
-    $table = $wpdb->prefix . 'h5p_results';
     $data = array(
       'score' => filter_input(INPUT_POST, 'score', FILTER_VALIDATE_INT),
       'max_score' => filter_input(INPUT_POST, 'maxScore', FILTER_VALIDATE_INT),
@@ -812,18 +812,20 @@ class H5P_Plugin_Admin {
       $format[] = '%d';
       $data['content_id'] = $content_id;
       $format[] = '%d';
-      $wpdb->insert($table, $data, $format);
+      $wpdb->insert($table_results, $data, $format);
     }
     else {
       // Update existing results
-      $wpdb->update($table, $data, array('id' => $result_id), $format, array('%d'));
+      $wpdb->update($table_results, $data, array('id' => $result_id), $format, array('%d'));
     }
 
     // Get content info for log
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
     $content = $wpdb->get_row($wpdb->prepare("
         SELECT c.title, l.name, l.major_version, l.minor_version
-          FROM {$wpdb->prefix}h5p_contents c
-          JOIN {$wpdb->prefix}h5p_libraries l ON l.id = c.library_id
+          FROM {$table_contents} c
+          JOIN {$table_libraries} l ON l.id = c.library_id
          WHERE c.id = %d
         ", $content_id));
 
@@ -873,9 +875,10 @@ class H5P_Plugin_Admin {
   public function get_results_num($content_id = NULL, $user_id = NULL, $filters = array()) {
     global $wpdb;
 
+    $table_results = H5PCommons::build_full_db_table_name('h5p_results');
     $query_args = array();
     return (int) $wpdb->get_var($wpdb->prepare(
-      "SELECT COUNT(id) FROM {$wpdb->prefix}h5p_results hr" .
+      "SELECT COUNT(id) FROM {$table_results} hr" .
         $this->get_results_query_where($query_args, $content_id, $user_id),
       $query_args
     ));
@@ -892,6 +895,8 @@ class H5P_Plugin_Admin {
   public function get_results($content_id = NULL, $user_id = NULL, $offset = 0, $limit = 20, $sort_by = 0, $sort_dir = 0, $filters = array()) {
     global $wpdb;
 
+    $table_results = H5PCommons::build_full_db_table_name('h5p_results');
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
     $extra_fields = '';
     $joins = '';
     $query_args = array();
@@ -901,7 +906,7 @@ class H5P_Plugin_Admin {
     // Add extra fields and joins for the different result lists
     if ($content_id === NULL) {
       $extra_fields .= " hr.content_id, hc.title AS content_title,";
-      $joins .= " LEFT JOIN {$wpdb->prefix}h5p_contents hc ON hr.content_id = hc.id";
+      $joins .= " LEFT JOIN {$table_contents} hc ON hr.content_id = hc.id";
     }
     if ($user_id === NULL) {
       $extra_fields .= " hr.user_id,";
@@ -934,7 +939,7 @@ class H5P_Plugin_Admin {
               hr.opened,
               hr.finished,
               hr.time
-        FROM {$wpdb->prefix}h5p_results hr
+        FROM {$table_results} hr
         {$joins}
         {$where}
         {$order_by}
@@ -1256,9 +1261,10 @@ class H5P_Plugin_Admin {
         exit;
       }
 
+      $table_contents_user_data = H5PCommons::build_full_db_table_name('h5p_contents_user_data');
       if ($data === '0') {
         // Remove data
-        $wpdb->delete($wpdb->prefix . 'h5p_contents_user_data',
+        $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_contents_user_data'),
           array(
             'content_id' => $content_id,
             'data_id' => $data_id,
@@ -1275,7 +1281,7 @@ class H5P_Plugin_Admin {
         // Determine if we should update or insert
         $update = $wpdb->get_var($wpdb->prepare(
           "SELECT content_id
-           FROM {$wpdb->prefix}h5p_contents_user_data
+           FROM {$table_contents_user_data}
            WHERE content_id = %d
              AND user_id = %d
              AND data_id = %s
@@ -1285,7 +1291,7 @@ class H5P_Plugin_Admin {
 
         if ($update === NULL) {
           // Insert new data
-          $wpdb->insert($wpdb->prefix . 'h5p_contents_user_data',
+          $wpdb->insert($table_contents_user_data,
             array(
               'user_id' => $current_user->ID,
               'content_id' => $content_id,
@@ -1301,7 +1307,7 @@ class H5P_Plugin_Admin {
         }
         else {
           // Update old data
-          $wpdb->update($wpdb->prefix . 'h5p_contents_user_data',
+          $wpdb->update($table_contents_user_data,
             array(
               'data' => $data,
               'preload' => $preload,
@@ -1328,7 +1334,7 @@ class H5P_Plugin_Admin {
       // Fetch data
       $response->data = $wpdb->get_var($wpdb->prepare(
         "SELECT hcud.data
-         FROM {$wpdb->prefix}h5p_contents_user_data hcud
+         FROM {$table_contents_user_data} hcud
          WHERE user_id = %d
            AND content_id = %d
            AND data_id = %s
@@ -1356,9 +1362,9 @@ class H5P_Plugin_Admin {
     global $wpdb;
 
     // Remove user scores/results
-    $wpdb->delete($wpdb->prefix . 'h5p_results', array('user_id' => $id), array('%d'));
+    $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_results'), array('user_id' => $id), array('%d'));
 
     // Remove contents user/usage data
-    $wpdb->delete($wpdb->prefix . 'h5p_contents_user_data', array('user_id' => $id), array('%d'));
+    $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_contents_user_data'), array('user_id' => $id), array('%d'));
   }
 }

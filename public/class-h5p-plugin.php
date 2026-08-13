@@ -194,7 +194,8 @@ class H5P_Plugin {
     $charset = self::determine_charset();
 
     // Keep track of h5p content entities
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_contents (
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+    dbDelta("CREATE TABLE {$table_contents} (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
       created_at TIMESTAMP NOT NULL DEFAULT 0,
       updated_at TIMESTAMP NOT NULL DEFAULT 0,
@@ -222,7 +223,8 @@ class H5P_Plugin {
     ) {$charset};");
 
     // Keep track of content dependencies
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_contents_libraries (
+    $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
+    dbDelta("CREATE TABLE {$table_contents_libraries} (
       content_id INT UNSIGNED NOT NULL,
       library_id INT UNSIGNED NOT NULL,
       dependency_type VARCHAR(31) NOT NULL,
@@ -232,7 +234,8 @@ class H5P_Plugin {
     ) {$charset};");
 
     // Keep track of data/state when users use content (contents >-< users)
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_contents_user_data (
+    $table_contents_user_data = H5PCommons::build_full_db_table_name('h5p_contents_user_data');
+    dbDelta("CREATE TABLE {$table_contents_user_data} (
       content_id INT UNSIGNED NOT NULL,
       user_id INT UNSIGNED NOT NULL,
       sub_content_id INT UNSIGNED NOT NULL,
@@ -245,21 +248,24 @@ class H5P_Plugin {
     ) {$charset};");
 
     // Create a relation between tags and content
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_contents_tags (
+    $table_contents_tags = H5PCommons::build_full_db_table_name('h5p_contents_tags');
+    dbDelta("CREATE TABLE {$table_contents_tags} (
       content_id INT UNSIGNED NOT NULL,
       tag_id INT UNSIGNED NOT NULL,
       PRIMARY KEY  (content_id,tag_id)
     ) {$charset};");
 
     // Keep track of tags
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_tags (
+    $table_tags = H5PCommons::build_full_db_table_name('h5p_tags');
+    dbDelta("CREATE TABLE {$table_tags} (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
       name VARCHAR(31) NOT NULL,
       PRIMARY KEY  (id)
     ) {$charset};");
 
     // Keep track of results (contents >-< users)
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_results (
+    $table_results = H5PCommons::build_full_db_table_name('h5p_results');
+    dbDelta("CREATE TABLE {$table_results} (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
       content_id INT UNSIGNED NOT NULL,
       user_id INT UNSIGNED NOT NULL,
@@ -273,7 +279,13 @@ class H5P_Plugin {
     ) {$charset};");
 
     // Keep track of h5p libraries
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_libraries (
+    // Note: When in network mode, the dbDelta run on
+    // h5p_libraries, h5p_libraries_cachedassets, h5p_libraries_languages and h5p_libraries_libraries
+    // will run for every single blog. A little wasteful, but does not break anything.
+    // TODO: Change upgrade from init hook to to upgrader_process_complete hook and run
+    //       over all blogs immediately and only run for these 4 once if network is enabled
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+    dbDelta("CREATE TABLE {$table_libraries} (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
       created_at TIMESTAMP NOT NULL,
       updated_at TIMESTAMP NOT NULL,
@@ -328,7 +340,8 @@ class H5P_Plugin {
     ) {$charset};");
 
     // Keep track of h5p library dependencies
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_libraries_libraries (
+    $table_libraries_libraries = H5PCommons::build_full_db_table_name('h5p_libraries_libraries');
+    dbDelta("CREATE TABLE {$table_libraries_libraries} (
       library_id INT UNSIGNED NOT NULL,
       required_library_id INT UNSIGNED NOT NULL,
       dependency_type VARCHAR(31) NOT NULL,
@@ -336,7 +349,8 @@ class H5P_Plugin {
     ) {$charset};");
 
     // Keep track of h5p library translations
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_libraries_languages (
+    $table_libraries_languages = H5PCommons::build_full_db_table_name('h5p_libraries_languages');
+    dbDelta("CREATE TABLE {$table_libraries_languages} (
       library_id INT UNSIGNED NOT NULL,
       language_code VARCHAR(31) NOT NULL,
       translation TEXT NOT NULL,
@@ -344,7 +358,8 @@ class H5P_Plugin {
     ) {$charset};");
 
     // Keep track of logged h5p events
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_events (
+    $table_events = H5PCommons::build_full_db_table_name('h5p_events');
+    dbDelta("CREATE TABLE {$table_events} (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
       user_id INT UNSIGNED NOT NULL,
       created_at INT UNSIGNED NOT NULL,
@@ -358,7 +373,8 @@ class H5P_Plugin {
     ) {$charset};");
 
     // A set of global counters to keep track of H5P usage
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_counters (
+    $table_counters = H5PCommons::build_full_db_table_name('h5p_counters');
+    dbDelta("CREATE TABLE {$table_counters} (
       type VARCHAR(63) NOT NULL,
       library_name VARCHAR(127) NOT NULL,
       library_version VARCHAR(31) NOT NULL,
@@ -366,13 +382,15 @@ class H5P_Plugin {
       PRIMARY KEY  (type,library_name,library_version)
     ) {$charset};");
 
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_libraries_cachedassets (
+    $table_libraries_cachedassets = H5PCommons::build_full_db_table_name('h5p_libraries_cachedassets');
+    dbDelta("CREATE TABLE {$table_libraries_cachedassets} (
       library_id INT UNSIGNED NOT NULL,
       hash VARCHAR(64) NOT NULL,
       PRIMARY KEY  (library_id,hash)
     ) {$charset};");
 
-    dbDelta("CREATE TABLE {$wpdb->prefix}h5p_tmpfiles (
+    $table_tmpfiles = H5PCommons::build_full_db_table_name('h5p_tmpfiles');
+    dbDelta("CREATE TABLE {$table_tmpfiles} (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
       path VARCHAR(255) NOT NULL,
       created_at INT UNSIGNED NOT NULL,
@@ -452,7 +470,8 @@ class H5P_Plugin {
     $between_1710_1713 = ($v->major === 1 && $v->minor === 7 && $v->patch >= 10 && $v->patch <= 13); // Target 1.7.10, 1.7.11, 1.7.12, 1.7.13
     if ($between_1710_1713) {
       // Fix tmpfiles table manually :-)
-      $wpdb->query("ALTER TABLE {$wpdb->prefix}h5p_tmpfiles ADD COLUMN id INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST, DROP PRIMARY KEY, ADD PRIMARY KEY(id)");
+      $table_tmpfiles = H5PCommons::build_full_db_table_name('h5p_tmpfiles');
+      $wpdb->query("ALTER TABLE {$table_tmpfiles} ADD COLUMN id INT UNSIGNED NOT NULL AUTO_INCREMENT FIRST, DROP PRIMARY KEY, ADD PRIMARY KEY(id)");
     }
 
     // Check and update database
@@ -495,15 +514,17 @@ class H5P_Plugin {
 
     if ($pre_1110) {
       // Remove unused columns
-      self::drop_column("{$wpdb->prefix}h5p_contents", 'author');
-      self::drop_column("{$wpdb->prefix}h5p_contents", 'keywords');
-      self::drop_column("{$wpdb->prefix}h5p_contents", 'description');
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+      self::drop_column($table_contents, 'author');
+      self::drop_column($table_contents, 'keywords');
+      self::drop_column($table_contents, 'description');
     }
 
     if ($pre_1113 && !$pre_1110) { // 1.11.0, 1.11.1 or 1.11.2
       // There are no tmpfiles in content folders, cleanup
+      $table_tmpfiles = H5PCommons::build_full_db_table_name('h5p_tmpfiles');
       $wpdb->query($wpdb->prepare(
-          "DELETE FROM {$wpdb->prefix}h5p_tmpfiles
+          "DELETE FROM {$table_tmpfiles}
             WHERE path LIKE '%s'",
           "%/h5p/content/%"));
     }
@@ -517,7 +538,8 @@ class H5P_Plugin {
                  ($v->major === 1 && $v->minor === 17 && $v->patch < 6)); // < 1.17.5
     if ($pre_1176) {
       // Clear filteredParameters
-      $wpdb->query("UPDATE {$wpdb->prefix}h5p_contents SET filtered = ''");
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+      $wpdb->query("UPDATE {$table_contents} SET filtered = ''");
     }
 
     // Keep track of which version of the plugin we have.
@@ -572,12 +594,18 @@ class H5P_Plugin {
     // Make sure we use the charset defined in wp-config, and not DB default.
     $charset = self::determine_charset();
     if (!empty($charset)) {
-      $wpdb->query("ALTER TABLE `{$wpdb->prefix}h5p_contents` {$charset}");
-      $wpdb->query("ALTER TABLE `{$wpdb->prefix}h5p_contents_libraries` {$charset}");
-      $wpdb->query("ALTER TABLE `{$wpdb->prefix}h5p_results` {$charset}");
-      $wpdb->query("ALTER TABLE `{$wpdb->prefix}h5p_libraries` {$charset}");
-      $wpdb->query("ALTER TABLE `{$wpdb->prefix}h5p_libraries_libraries` {$charset}");
-      $wpdb->query("ALTER TABLE `{$wpdb->prefix}h5p_libraries_languages` {$charset}");
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+      $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
+      $table_results = H5PCommons::build_full_db_table_name('h5p_results');
+      $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+      $table_libraries_libraries = H5PCommons::build_full_db_table_name('h5p_libraries_libraries');
+      $table_libraries_languages = H5PCommons::build_full_db_table_name('h5p_libraries_languages');
+      $wpdb->query("ALTER TABLE `{$table_contents}` {$charset}");
+      $wpdb->query("ALTER TABLE `{$table_contents_libraries}` {$charset}");
+      $wpdb->query("ALTER TABLE `{$table_results}` {$charset}");
+      $wpdb->query("ALTER TABLE `{$table_libraries}` {$charset}");
+      $wpdb->query("ALTER TABLE `{$table_libraries_libraries}` {$charset}");
+      $wpdb->query("ALTER TABLE `{$table_libraries_languages}` {$charset}");
     }
   }
 
@@ -686,7 +714,8 @@ class H5P_Plugin {
       }
     }
 
-    $wpdb->query("TRUNCATE TABLE {$wpdb->prefix}h5p_libraries_cachedassets");
+    $table_libraries_cachedassets = H5PCommons::build_full_db_table_name('h5p_libraries_cachedassets');
+$wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
   }
 
   /**
@@ -701,13 +730,14 @@ class H5P_Plugin {
     global $wpdb;
     $wpdb->hide_errors();
 
-    if ($wpdb->query("SHOW INDEX FROM `{$wpdb->prefix}{$table}` WHERE Key_name = '{$index}'")) {
-      $wpdb->query("ALTER TABLE `{$wpdb->prefix}{$table}` DROP INDEX `{$index}`");
+    $full_table = H5PCommons::build_full_db_table_name($table);
+    if ($wpdb->query("SHOW INDEX FROM `{$full_table}` WHERE Key_name = '{$index}'")) {
+      $wpdb->query("ALTER TABLE `{$full_table}` DROP INDEX `{$index}`");
     }
 
     for ($i = 0; $i < 5; $i++) {
-      if ($wpdb->query("SHOW INDEX FROM `{$wpdb->prefix}{$table}` WHERE Key_name = '{$index}_$i'")) {
-        $wpdb->query("ALTER TABLE `{$wpdb->prefix}{$table}` DROP INDEX `{$index}_$i`");
+      if ($wpdb->query("SHOW INDEX FROM `{$full_table}` WHERE Key_name = '{$index}_$i'")) {
+        $wpdb->query("ALTER TABLE `{$full_table}` DROP INDEX `{$index}_$i`");
       }
     }
 
@@ -970,9 +1000,10 @@ class H5P_Plugin {
   public function shortcode($atts) {
     global $wpdb;
     if (isset($atts['slug'])) {
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
       $q=$wpdb->prepare(
         "SELECT  id ".
-        "FROM    {$wpdb->prefix}h5p_contents ".
+        "FROM    {$table_contents} ".
         "WHERE   slug=%s",
         $atts['slug']
       );
@@ -1072,11 +1103,12 @@ class H5P_Plugin {
     // Get preloaded user data for the current user
     $current_user = wp_get_current_user();
     if (get_option('h5p_save_content_state', FALSE) && $current_user->ID) {
+      $table_contents_user_data = H5PCommons::build_full_db_table_name('h5p_contents_user_data');
       $results = $wpdb->get_results($wpdb->prepare(
         "SELECT hcud.sub_content_id,
                 hcud.data_id,
                 hcud.data
-          FROM {$wpdb->prefix}h5p_contents_user_data hcud
+          FROM {$table_contents_user_data} hcud
           WHERE user_id = %d
           AND content_id = %d
           AND preload = 1",
@@ -1402,9 +1434,10 @@ class H5P_Plugin {
     $num = 0; // Number of files deleted
 
     // Locate files not saved in over a day
+    $table_tmpfiles = H5PCommons::build_full_db_table_name('h5p_tmpfiles');
     $files = $wpdb->get_results($wpdb->prepare(
         "SELECT path
-           FROM {$wpdb->prefix}h5p_tmpfiles
+           FROM {$table_tmpfiles}
           WHERE created_at < %d",
         $older_than)
       );
@@ -1418,7 +1451,7 @@ class H5P_Plugin {
 
     // Remove from tmpfiles table
     $wpdb->query($wpdb->prepare(
-        "DELETE FROM {$wpdb->prefix}h5p_tmpfiles
+        "DELETE FROM {$table_tmpfiles}
           WHERE created_at < %d",
         $older_than));
 
@@ -1479,8 +1512,9 @@ class H5P_Plugin {
 
     $older_than = (time() - H5PEventBase::$log_time);
 
+    $table_events = H5PCommons::build_full_db_table_name('h5p_events');
     $wpdb->query($wpdb->prepare("
-        DELETE FROM {$wpdb->prefix}h5p_events
+        DELETE FROM {$table_events}
 		          WHERE created_at < %d
         ", $older_than));
   }
@@ -1587,10 +1621,11 @@ class H5P_Plugin {
     $where = ($ids ? "WHERE id IN (" . implode(',', $ids) . ")"  : '');
 
     // Look up H5P IDs
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
     $results = $wpdb->get_results(
       "SELECT hc.id,
               hc.slug
-        FROM {$wpdb->prefix}h5p_contents hc
+        FROM {$table_contents} hc
              {$where}"
     );
 
@@ -1693,19 +1728,33 @@ class H5P_Plugin {
     global $wpdb;
 
     // Drop tables
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_contents");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_contents_libraries");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_contents_user_data");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_contents_tags");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_tags");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_results");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_libraries");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_libraries_libraries");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_libraries_languages");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_libraries_cachedassets");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_counters");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_events");
-    $wpdb->query("DROP TABLE {$wpdb->prefix}h5p_tmpfiles");
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+    $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
+    $table_contents_user_data = H5PCommons::build_full_db_table_name('h5p_contents_user_data');
+    $table_contents_tags = H5PCommons::build_full_db_table_name('h5p_contents_tags');
+    $table_tags = H5PCommons::build_full_db_table_name('h5p_tags');
+    $table_results = H5PCommons::build_full_db_table_name('h5p_results');
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+    $table_libraries_libraries = H5PCommons::build_full_db_table_name('h5p_libraries_libraries');
+    $table_libraries_languages = H5PCommons::build_full_db_table_name('h5p_libraries_languages');
+    $table_libraries_cachedassets = H5PCommons::build_full_db_table_name('h5p_libraries_cachedassets');
+    $table_counters = H5PCommons::build_full_db_table_name('h5p_counters');
+    $table_events = H5PCommons::build_full_db_table_name('h5p_events');
+    $table_tmpfiles = H5PCommons::build_full_db_table_name('h5p_tmpfiles');
+
+    $wpdb->query("DROP TABLE IF EXISTS {$table_contents}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_contents_libraries}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_contents_user_data}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_contents_tags}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_tags}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_results}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_libraries}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_libraries_libraries}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_libraries_languages}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_libraries_cachedassets}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_counters}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_events}");
+    $wpdb->query("DROP TABLE IF EXISTS {$table_tmpfiles}");
 
     // Remove settings
     delete_option('h5p_version');
@@ -1735,6 +1784,7 @@ class H5P_Plugin {
     delete_option('h5p_hub_is_enabled');
     delete_option('h5p_send_usage_statistics');
     delete_option('h5p_has_request_user_consent');
+    delete_site_option('h5p_network_enabled');
 
     // Clean out file dirs.
     $upload_dir = wp_upload_dir();
