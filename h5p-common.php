@@ -33,14 +33,24 @@ class H5PCommons {
 	];
 
 	/**
+	 * Cached network enable flag to avoid repeated database calls.
+	 *
+	 * @var bool|null
+	 */
+	private static $is_network_enabled = null;
+
+	/**
 	 * Build full database table name, including correct prefix.
 	 *
 	 * @param string $table_name Table name without prefix (e.g. 'h5p_libraries').
 	 * @return string Full table name.
 	 */
 	public static function build_full_db_table_name($table_name) {
-		$is_network_enabled = get_site_option('h5p_network_enabled', false);
-		return ($is_network_enabled)
+		if (null === self::$is_network_enabled) {
+			self::$is_network_enabled = get_site_option('h5p_network_enabled', false);
+		}
+
+		return (self::$is_network_enabled)
 			? H5PCommons::build_full_db_table_name_multisite($table_name)
 			: H5PCommons::build_full_db_table_name_singlesite($table_name);
 	}
