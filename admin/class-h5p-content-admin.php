@@ -426,6 +426,8 @@ class H5PContentAdmin {
     global $wpdb;
     $tag_ids = array();
 
+    $table_contents_tags = H5PCommons::build_full_db_table_name('h5p_contents_tags');
+
     // Create array and trim input
     $tags = explode(',', $tags);
     foreach ($tags as $tag) {
@@ -436,7 +438,6 @@ class H5PContentAdmin {
 
       // Find out if tag exists and is linked to content
       $table_tags = H5PCommons::build_full_db_table_name('h5p_tags');
-      $table_contents_tags = H5PCommons::build_full_db_table_name('h5p_contents_tags');
       $exists = $wpdb->get_row($wpdb->prepare(
           "SELECT t.id, ct.content_id
              FROM {$table_tags} t
