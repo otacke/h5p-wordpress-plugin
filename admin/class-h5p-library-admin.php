@@ -108,6 +108,26 @@ class H5PLibraryAdmin {
   }
 
   /**
+   * End the request unless the current user may manage libraries.
+   *
+   * These operations are reached over AJAX, which is registered for every logged
+   * in user, so the page capability that guards the libraries screen does not
+   * apply. In network mode libraries are shared by all blogs, and then only
+   * network admins may act on them.
+   *
+   * @since 1.19.0
+   */
+  private function require_manage_libraries() {
+    if (H5PCommons::current_user_can_manage_libraries()) {
+      return;
+    }
+
+    status_header(H5PCommons::HTTP_FORBIDDEN);
+    print __('Error, insufficient permissions!', $this->plugin_slug);
+    exit;
+  }
+
+  /**
    * Display admin interface for managing content libraries.
    *
    * @since 1.1.0
@@ -256,6 +276,14 @@ class H5PLibraryAdmin {
   public function process_libraries() {
     $post = ($_SERVER['REQUEST_METHOD'] === 'POST');
     $task = filter_input(INPUT_GET, 'task');
+
+    // Uploading and deleting write to the libraries folder, which is shared by
+    // every blog in network mode. The libraries screen is already gated on the
+    // same capability, but this handler does not depend on how it is reached.
+    if (($post || $task === 'delete') && !H5PCommons::current_user_can_manage_libraries()) {
+      H5P_Plugin_Admin::set_error(__('You are not allowed to manage H5P libraries.', $this->plugin_slug));
+      return;
+    }
 
     if ($post) {
       // A form as has been submitted
@@ -485,6 +513,8 @@ class H5PLibraryAdmin {
       exit; // POST is required
     }
 
+    $this->require_manage_libraries();
+
     $plugin = H5P_Plugin::get_instance();
     $core = $plugin->get_h5p_instance('core');
 
@@ -548,6 +578,8 @@ class H5PLibraryAdmin {
   public function ajax_upgrade_progress() {
     global $wpdb;
     header('Cache-Control: no-cache');
+
+    $this->require_manage_libraries();
 
     if (!wp_verify_nonce(filter_input(INPUT_POST, 'token'), 'h5p_content_upgrade')) {
       print __('Error, invalid security token!', $this->plugin_slug);
@@ -676,6 +708,8 @@ class H5PLibraryAdmin {
   public function ajax_upgrade_library() {
     header('Cache-Control: no-cache');
 
+    $this->require_manage_libraries();
+
     $library_string = filter_input(INPUT_GET, 'library');
     if (!$library_string) {
       print __('Error, missing library!', $this->plugin_slug);
@@ -711,8 +745,16 @@ class H5PLibraryAdmin {
     }
     else {
       $suffix = '/libraries/' . $library->name . '-' . $library->version->major . '.' . $library->version->minor . '/upgrades.js';
-      $upgrades_script_path = $plugin->get_h5p_path() . $suffix;
-      $upgrades_script_url = $plugin->get_h5p_url() . $suffix;
+
+      // Libraries are shared by all blogs in network mode.
+      if (H5PCommons::is_network_enabled()) {
+        $upgrades_script_path = H5PCommons::get_h5p_network_path() . $suffix;
+        $upgrades_script_url = H5PCommons::get_h5p_network_url() . $suffix;
+      }
+      else {
+        $upgrades_script_path = $plugin->get_h5p_path() . $suffix;
+        $upgrades_script_url = $plugin->get_h5p_url() . $suffix;
+      }
     }
 
     if (file_exists($upgrades_script_path)) {
@@ -731,6 +773,8 @@ class H5PLibraryAdmin {
    */
   public function ajax_restrict_access() {
     global $wpdb;
+
+    $this->require_manage_libraries();
 
     $library_id = filter_input(INPUT_GET, 'id');
     $restricted = filter_input(INPUT_GET, 'restrict');

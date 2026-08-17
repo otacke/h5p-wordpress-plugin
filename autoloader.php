@@ -36,6 +36,7 @@ function h5p_autoloader($class) {
       'H5P_Event' => 'public/class-h5p-event.php',
       'H5P_Plugin' => 'public/class-h5p-plugin.php',
       'H5PWordPress' => 'public/class-h5p-wordpress.php',
+      'H5P_Network_File_Storage' => 'public/class-h5p-network-file-storage.php',
 
       // Admin
       'H5P_Plugin_Admin' => 'admin/class-h5p-plugin-admin.php',

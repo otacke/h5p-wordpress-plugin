@@ -21,6 +21,8 @@ class H5P_Network_Admin {
    * Add the "H5P Network" page under the network Settings menu.
    */
   public function add_network_admin_menu() {
+    $this->library = NULL;
+
     add_submenu_page(
       'settings.php',
       __('H5P Network', 'h5p'),
@@ -29,6 +31,19 @@ class H5P_Network_Admin {
       'h5p_network',
       array($this, 'render_settings_page')
     );
+
+    if (H5PCommons::is_network_enabled()) {
+      $this->library = new H5PLibraryAdmin('h5p');
+      $libraries_page = add_submenu_page(
+        'settings.php',
+        __('H5P Libraries', 'h5p'),
+        __('H5P Libraries', 'h5p'),
+        H5PCommons::current_user_can_manage_libraries() ? 'manage_network' : 'manage_h5p_libraries',
+        'h5p_libraries',
+        array($this->library, 'display_libraries_page')
+      );
+      add_action('load-' . $libraries_page, array($this->library, 'process_libraries'));
+    }
   }
 
   /**
@@ -39,11 +54,10 @@ class H5P_Network_Admin {
 
     if ($save !== null) {
       check_admin_referer( 'h5p_network_settings', 'save_network_settings' );
-      $enabled = filter_input( INPUT_POST, 'h5p_network_enabled', FILTER_VALIDATE_BOOLEAN );
-      update_site_option('h5p_network_enabled', $enabled);
-    } else {
-      $enabled = get_site_option('h5p_network_enabled', true);
     }
+
+    // Read back the stored state, so the form always shows what is in effect.
+    $enabled = H5PCommons::is_network_enabled();
 
     include 'views/network-settings.php';
   }
@@ -85,7 +99,7 @@ class H5P_Network_Admin {
       return;
     }
 
-    update_site_option('h5p_network_enabled', true);
+    $this->set_network_mode(true);
 
     wp_send_json_success(
       array(
@@ -112,9 +126,23 @@ class H5P_Network_Admin {
     $demigrate = new H5P_Network_Migrate_To_Local();
     $demigrate->migrateToLocal();
 
-    update_site_option('h5p_network_enabled', false);
+    $this->set_network_mode(false);
 
     wp_send_json_success();
+  }
+
+  /**
+   * Switch network mode on or off.
+   *
+   * Who may manage libraries depends on this, so the capabilities of every blog
+   * are re-assigned to match. Enabling revokes manage_h5p_libraries from blog
+   * roles, disabling grants it back to those with manage_options.
+   *
+   * @param bool $enabled Whether network mode should be enabled.
+   */
+  private function set_network_mode($enabled) {
+    H5PCommons::set_network_enabled($enabled);
+    H5P_Plugin::assign_capabilities_all_blogs();
   }
 
   /**

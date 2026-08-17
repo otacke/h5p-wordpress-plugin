@@ -18,7 +18,7 @@ abstract class H5P_Network_Admin_Base {
    * @return string
    */
   protected function getH5PNetworkPath() {
-    return wp_upload_dir()['basedir'] . '/h5p_network';
+    return H5PCommons::get_h5p_network_path();
   }
 
   /**

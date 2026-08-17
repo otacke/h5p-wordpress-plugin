@@ -412,11 +412,13 @@ class H5P_Plugin_Admin {
     // Process form data when saving H5Ps.
     add_action('load-' . $contents_page, array($this->content, 'process_new_content'));
 
-    $libraries = __('Libraries', $this->plugin_slug);
-    $libraries_page = add_submenu_page($this->plugin_slug, $libraries, $libraries, 'manage_h5p_libraries', $this->plugin_slug . '_libraries', array($this->library, 'display_libraries_page'));
+    if (!H5PCommons::is_network_enabled()) {
+      $libraries = __('Libraries', $this->plugin_slug);
+      $libraries_page = add_submenu_page($this->plugin_slug, $libraries, $libraries, 'manage_h5p_libraries', $this->plugin_slug . '_libraries', array($this->library, 'display_libraries_page'));
 
-    // Process form data when upload H5Ps without content.
-    add_action('load-' . $libraries_page, array($this->library, 'process_libraries'));
+      // Process form data when upload H5Ps without content.
+      add_action('load-' . $libraries_page, array($this->library, 'process_libraries'));
+    }
 
     if (get_option('h5p_track_user', TRUE)) {
       $my_results = __('My Results', $this->plugin_slug);

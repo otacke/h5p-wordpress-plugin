@@ -12,6 +12,14 @@ class H5PWordPress implements H5PFrameworkInterface {
   private $messages = array('error' => array(), 'info' => array());
 
   /**
+   * Number of content items per library id, built on first use.
+   *
+   * @since 1.19.0
+   * @var int[]|null
+   */
+  private $content_usage = NULL;
+
+  /**
    * Keys that should be stored as a network setting
    *
    * @since 1.15.7
@@ -87,11 +95,32 @@ class H5PWordPress implements H5PFrameworkInterface {
   }
 
   /**
+   * Helper
+   *
+   * Libraries are shared by all blogs in network mode, so they do not live in
+   * the blog's own h5p folder.
+   */
+  private function getLibrariesPath() {
+    if (H5PCommons::is_network_enabled()) {
+      return H5PCommons::get_h5p_network_path() . '/libraries';
+    }
+
+    return $this->getH5pPath() . '/libraries';
+  }
+
+  /**
    * Get the URL to a library file
    */
   public function getLibraryFileUrl($libraryFolderName, $fileName) {
-    $upload_dir = wp_upload_dir();
-    return $upload_dir['baseurl'] . '/h5p/libraries/' . $libraryFolderName . '/' . $fileName;
+    if (H5PCommons::is_network_enabled()) {
+      $base = H5PCommons::get_h5p_network_url();
+    }
+    else {
+      $upload_dir = wp_upload_dir();
+      $base = $upload_dir['baseurl'] . '/h5p';
+    }
+
+    return $base . '/libraries/' . $libraryFolderName . '/' . $fileName;
   }
 
   /**
@@ -199,7 +228,7 @@ class H5PWordPress implements H5PFrameworkInterface {
    * Implements mayUpdateLibraries
    */
   public function mayUpdateLibraries() {
-    return current_user_can('manage_h5p_libraries');
+    return H5PCommons::current_user_can_manage_libraries();
   }
 
   /**
@@ -208,20 +237,12 @@ class H5PWordPress implements H5PFrameworkInterface {
   public function getLibraryUsage($id, $skipContent = FALSE) {
     global $wpdb;
 
-    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
-    $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
-    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
     $table_libraries_libraries = H5PCommons::build_full_db_table_name('h5p_libraries_libraries');
 
     return array(
-      'content' => $skipContent ? -1 : intval($wpdb->get_var($wpdb->prepare(
-          "SELECT COUNT(distinct c.id)
-          FROM {$table_libraries} l
-          JOIN {$table_contents_libraries} cl ON l.id = cl.library_id
-          JOIN {$table_contents} c ON cl.content_id = c.id
-          WHERE l.id = %d",
-          $id)
-        )),
+      'content' => $skipContent ? -1 : $this->getContentUsage($id),
+      // Dependencies are kept in a network level table in network mode, so this
+      // count already covers every blog.
       'libraries' => intval($wpdb->get_var($wpdb->prepare(
           "SELECT COUNT(*)
           FROM {$table_libraries_libraries}
@@ -229,6 +250,104 @@ class H5PWordPress implements H5PFrameworkInterface {
           $id)
         ))
     );
+  }
+
+  /**
+   * Number of content items using the given library.
+   *
+   * In network mode libraries are shared, so content on every blog counts:
+   * deleting a library has to be blocked while any blog still uses it.
+   *
+   * Counts for all libraries are gathered in one query per blog and kept for the
+   * rest of the request, because the library admin list asks about every library
+   * in turn and switching blogs is not cheap.
+   *
+   * @since 1.19.0
+   * @param int $id Library id.
+   * @return int
+   */
+  private function getContentUsage($id) {
+    if ($this->content_usage === NULL) {
+      $this->content_usage = H5PCommons::is_network_enabled()
+        ? $this->countContentUsageAllBlogs()
+        : $this->countContentUsage();
+    }
+
+    return isset($this->content_usage[$id]) ? $this->content_usage[$id] : 0;
+  }
+
+  /**
+   * Sum the number of content items per library across every blog.
+   *
+   * @since 1.19.0
+   * @return int[] Content count keyed by library id.
+   */
+  private function countContentUsageAllBlogs() {
+    $usage = array();
+
+    foreach (get_sites(array('fields' => 'ids')) as $blog_id) {
+      switch_to_blog($blog_id);
+
+      try {
+        foreach ($this->countContentUsage() as $library_id => $count) {
+          $usage[$library_id] = (isset($usage[$library_id]) ? $usage[$library_id] : 0) + $count;
+        }
+      }
+      finally {
+        restore_current_blog();
+      }
+    }
+
+    return $usage;
+  }
+
+  /**
+   * Count the number of content items per library on the current blog.
+   *
+   * A blog where H5P has never been loaded has no content tables, and no content
+   * either, so it contributes nothing.
+   *
+   * @since 1.19.0
+   * @return int[] Content count keyed by library id.
+   */
+  private function countContentUsage() {
+    global $wpdb;
+
+    $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+
+    if (!$this->tableExists($table_contents_libraries) || !$this->tableExists($table_contents)) {
+      return array();
+    }
+
+    $rows = $wpdb->get_results(
+      "SELECT cl.library_id AS library_id, COUNT(DISTINCT c.id) AS content_count
+        FROM {$table_contents_libraries} cl
+        JOIN {$table_contents} c ON cl.content_id = c.id
+        GROUP BY cl.library_id"
+    );
+
+    $usage = array();
+    foreach ($rows as $row) {
+      $usage[intval($row->library_id)] = intval($row->content_count);
+    }
+
+    return $usage;
+  }
+
+  /**
+   * Whether the given database table exists.
+   *
+   * @since 1.19.0
+   * @param string $table Full table name.
+   * @return bool
+   */
+  private function tableExists($table) {
+    global $wpdb;
+
+    return $wpdb->get_var(
+      $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))
+    ) === $table;
   }
 
   /**
@@ -416,7 +535,7 @@ class H5PWordPress implements H5PFrameworkInterface {
     global $wpdb;
 
     // Delete library files
-    H5PCore::deleteFileTree($this->getH5pPath() . '/libraries/' . $library->name . '-' . $library->major_version . '.' . $library->minor_version);
+    H5PCore::deleteFileTree($this->getLibrariesPath() . '/' . $library->name . '-' . $library->major_version . '.' . $library->minor_version);
 
     // Remove library data from database
     $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_libraries_libraries'), array('library_id' => $library->id), array('%d'));
@@ -647,7 +766,7 @@ class H5PWordPress implements H5PFrameworkInterface {
   }
 
   private function getSemanticsFromFile($name, $majorVersion, $minorVersion) {
-    $semanticsPath = $this->getH5pPath() . '/libraries/' . $name . '-' . $majorVersion . '.' . $minorVersion . '/semantics.json';
+    $semanticsPath = $this->getLibrariesPath() . '/' . $name . '-' . $majorVersion . '.' . $minorVersion . '/semantics.json';
     if (file_exists($semanticsPath)) {
       $semantics = file_get_contents($semanticsPath);
       if (!json_decode($semantics, TRUE)) {
@@ -1203,10 +1322,10 @@ class H5PWordPress implements H5PFrameworkInterface {
 
       case H5PPermission::CREATE_RESTRICTED:
       case H5PPermission::UPDATE_LIBRARIES:
-        return current_user_can('manage_h5p_libraries');
+        return H5PCommons::current_user_can_manage_libraries();
 
       case H5PPermission::INSTALL_RECOMMENDED:
-        return current_user_can('install_recommended_h5p_libraries');
+        return H5PCommons::current_user_can_install_recommended_libraries();
 
     }
     return FALSE;

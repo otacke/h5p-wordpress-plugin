@@ -92,7 +92,7 @@ class H5PEditorWordPressStorage implements H5peditorStorage {
   public function getLibraries($libraries = NULL) {
     global $wpdb;
 
-    $super_user = current_user_can('manage_h5p_libraries');
+    $super_user = H5PCommons::current_user_can_manage_libraries();
 
     if ($libraries !== NULL) {
       // Get details for the specified libraries only.

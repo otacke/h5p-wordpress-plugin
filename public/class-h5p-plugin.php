@@ -625,7 +625,7 @@ class H5P_Plugin {
     foreach ($all_roles as $role_name => $role_info) {
       $role = get_role($role_name);
 
-      self::map_capability($role, $role_info, 'edit_others_pages', 'install_recommended_h5p_libraries');
+      self::map_capability($role, $role_info, self::library_capability_source('edit_others_pages'), 'install_recommended_h5p_libraries');
     }
   }
 
@@ -767,8 +767,8 @@ $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
         // Not multisite, regular admin can disable security checks
         self::map_capability($role, $role_info, 'install_plugins', 'disable_h5p_security');
       }
-      self::map_capability($role, $role_info, 'manage_options', 'manage_h5p_libraries');
-      self::map_capability($role, $role_info, 'edit_others_pages', 'install_recommended_h5p_libraries');
+      self::map_capability($role, $role_info, self::library_capability_source('manage_options'), 'manage_h5p_libraries');
+      self::map_capability($role, $role_info, self::library_capability_source('edit_others_pages'), 'install_recommended_h5p_libraries');
       self::map_capability($role, $role_info, 'edit_others_pages', 'edit_others_h5p_contents');
       self::map_capability($role, $role_info, 'edit_posts', 'edit_h5p_contents');
       self::map_capability($role, $role_info, 'read', 'view_others_h5p_contents');
@@ -778,6 +778,33 @@ $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
 
     // Keep track on how the capabilities are assigned (multisite caps or not)
     update_option('h5p_multisite_capabilities', is_multisite() ? 1 : 0);
+  }
+
+  /**
+   * Assign H5P capabilities to roles on every blog.
+   *
+   * Roles are stored per blog, so a change that depends on network wide state
+   * has to be applied to each of them. Used when network mode is switched on or
+   * off, which changes who may manage libraries.
+   *
+   * @since 1.19.0
+   */
+  public static function assign_capabilities_all_blogs() {
+    if (!is_multisite()) {
+      self::assign_capabilities();
+      return;
+    }
+
+    foreach (get_sites(array('fields' => 'ids')) as $blog_id) {
+      switch_to_blog($blog_id);
+
+      try {
+        self::assign_capabilities();
+      }
+      finally {
+        restore_current_blog();
+      }
+    }
   }
 
   /**
@@ -805,6 +832,27 @@ $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
         $role->add_cap($new_cap);
       }
     }
+  }
+
+  /**
+   * The capability that a library capability should be mapped from.
+   *
+   * Capabilities that write to the libraries folder are for network admins only
+   * when network mode is on, because the folder is then shared by every blog.
+   * manage_network_plugins belongs to no blog role, so mapping from it revokes
+   * the library capability from all of them, while super admins keep it by way
+   * of having every capability.
+   *
+   * @since 1.19.0
+   * @param string $local_cap Capability to map from when network mode is off.
+   * @return string|array
+   */
+  private static function library_capability_source($local_cap) {
+    if (!H5PCommons::is_network_enabled()) {
+      return $local_cap;
+    }
+
+    return array('install_plugins', 'manage_network_plugins');
   }
 
   /**
@@ -878,6 +926,27 @@ $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
   }
 
   /**
+   * Get the file storage for H5P core to use.
+   *
+   * In network mode libraries and cached assets are shared by all blogs, which
+   * needs a storage with two roots. Otherwise the plain h5p folder will do, and
+   * H5PCore builds the default storage from it itself.
+   *
+   * @since 1.19.0
+   * @return string|\H5PFileStorage
+   */
+  public function get_h5p_storage() {
+    if (!H5PCommons::is_network_enabled()) {
+      return $this->get_h5p_path();
+    }
+
+    return new H5P_Network_File_Storage(
+      $this->get_h5p_path(),
+      H5PCommons::get_h5p_network_path()
+    );
+  }
+
+  /**
    * Get the URL for the H5P files folder.
    *
    * @since 1.0.0
@@ -945,7 +1014,7 @@ $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
     if (empty(self::$interface[$id])) {
       self::$interface[$id] = new H5PWordPress();
       $language = $this->get_language();
-      self::$core[$id] = new H5PCore(self::$interface[$id], $this->get_h5p_path(), $this->get_h5p_url(), $language, get_option('h5p_export', TRUE));
+      self::$core[$id] = new H5PCore(self::$interface[$id], $this->get_h5p_storage(), $this->get_h5p_url(), $language, get_option('h5p_export', TRUE));
       self::$core[$id]->aggregateAssets = !(defined('H5P_DISABLE_AGGREGATION') && H5P_DISABLE_AGGREGATION === true);
     }
 
@@ -1204,6 +1273,8 @@ $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
    * @param string $embed type
    */
   public function alter_assets(&$files, &$dependencies, $embed) {
+    $this->network_asset_paths($files);
+
     if (!has_action('h5p_alter_library_scripts') && !has_action('h5p_alter_library_styles')) {
       return;
     }
@@ -1240,6 +1311,39 @@ $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
      * @param string $embed_type Possible values are: div, iframe, external, editor.
      */
     do_action_ref_array('h5p_alter_library_styles', array(&$files['styles'], $libraries, $embed));
+  }
+
+  /**
+   * Point library and cached asset paths at the network level folder.
+   *
+   * H5P core builds these paths relative to the storage root, which for
+   * libraries and cached assets is the shared network folder rather than this
+   * blog's h5p folder. Rewriting them to absolute URLs is what makes the three
+   * consumers leave them alone: H5PCore::getAssetsUrls(),
+   * H5peditor::getLibraryData() and self::enqueue_assets() all pass a path
+   * through unchanged once it carries a scheme.
+   *
+   * @since 1.19.0
+   * @param array $files scripts & styles
+   */
+  private function network_asset_paths(&$files) {
+    if (!H5PCommons::is_network_enabled()) {
+      return;
+    }
+
+    $network_url = H5PCommons::get_h5p_network_url();
+
+    foreach (array('scripts', 'styles') as $type) {
+      if (empty($files[$type])) {
+        continue;
+      }
+
+      foreach ($files[$type] as $asset) {
+        if (preg_match('#^/(libraries|cachedassets)/#', $asset->path) === 1) {
+          $asset->path = $network_url . $asset->path;
+        }
+      }
+    }
   }
 
   /**
@@ -1334,6 +1438,12 @@ $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
       'pluginCacheBuster' => '?v=' . self::VERSION,
       'libraryUrl' => plugins_url('h5p/h5p-php-library/js')
     );
+
+    // Core JS builds library URLs as url + '/libraries/', which in network mode
+    // is not where the libraries are. H5P.getLibraryPath() honours this override.
+    if (H5PCommons::is_network_enabled()) {
+      $settings['urlLibraries'] = H5PCommons::get_h5p_network_url() . '/libraries';
+    }
 
     if ($current_user->ID) {
       $settings['user'] = array(
