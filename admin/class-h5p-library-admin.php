@@ -193,6 +193,8 @@ class H5PLibraryAdmin {
       )
     );
 
+    $is_network_enabled = H5PCommons::is_network_enabled();
+
     // Add settings for each library
     $i = 0;
     foreach ($libraries as $versions) {
@@ -200,7 +202,12 @@ class H5PLibraryAdmin {
         $usage = $interface->getLibraryUsage($library->id, $not_cached ? TRUE : FALSE);
         if ($library->runnable) {
           $upgrades = $core->getUpgrades($library, $versions);
-          $upgradeUrl = empty($upgrades) ? FALSE : admin_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . admin_url('admin.php?page=h5p_libraries'));
+          $upgradeUrl = empty($upgrades) ? FALSE : TRUE;
+          if ($upgradeUrl) {
+            $upgradeUrl = $is_network_enabled ?
+              network_admin_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . network_admin_url('admin.php?page=h5p_libraries')) :
+              admin_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . admin_url('admin.php?page=h5p_libraries'));
+          }
 
           $restricted = ($library->restricted ? TRUE : FALSE);
           $restricted_url = admin_url('admin-ajax.php?action=h5p_restrict_library' .
@@ -215,6 +222,14 @@ class H5PLibraryAdmin {
           $restricted_url = NULL;
         }
 
+        $detailsUrlBase = H5PCommons::is_network_enabled() ?
+          network_admin_url('admin.php?page=h5p_libraries&task=show&id=') :
+          admin_url('admin.php?page=h5p_libraries&task=show&id=');
+
+        $deleteUrlBase = H5PCommons::is_network_enabled() ?
+          network_admin_url('admin.php?page=h5p_libraries&task=delete&id=') :
+          admin_url('admin.php?page=h5p_libraries&task=delete&id=');
+
         $contents_count = $interface->getNumContent($library->id);
         $settings['libraryList']['listData'][] = array(
           'title' => $library->title . ' (' . H5PCore::libraryVersion($library) . ')',
@@ -224,8 +239,8 @@ class H5PLibraryAdmin {
           'numContentDependencies' => $usage['content'] < 1 ? '' : $usage['content'],
           'numLibraryDependencies' => $usage['libraries'] === 0 ? '' : $usage['libraries'],
           'upgradeUrl' => $upgradeUrl,
-          'detailsUrl' => admin_url('admin.php?page=h5p_libraries&task=show&id=' . $library->id),
-          'deleteUrl' => admin_url('admin.php?page=h5p_libraries&task=delete&id=' . $library->id)
+          'detailsUrl' => "{$detailsUrlBase}{$library->id}",
+          'deleteUrl' => "{$deleteUrlBase}{$library->id}",
         );
 
         $i++;
@@ -416,6 +431,7 @@ class H5PLibraryAdmin {
 
     include_once('views/library-details.php');
     $plugin->print_settings($settings, 'H5PAdminIntegration');
+  }
   }
 
   /**
