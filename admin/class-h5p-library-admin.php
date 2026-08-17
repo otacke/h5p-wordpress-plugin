@@ -432,7 +432,6 @@ class H5PLibraryAdmin {
     include_once('views/library-details.php');
     $plugin->print_settings($settings, 'H5PAdminIntegration');
   }
-  }
 
   /**
    * Display a list of all h5p content libraries.
