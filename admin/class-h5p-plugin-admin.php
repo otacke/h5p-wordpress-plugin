@@ -65,7 +65,7 @@ class H5P_Plugin_Admin {
 
     // Prepare admin pages / sections
     $this->content = new H5PContentAdmin($this->plugin_slug);
-    $this->library = new H5PLibraryAdmin($this->plugin_slug);
+    $this->library = H5PLibraryAdmin::create($this->plugin_slug);
     $this->privacy = new H5PPrivacyPolicy($this->plugin_slug);
 
     // Initialize admin area.

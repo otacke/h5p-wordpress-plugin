@@ -33,7 +33,7 @@ class H5P_Network_Admin {
     );
 
     if (H5PCommons::is_network_enabled()) {
-      $this->library = new H5PLibraryAdmin('h5p');
+      $this->library = H5PLibraryAdmin::create('h5p');
       $libraries_page = add_submenu_page(
         'settings.php',
         __('H5P Libraries', 'h5p'),

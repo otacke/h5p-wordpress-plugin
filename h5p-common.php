@@ -195,4 +195,28 @@ class H5PCommons {
 
 		return $wpdb->base_prefix . self::NETWORK_DB_TABLE_PREFIX . $table_name;
 	}
+
+	/**
+	 * Run callback once per blog.
+	 *
+	 * @since 1.19.0
+	 * @param callable $callback Receives the current blog id.
+	 */
+	public static function for_each_blog(callable $callback) {
+		if (!is_multisite()) {
+			$callback(get_current_blog_id());
+			return;
+		}
+
+		foreach (get_sites(array('fields' => 'ids')) as $blog_id) {
+			switch_to_blog($blog_id);
+
+			try {
+				$callback((int) $blog_id);
+			}
+			finally {
+				restore_current_blog();
+			}
+		}
+	}
 }
