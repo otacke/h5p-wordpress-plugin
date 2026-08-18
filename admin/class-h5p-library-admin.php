@@ -18,6 +18,22 @@
 class H5PLibraryAdmin {
 
   use H5PUtils;
+
+  /**
+   * Number of contents the upgrade script processes per request.
+   *
+   * @since 1.19.0
+   */
+  const UPGRADE_BATCH_SIZE = 40;
+
+  /**
+   * Seconds reserved for each batch.
+   *
+   * @since 1.19.0
+   */
+  const UPGRADE_BATCH_TIMEOUT = 5;
+
+
   /**
    * @since 1.1.0
    */
@@ -697,7 +713,7 @@ class H5PLibraryAdmin {
     if ($out->left) {
       $skip_query = empty($skipped) ? '' : " AND id NOT IN ($skipped)";
 
-      // Find 40 first contents using library and add to params
+      // Find next batch of contents using library and add to params
       $contents = $this->get_next_contents($library_id, $skip_query);
       foreach ($contents as $content) {
         $out->params[$content->id] =
@@ -808,7 +824,7 @@ class H5PLibraryAdmin {
    * @param int $limit Maximum number of rows to return.
    * @return array Rows with fields needed to build an upgrade request.
    */
-  protected function get_next_contents($library_id, $skip_query = '', $limit = 40) {
+  protected function get_next_contents($library_id, $skip_query = '', $limit = self::UPGRADE_BATCH_SIZE) {
     global $wpdb;
 
     $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
