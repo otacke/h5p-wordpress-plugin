@@ -15,12 +15,12 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    * @throws Exception If something fails.
    */
   public function migrateToNetwork() {
-    // TODO: CachedAssets!?!?
-    // TODO: Ensure all files can now be served from libraries_network
-
     $network_libraries_installed = $this->migrateLibrariesToNetwork();
     $network_libraries_installed = $this->migrateDatabaseTablesToNetwork($network_libraries_installed);
     $this->updateBlogsDatabase($network_libraries_installed);
+    $this->clearBlogsLibrariesAndCachedassets();
+
+    // TODO: Generate cached assets for network level
   }
 
   /**
@@ -33,14 +33,13 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     $this->ensureNetworkLibrariesDir();
     $this->ensureNetworkCachedassetsDir();
 
-    $upload_directory = wp_upload_dir();
     $network_libraries_path = $this->getNetworkLibrariesPath();
 
     $network_libraries_installed = array();
-    $sites = get_sites(array('fields' => 'ids'));
 
-    foreach ($sites as $blog_id) {
-      $libraries_directory = $this->getLibrariesDirForBlogId($blog_id, $upload_directory['basedir']);
+    H5PCommons::for_each_blog(function ($blog_id) use ($network_libraries_path, &$network_libraries_installed) {
+      $upload_directory = wp_upload_dir();
+      $libraries_directory = "{$upload_directory['basedir']}/h5p/libraries";
 
       if (!is_dir($libraries_directory)) {
         throw new Exception(
@@ -74,9 +73,52 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
         $network_libraries_installed[$result['versioned_machine_name']] = $result;
       }
-    }
+    });
 
     return $network_libraries_installed;
+  }
+
+  /**
+   * Clear blog-level H5P content (libraries and cachedassets) that was migrated
+   * to network level.
+   *
+   * Empties each site's h5p/libraries and h5p/cachedassets directories, keeping
+   * the directories themselves. The primary site's directories are separate from
+   * the network-level h5p_network directory, so it is included.
+   *
+   * @throws Exception If an existing file or directory cannot be deleted.
+   */
+  protected function clearBlogsLibrariesAndCachedassets() {
+    WP_Filesystem();
+    global $wp_filesystem;
+
+    H5PCommons::for_each_blog(function () use ($wp_filesystem) {
+      $upload_directory = wp_upload_dir();
+      $directories = array(
+        "{$upload_directory['basedir']}/h5p/libraries",
+        "{$upload_directory['basedir']}/h5p/cachedassets",
+      );
+
+      foreach ($directories as $directory) {
+        if (!$wp_filesystem->is_dir($directory)) {
+          continue;
+        }
+
+        foreach (scandir($directory) as $entry) {
+          $entry_path = "{$directory}/{$entry}";
+
+          if (is_dir($entry_path)) {
+            $deleted = $wp_filesystem->rmdir($entry_path, true);
+          } else {
+            $deleted = $wp_filesystem->delete($entry_path);
+          }
+
+          if (!$deleted) {
+            throw new Exception("Failed to delete: {$entry_path}");
+          }
+        }
+      }
+    });
   }
 
   /**

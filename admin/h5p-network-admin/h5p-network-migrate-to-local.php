@@ -19,8 +19,10 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
     $this->copyNetworkLibrariesToBlogs();
     $this->copyDatabaseTablesToBlogs();
 
-    // TODO: Cachesassets
-    // TODO: Ensure served from local blogs again
+    // TODO: Check if assets should be aggregated
+
+    // TODO: We're technically still in network mode, but for each blog, we need to
+    // Rebuild the cachedassets (database tables + files) now that we're migrating back to blogs.
 
     $this->deleteNetworkFilesDirectory();
     $this->dropNetworkTables();
@@ -80,26 +82,18 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
       return;
     }
 
-    $upload_directory = wp_upload_dir();
-    $sites = get_sites(array('fields' => 'ids'));
+    H5PCommons::for_each_blog(function () use ($network_libraries_path) {
+      $upload_directory = wp_upload_dir();
+      $target_dir = "{$upload_directory['basedir']}/h5p/libraries";
 
-    foreach ($sites as $blog_id) {
-      switch_to_blog($blog_id);
-      try {
-        $target_dir = $this->getLibrariesDirForBlogId($blog_id, $upload_directory['basedir']);
-
-        if (!is_dir($target_dir)) {
-          if (!mkdir($target_dir, 0755, true)) {
-            continue;
-          }
+      if (!is_dir($target_dir)) {
+        if (!mkdir($target_dir, 0755, true)) {
+          return;
         }
+      }
 
-        $this->copyDirectory($network_libraries_path, $target_dir);
-      }
-      finally {
-        restore_current_blog();
-      }
-    }
+      $this->copyDirectory($network_libraries_path, $target_dir);
+    });
   }
 
   /**

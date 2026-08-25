@@ -40,19 +40,6 @@ abstract class H5P_Network_Admin_Base {
   }
 
   /**
-   * Get libraries directory path for given blog.
-   *
-   * @param int     $blog_id               Blog ID.
-   * @param string  $upload_base_directory WordPress upload directory base path.
-   * @return string Libraries directory for given blog.
-   */
-  protected function getLibrariesDirForBlogId($blog_id, $upload_base_directory) {
-    return ($blog_id == 1) ?
-      "{$upload_base_directory}/h5p/libraries" :
-      "{$upload_base_directory}/sites/{$blog_id}/h5p/libraries";
-  }
-
-  /**
    * Create a table by copying the schema from an existing table.
    *
    * Uses SHOW CREATE TABLE, renames the table, strips AUTO_INCREMENT,
