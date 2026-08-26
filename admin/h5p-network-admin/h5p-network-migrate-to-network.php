@@ -20,7 +20,14 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     $this->updateBlogsDatabase($network_libraries_installed);
     $this->clearBlogsLibrariesAndCachedassets();
 
-    // TODO: Generate cached assets for network level
+    // This seems to work up to this point:
+    // - The `wp_h5p_network_h5p_libraries_cachedassets` gets created
+    // - The `h5p_network/cachedassets` folder gets created
+    // - The table receives the appropriate entries + the folder receives the
+    //   appropriate files once H5P content is viewed and cached assets are created (if missing)
+    // TODO: To save users time when viewing, all the cached assets on the network level should be
+    // created now, here. H5P core must have some functions that could be used - they must be invoked
+    // when content is viewed (and no cached assets are set but supposed to).
   }
 
   /**
@@ -105,6 +112,10 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         }
 
         foreach (scandir($directory) as $entry) {
+          if ($entry[0] === '.') {
+            continue;
+          }
+
           $entry_path = "{$directory}/{$entry}";
 
           if (is_dir($entry_path)) {

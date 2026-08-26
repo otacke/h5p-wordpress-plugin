@@ -42,9 +42,6 @@ abstract class H5P_Network_Admin_Base {
   /**
    * Create a table by copying the schema from an existing table.
    *
-   * Uses SHOW CREATE TABLE, renames the table, strips AUTO_INCREMENT,
-   * then executes the resulting statement.
-   *
    * @param string $source_table_name  Source table name.
    * @param string $new_table_name  Destination table name.
    * @param bool   $fail_on_error  Whether to throw on failure (default false).
@@ -77,6 +74,8 @@ abstract class H5P_Network_Admin_Base {
 
     // Strip AUTO_INCREMENT so new table starts from 1.
     $create_statement = preg_replace('/\s+AUTO_INCREMENT=\d+/i', '', $create_statement);
+
+    $wpdb->query("DROP TABLE IF EXISTS `{$new_table_name}`");
 
     return $wpdb->query($create_statement) !== false;
   }
