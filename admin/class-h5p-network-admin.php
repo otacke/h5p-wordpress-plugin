@@ -101,6 +101,16 @@ class H5P_Network_Admin {
 
     $this->set_network_mode(true);
 
+    if (!(defined('H5P_DISABLE_AGGREGATION') && H5P_DISABLE_AGGREGATION === true)) {
+      try {
+        $migrate->createCachedAssets();
+      }
+      catch (Exception $exception) {
+        // Not fatal: cached assets are created lazily when content is viewed.
+        error_log('H5P network migration: ' . $exception->getMessage());
+      }
+    }
+
     wp_send_json_success(
       array(
         'message' => sprintf(
@@ -127,6 +137,16 @@ class H5P_Network_Admin {
     $demigrate->migrateToLocal();
 
     $this->set_network_mode(false);
+
+    if (!(defined('H5P_DISABLE_AGGREGATION') && H5P_DISABLE_AGGREGATION === true)) {
+      try {
+        $demigrate->createCachedAssets();
+      }
+      catch (Exception $exception) {
+        // Not fatal: cached assets are created lazily when content is viewed.
+        error_log('H5P network demigration: ' . $exception->getMessage());
+      }
+    }
 
     wp_send_json_success();
   }

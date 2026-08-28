@@ -18,12 +18,6 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   public function migrateToLocal() {
     $this->copyNetworkLibrariesToBlogs();
     $this->copyDatabaseTablesToBlogs();
-
-    // TODO: Check if assets should be aggregated
-
-    // TODO: We're technically still in network mode, but for each blog, we need to
-    // Rebuild the cachedassets (database tables + files) now that we're migrating back to blogs.
-
     $this->deleteNetworkFilesDirectory();
     $this->dropNetworkTables();
   }
@@ -32,6 +26,8 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
    * Copy network-level database tables to each blog's local tables.
    */
   protected function copyDatabaseTablesToBlogs() {
+    global $wpdb;
+
     $sites = get_sites(array('fields' => 'ids'));
 
     foreach ($sites as $blog_id) {
@@ -44,6 +40,11 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
             H5PCommons::build_full_db_table_name_multisite($table_name)
           );
         }
+
+        // cachedassets rows will be rebuilt by createCachedAssets() after the migration
+        $wpdb->query(
+          "TRUNCATE TABLE " . H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_cachedassets')
+        );
       }
       finally {
         restore_current_blog();
@@ -92,7 +93,20 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
         }
       }
 
-      $this->copyDirectory($network_libraries_path, $target_dir);
+      foreach (scandir($network_libraries_path) as $library_directory_name) {
+        if ($library_directory_name[0] === '.') {
+          continue;
+        }
+
+        $library_path = "{$network_libraries_path}/{$library_directory_name}";
+        if (!is_dir($library_path)) {
+          continue;
+        }
+
+        if (!$this->copyDirectory($library_path, $target_dir)) {
+          return;
+        }
+      }
     });
   }
 

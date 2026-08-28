@@ -40,6 +40,30 @@ abstract class H5P_Network_Admin_Base {
   }
 
   /**
+   * Create cached assets for all H5P content on all blogs.
+   *
+   * Storage and table names resolve at call time, so it must run while the
+   * network mode flag matches the target level: network level after migrating
+   * to network, blog level after migrating back to the blogs. Uses the same
+   * code path as viewing content, so it is idempotent: existing cached assets
+   * are left untouched.
+   */
+  public function createCachedAssets() {
+    H5PCommons::for_each_blog(function () {
+      global $wpdb;
+
+      $core = H5P_Plugin::get_instance()->get_h5p_instance('core');
+      $table_contents = H5PCommons::build_full_db_table_name_singlesite('h5p_contents');
+      $content_ids = $wpdb->get_col("SELECT id FROM {$table_contents}");
+
+      foreach ($content_ids as $content_id) {
+        $dependencies = $core->loadContentDependencies($content_id, 'preloaded');
+        $core->getDependenciesFiles($dependencies);
+      }
+    });
+  }
+
+  /**
    * Create a table by copying the schema from an existing table.
    *
    * @param string $source_table_name  Source table name.
