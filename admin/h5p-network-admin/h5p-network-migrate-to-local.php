@@ -26,30 +26,21 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
    * Copy network-level database tables to each blog's local tables.
    */
   protected function copyDatabaseTablesToBlogs() {
-    global $wpdb;
+    H5PCommons::for_each_blog(function () {
+      global $wpdb;
 
-    $sites = get_sites(array('fields' => 'ids'));
-
-    foreach ($sites as $blog_id) {
-      switch_to_blog($blog_id);
-
-      try {
-        foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
-          $this->copyTableFromNetwork(
-            H5PCommons::build_full_db_table_name_singlesite($table_name),
-            H5PCommons::build_full_db_table_name_multisite($table_name)
-          );
-        }
-
-        // cachedassets rows will be rebuilt by createCachedAssets() after the migration
-        $wpdb->query(
-          "TRUNCATE TABLE " . H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_cachedassets')
+      foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
+        $this->copyTableFromNetwork(
+          H5PCommons::build_full_db_table_name_singlesite($table_name),
+          H5PCommons::build_full_db_table_name_multisite($table_name)
         );
       }
-      finally {
-        restore_current_blog();
-      }
-    }
+
+      // cachedassets rows will be rebuilt by createCachedAssets() after the migration
+      $wpdb->query(
+        "TRUNCATE TABLE " . H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_cachedassets')
+      );
+    });
   }
 
   /**

@@ -239,36 +239,25 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       );
     }
 
-    $sites = get_sites(array('fields' => 'ids'));
+    H5PCommons::for_each_blog(function ($blog_id) use ($network_libraries_installed) {
+      // Filter for libraries installed from blog
+      $blog_libraries = array();
+      foreach ($network_libraries_installed as $versioned_machine_name => $info) {
+        if ($info['blog_id'] == $blog_id) {
+          $blog_libraries[$info['versioned_machine_name']] = $info;
+        }
+      }
 
-    // TODO: Use H5PCommons::for_each_blog
-    foreach ($sites as $blog_id) {
-      switch_to_blog($blog_id);
+      foreach ($blog_libraries as $versioned_machine_name => $info) {
+        $network_library_id = $this->insertBlogLibraryToNetwork($info['machine_name'], $info['version']);
 
-      try {
-        // Filter for libraries installed from blog
-        $blog_libraries = array();
-        foreach ($network_libraries_installed as $versioned_machine_name => $info) {
-          if ($info['blog_id'] == $blog_id) {
-            $blog_libraries[$info['versioned_machine_name']] = $info;
-          }
+        if (!$network_library_id) {
+          continue;
         }
 
-        foreach ($blog_libraries as $versioned_machine_name => $info) {
-          $network_library_id = $this->insertBlogLibraryToNetwork($info['machine_name'], $info['version']);
-
-          if (!$network_library_id) {
-            continue;
-          }
-
-          $this->insertBlogLibraryToNetworkLanguages($info['machine_name'], $info['version'], $network_library_id);
-        }
-
+        $this->insertBlogLibraryToNetworkLanguages($info['machine_name'], $info['version'], $network_library_id);
       }
-      finally {
-        restore_current_blog();
-      }
-    }
+    });
 
     $this->copyLibraryDependenciesToNetwork();
 
@@ -281,42 +270,32 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    * @return array Keyed by blog_id, each value is associative array mapping blog library_id to network library_id.
    */
   public function buildIdLookupTable() {
-    global $wpdb;
-
     $network_table_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries');
     $lookup = array();
 
-    $sites = get_sites(array('fields' => 'ids'));
+    H5PCommons::for_each_blog(function ($blog_id) use (&$lookup, $network_table_libraries) {
+      global $wpdb;
 
-    foreach ($sites as $blog_id) {
-      switch_to_blog($blog_id);
+      $blog_table_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
+      $blog_libraries = $wpdb->get_results(
+        "SELECT id, name, major_version, minor_version FROM {$blog_table_libraries}"
+      );
 
-      try {
-        $blog_table_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
-        $blog_libraries = $wpdb->get_results(
-          "SELECT id, name, major_version, minor_version FROM {$blog_table_libraries}"
+      foreach ($blog_libraries as $blog_library_entry) {
+        $row = $wpdb->get_row(
+          $wpdb->prepare(
+            "SELECT id FROM {$network_table_libraries} WHERE name = %s AND major_version = %d AND minor_version = %d",
+            $blog_library_entry->name,
+            $blog_library_entry->major_version,
+            $blog_library_entry->minor_version
+          )
         );
 
-        foreach ($blog_libraries as $blog_library_entry) {
-          $row = $wpdb->get_row(
-            $wpdb->prepare(
-              "SELECT id FROM {$network_table_libraries} WHERE name = %s AND major_version = %d AND minor_version = %d",
-              $blog_library_entry->name,
-              $blog_library_entry->major_version,
-              $blog_library_entry->minor_version
-            )
-          );
-
-          if ($row !== null) {
-            $lookup[$blog_id][$blog_library_entry->id] = $row->id;
-          }
+        if ($row !== null) {
+          $lookup[$blog_id][$blog_library_entry->id] = $row->id;
         }
-
       }
-      finally {
-        restore_current_blog();
-      }
-    }
+    });
 
     return $lookup;
   }
@@ -325,16 +304,12 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    * Copy dependency entries (h5p_libraries_libraries) from each blog to the network-level table.
    */
   protected function copyLibraryDependenciesToNetwork() {
-    global $wpdb;
-
     $network_table_libraries_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries_libraries');
 
     $lookup = $this->buildIdLookupTable();
 
-    $sites = get_sites(array('fields' => 'ids'));
-
-    foreach ($sites as $blog_id) {
-      switch_to_blog($blog_id);
+    H5PCommons::for_each_blog(function ($blog_id) use ($network_table_libraries_libraries, $lookup) {
+      global $wpdb;
 
       $blog_table_libraries_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_libraries');
       $dependencies = $wpdb->get_results(
@@ -373,9 +348,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
           )
         );
       }
-
-      restore_current_blog();
-    }
+    });
   }
 
   /**
@@ -385,22 +358,14 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    * library IDs using the lookup table built by buildIdLookupTable.
    *
    * @param string $network_table_libraries Network-level libraries table name.
-   * @param array  $sites Array of blog IDs.
    */
-  protected function updateBlogsLibraryIds($network_table_libraries, $sites) {
+  protected function updateBlogsLibraryIds($network_table_libraries) {
     $lookup = $this->buildIdLookupTable();
 
-    foreach ($sites as $blog_id) {
-      try {
-        switch_to_blog($blog_id);
-
-        $this->updateBlogContentsLibraryIds($blog_id, $lookup);
-        $this->updateBlogContentsLibrariesLibraryIds($blog_id, $lookup);
-      }
-      finally {
-        restore_current_blog();
-      }
-    }
+    H5PCommons::for_each_blog(function ($blog_id) use ($lookup) {
+      $this->updateBlogContentsLibraryIds($blog_id, $lookup);
+      $this->updateBlogContentsLibrariesLibraryIds($blog_id, $lookup);
+    });
   }
 
   /**
@@ -480,8 +445,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   protected function updateBlogsDatabase($network_libraries_installed) {
     global $wpdb;
 
-    $sites = get_sites(array('fields' => 'ids'));
-    $this->updateBlogsLibraryIds($network_libraries_installed, $sites);
+    $this->updateBlogsLibraryIds($network_libraries_installed);
     $this->dropBlogsTables();
   }
 
@@ -489,20 +453,13 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    * Drop all blog-level H5P tables that are not needed on every site.
    */
   protected function dropBlogsTables() {
-    global $wpdb;
+    H5PCommons::for_each_blog(function () {
+      global $wpdb;
 
-    $sites = get_sites(array('fields' => 'ids'));
-    foreach ($sites as $blog_id) {
-      switch_to_blog($blog_id);
-      try {
-        foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
-          $wpdb->query("DROP TABLE IF EXISTS " . H5PCommons::build_full_db_table_name_singlesite($table_name));
-        }
+      foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
+        $wpdb->query("DROP TABLE IF EXISTS " . H5PCommons::build_full_db_table_name_singlesite($table_name));
       }
-      finally {
-        restore_current_blog();
-      }
-    }
+    });
   }
 
   /**
