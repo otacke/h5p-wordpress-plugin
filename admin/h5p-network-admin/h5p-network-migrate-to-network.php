@@ -416,13 +416,9 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
     $blog_table = H5PCommons::build_full_db_table_name_singlesite($table);
 
-    error_log('updateLibraryIdsInBlogTable');
-    error_log($blog_table);
-    error_log('Phase 1');
     // Phase 1: old_id -> temp(new_id)
     foreach ($mappings as $old_id => $new_id) {
       $tmpId = (int) $new_id + $temp_offset;
-      error_log("{$old_id} => {$new_id} => {$tmpId}");
       $wpdb->update(
         $blog_table,
         array('library_id' => (int) $new_id + $temp_offset),
@@ -432,10 +428,8 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       );
     }
 
-    error_log('Phase 2');
     // Phase 2: temp(new_id) -> final new_id
     foreach ($mappings as $old_id => $new_id) {
-      error_log("{$old_id} => {$tmpId} => {$new_id}");
       $wpdb->update(
         $blog_table,
         array('library_id' => (int) $new_id),
