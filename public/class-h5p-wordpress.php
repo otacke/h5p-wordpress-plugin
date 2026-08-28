@@ -1013,11 +1013,40 @@ class H5PWordPress implements H5PFrameworkInterface {
 
   /**
    * Implements getNumNotFiltered().
+   *
+   * In network mode content lives on every blog, so unfiltered content on any
+   * blog makes the per-library usage counts untrustworthy there, too.
    */
   public function getNumNotFiltered() {
+    if (!H5PCommons::is_network_enabled()) {
+      return $this->countNotFiltered();
+    }
+
+    $not_filtered = 0;
+    H5PCommons::for_each_blog(function () use (&$not_filtered) {
+      $not_filtered += $this->countNotFiltered();
+    });
+    return $not_filtered;
+  }
+
+  /**
+   * Count content items that have not been filtered yet on the current blog.
+   *
+   * A blog where H5P has never been loaded has no content tables, and no content
+   * either, so it contributes nothing.
+   *
+   * @since 1.19.0
+   * @return int
+   */
+  private function countNotFiltered() {
     global $wpdb;
 
     $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+
+    if (!$this->tableExists($table_contents)) {
+      return 0;
+    }
+
     return (int) $wpdb->get_var(
       "SELECT COUNT(id)
         FROM {$table_contents}

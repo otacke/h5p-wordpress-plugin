@@ -11,6 +11,16 @@
 class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
 
   /**
+   * Content count per library across all blogs.
+   *
+   * Gathered lazily once per request, because the library admin list asks about every
+   * library in turn and switching blogs is not cheap.
+   *
+   * @var array|null Keyed by library id.
+   */
+  private $library_content_counts = NULL;
+
+  /**
    * List content that uses given library, across all blogs.
    *
    * @since 1.19.0
@@ -51,33 +61,49 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Count content that uses given library, across all blogs.
    *
+   * Counts for all libraries are gathered in one query per blog and kept for the
+   * rest of the request, because the library admin list asks about every library
+   * in turn and switching blogs is not cheap.
+   *
    * Skipped list is accepted for signature compatibility but ignored here.
    * Network implementation of ajax_upgrade_progress() applies skips per blog instead.
    *
    * @since 1.19.0
    * @param int $library_id Id of library to count content for.
-   * @param string|null $skipped Comma separated content ids to exclude, or NULL.
+   * @param string|null $skipped Comma separated content ids to exclude (cannot be handled in network mode), or NULL.
    * @return int
    */
   protected function get_num_content_using_library($library_id, $skipped = NULL) {
-    $count = 0;
+    if ($this->library_content_counts === NULL) {
+      $this->library_content_counts = array();
 
-    H5PCommons::for_each_blog(function ($blog_id) use (&$count, $library_id) {
-      global $wpdb;
+      H5PCommons::for_each_blog(function () {
+        global $wpdb;
 
-      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+        $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
 
-      if (!$this->table_exists($table_contents)) {
-        return; // Blog has no H5P content tables yet.
-      }
+        if (!$this->table_exists($table_contents)) {
+          return; // Blog has no H5P content tables yet.
+        }
 
-      $count += (int) $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(id) FROM {$table_contents} WHERE library_id = %d",
-        $library_id
-      ));
-    });
+        $rows = $wpdb->get_results(
+          "SELECT library_id, COUNT(id) AS content_count
+            FROM {$table_contents}
+            GROUP BY library_id"
+        );
 
-    return $count;
+        foreach ($rows as $row) {
+          $id = (int) $row->library_id;
+          $this->library_content_counts[$id] =
+            (isset($this->library_content_counts[$id]) ? $this->library_content_counts[$id] : 0)
+            + (int) $row->content_count;
+        }
+      });
+    }
+
+    return isset($this->library_content_counts[(int) $library_id])
+      ? $this->library_content_counts[(int) $library_id]
+      : 0;
   }
 
   /**

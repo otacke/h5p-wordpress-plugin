@@ -259,7 +259,7 @@ class H5PLibraryAdmin {
           network_admin_url('admin.php?page=h5p_libraries&task=delete&id=') :
           admin_url('admin.php?page=h5p_libraries&task=delete&id=');
 
-        $contents_count = $interface->getNumContent($library->id);
+        $contents_count = $this->get_num_content_using_library($library->id);
         $settings['libraryList']['listData'][] = array(
           'title' => $library->title . ' (' . H5PCore::libraryVersion($library) . ')',
           'restricted' => $restricted,
