@@ -18,6 +18,22 @@
 class H5PLibraryAdmin {
 
   use H5PUtils;
+
+  /**
+   * Number of contents the upgrade script processes per request.
+   *
+   * @since 1.19.0
+   */
+  const UPGRADE_BATCH_SIZE = 40;
+
+  /**
+   * Seconds reserved for each batch.
+   *
+   * @since 1.19.0
+   */
+  const UPGRADE_BATCH_TIMEOUT = 5;
+
+
   /**
    * @since 1.1.0
    */
@@ -38,6 +54,19 @@ class H5PLibraryAdmin {
    */
   public function __construct($plugin_slug) {
     $this->plugin_slug = $plugin_slug;
+  }
+
+  /**
+   * Create library admin suited to current installation (network mode yes/no).
+   *
+   * @since 1.19.0
+   * @param string $plugin_slug Plugin slug.
+   * @return H5PLibraryAdmin Admin page instance.
+   */
+  public static function create($plugin_slug) {
+    return H5PCommons::is_network_enabled()
+      ? new H5PNetworkLibraryAdmin($plugin_slug)
+      : new self($plugin_slug);
   }
 
   /**
@@ -92,9 +121,10 @@ class H5PLibraryAdmin {
     }
 
     // Try to find content with $id.
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
     $this->library = $wpdb->get_row($wpdb->prepare(
         "SELECT id, title, name, major_version, minor_version, patch_version, runnable, fullscreen
-          FROM {$wpdb->prefix}h5p_libraries
+          FROM {$table_libraries}
           WHERE id = %d",
         $id
       )
@@ -104,6 +134,26 @@ class H5PLibraryAdmin {
     }
 
     return $this->library;
+  }
+
+  /**
+   * End the request unless the current user may manage libraries.
+   *
+   * These operations are reached over AJAX, which is registered for every logged
+   * in user, so the page capability that guards the libraries screen does not
+   * apply. In network mode libraries are shared by all blogs, and then only
+   * network admins may act on them.
+   *
+   * @since 1.19.0
+   */
+  protected function require_manage_libraries() {
+    if (H5PCommons::current_user_can_manage_libraries()) {
+      return;
+    }
+
+    status_header(H5PCommons::HTTP_FORBIDDEN);
+    print __('Error, insufficient permissions!', $this->plugin_slug);
+    exit;
   }
 
   /**
@@ -172,6 +222,8 @@ class H5PLibraryAdmin {
       )
     );
 
+    $is_network_enabled = H5PCommons::is_network_enabled();
+
     // Add settings for each library
     $i = 0;
     foreach ($libraries as $versions) {
@@ -179,7 +231,12 @@ class H5PLibraryAdmin {
         $usage = $interface->getLibraryUsage($library->id, $not_cached ? TRUE : FALSE);
         if ($library->runnable) {
           $upgrades = $core->getUpgrades($library, $versions);
-          $upgradeUrl = empty($upgrades) ? FALSE : admin_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . admin_url('admin.php?page=h5p_libraries'));
+          $upgradeUrl = empty($upgrades) ? FALSE : TRUE;
+          if ($upgradeUrl) {
+            $upgradeUrl = $is_network_enabled ?
+              network_admin_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . network_admin_url('admin.php?page=h5p_libraries')) :
+              admin_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . admin_url('admin.php?page=h5p_libraries'));
+          }
 
           $restricted = ($library->restricted ? TRUE : FALSE);
           $restricted_url = admin_url('admin-ajax.php?action=h5p_restrict_library' .
@@ -194,7 +251,15 @@ class H5PLibraryAdmin {
           $restricted_url = NULL;
         }
 
-        $contents_count = $interface->getNumContent($library->id);
+        $detailsUrlBase = H5PCommons::is_network_enabled() ?
+          network_admin_url('admin.php?page=h5p_libraries&task=show&id=') :
+          admin_url('admin.php?page=h5p_libraries&task=show&id=');
+
+        $deleteUrlBase = H5PCommons::is_network_enabled() ?
+          network_admin_url('admin.php?page=h5p_libraries&task=delete&id=') :
+          admin_url('admin.php?page=h5p_libraries&task=delete&id=');
+
+        $contents_count = $this->get_num_content_using_library($library->id);
         $settings['libraryList']['listData'][] = array(
           'title' => $library->title . ' (' . H5PCore::libraryVersion($library) . ')',
           'restricted' => $restricted,
@@ -203,8 +268,8 @@ class H5PLibraryAdmin {
           'numContentDependencies' => $usage['content'] < 1 ? '' : $usage['content'],
           'numLibraryDependencies' => $usage['libraries'] === 0 ? '' : $usage['libraries'],
           'upgradeUrl' => $upgradeUrl,
-          'detailsUrl' => admin_url('admin.php?page=h5p_libraries&task=show&id=' . $library->id),
-          'deleteUrl' => admin_url('admin.php?page=h5p_libraries&task=delete&id=' . $library->id)
+          'detailsUrl' => "{$detailsUrlBase}{$library->id}",
+          'deleteUrl' => "{$deleteUrlBase}{$library->id}",
         );
 
         $i++;
@@ -255,6 +320,14 @@ class H5PLibraryAdmin {
   public function process_libraries() {
     $post = ($_SERVER['REQUEST_METHOD'] === 'POST');
     $task = filter_input(INPUT_GET, 'task');
+
+    // Uploading and deleting write to the libraries folder, which is shared by
+    // every blog in network mode. The libraries screen is already gated on the
+    // same capability, but this handler does not depend on how it is reached.
+    if (($post || $task === 'delete') && !H5PCommons::current_user_can_manage_libraries()) {
+      H5P_Plugin_Admin::set_error(__('You are not allowed to manage H5P libraries.', $this->plugin_slug));
+      return;
+    }
 
     if ($post) {
       // A form as has been submitted
@@ -324,8 +397,6 @@ class H5PLibraryAdmin {
    * @since 1.1.0
    */
   private function display_library_details() {
-    global $wpdb;
-
     $library = $this->get_library();
     H5P_Plugin_Admin::print_messages();
     if (!$library) {
@@ -355,19 +426,11 @@ class H5PLibraryAdmin {
     }
     else {
       // List content which uses this library
-      $contents = $wpdb->get_results($wpdb->prepare(
-          "SELECT DISTINCT hc.id, hc.title
-            FROM {$wpdb->prefix}h5p_contents_libraries hcl
-            JOIN {$wpdb->prefix}h5p_contents hc ON hcl.content_id = hc.id
-            WHERE hcl.library_id = %d
-            ORDER BY hc.title",
-          $library->id
-        )
-      );
-      foreach($contents as $content) {
+      $contents = $this->get_contents_using_library($library);
+      foreach ($contents as $content) {
         $settings['libraryInfo']['content'][] = array(
           'title' => $content->title,
-          'url' => admin_url('admin.php?page=h5p&task=show&id=' . $content->id),
+          'url' => $this->get_content_url($content),
         );
       }
     }
@@ -388,6 +451,73 @@ class H5PLibraryAdmin {
   }
 
   /**
+   * List content on current blog that uses given library.
+   *
+   * Each returned row is tagged with its blog id so callers can build URL that points at right site.
+   * Single-site implementation only ever sees one blog; network variant overrides to fan out over every blog.
+   *
+   * @since 1.19.0
+   * @param object $library Library to list content for.
+   * @return array Rows with id, title and blog_id.
+   */
+  protected function get_contents_using_library($library) {
+    global $wpdb;
+
+    $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+    $contents = $wpdb->get_results($wpdb->prepare(
+        "SELECT DISTINCT hc.id, hc.title
+          FROM {$table_contents_libraries} hcl
+          JOIN {$table_contents} hc ON hcl.content_id = hc.id
+          WHERE hcl.library_id = %d
+          ORDER BY hc.title",
+        $library->id
+      )
+    );
+
+    foreach ($contents as $content) {
+      $content->blog_id = get_current_blog_id();
+    }
+
+    return $contents;
+  }
+
+  /**
+   * Build admin URL for viewing piece of content.
+   *
+   * In network mode content lives on specific blog, so URL points at that blog's admin.
+   * On single site install this is just current site's admin URL.
+   *
+   * @since 1.19.0
+   * @param object $content Row with id and blog_id.
+   * @return string
+   */
+  protected function get_content_url($content) {
+    $path = 'admin.php?page=h5p&task=show&id=' . $content->id;
+
+    return H5PCommons::is_network_enabled()
+      ? get_admin_url($content->blog_id, $path)
+      : admin_url($path);
+  }
+
+  /**
+   * Count content on current blog that uses given library.
+   *
+   * Single-site implementation counts one blog; network variant overrides to sum over every blog.
+   *
+   * @since 1.19.0
+   * @param int $library_id Library to count content for.
+   * @param string|null $skipped Comma separated content ids to exclude, or NULL.
+   * @return int
+   */
+  protected function get_num_content_using_library($library_id, $skipped = NULL) {
+    $plugin = H5P_Plugin::get_instance();
+    $interface = $plugin->get_h5p_instance('interface');
+
+    return $interface->getNumContent($library_id, $skipped);
+  }
+
+  /**
    * Display a list of all h5p content libraries.
    *
    * @since 1.1.0
@@ -397,12 +527,12 @@ class H5PLibraryAdmin {
 
     $plugin = H5P_Plugin::get_instance();
     $core = $plugin->get_h5p_instance('core');
-    $interface = $plugin->get_h5p_instance('interface');
 
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
     $versions = $wpdb->get_results($wpdb->prepare(
         "SELECT hl2.id, hl2.name, hl2.title, hl2.major_version, hl2.minor_version, hl2.patch_version
-          FROM {$wpdb->prefix}h5p_libraries hl1
-          JOIN {$wpdb->prefix}h5p_libraries hl2
+          FROM {$table_libraries} hl1
+          JOIN {$table_libraries} hl2
             ON hl2.name = hl1.name
           WHERE hl1.id = %d
           ORDER BY hl2.title ASC, hl2.major_version ASC, hl2.minor_version ASC",
@@ -422,7 +552,7 @@ class H5PLibraryAdmin {
     }
 
     // Get num of contents that can be upgraded
-    $contents = $interface->getNumContent($library->id);
+    $contents = $this->get_num_content_using_library($library->id);
     if (!$contents) {
       H5P_Plugin_Admin::set_error(__("There's no content instances to upgrade.", $this->plugin_slug));
       return NULL;
@@ -481,15 +611,18 @@ class H5PLibraryAdmin {
       exit; // POST is required
     }
 
+    $this->require_manage_libraries();
+
     $plugin = H5P_Plugin::get_instance();
     $core = $plugin->get_h5p_instance('core');
 
     // Do as many as we can in five seconds.
     $start = microtime(TRUE);
 
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
     $contents = $wpdb->get_results(
       "SELECT id
-        FROM {$wpdb->prefix}h5p_contents
+        FROM {$table_contents}
         WHERE filtered = ''"
     );
 
@@ -541,31 +674,9 @@ class H5PLibraryAdmin {
    * AJAX processing for content upgrade script.
    */
   public function ajax_upgrade_progress() {
-    global $wpdb;
-    header('Cache-Control: no-cache');
-
-    if (!wp_verify_nonce(filter_input(INPUT_POST, 'token'), 'h5p_content_upgrade')) {
-      print __('Error, invalid security token!', $this->plugin_slug);
-      exit;
-    }
-
-    $library_id = filter_input(INPUT_GET, 'id');
-    if (!$library_id) {
-      print __('Error, missing library!', $this->plugin_slug);
-      exit;
-    }
-
-    // Get the library we're upgrading to
-    $to_library = $wpdb->get_row($wpdb->prepare(
-      "SELECT id, name, major_version, minor_version
-        FROM {$wpdb->prefix}h5p_libraries
-        WHERE id = %d",
-      filter_input(INPUT_POST, 'libraryId')
-    ));
-    if (!$to_library) {
-      print __('Error, invalid library!', $this->plugin_slug);
-      exit;
-    }
+    $prepared = $this->prepare_upgrade_progress();
+    $library_id = $prepared['library_id'];
+    $to_library = $prepared['to_library'];
 
     // Prepare response
     $out = new stdClass();
@@ -575,41 +686,13 @@ class H5PLibraryAdmin {
     // Get updated params
     $params = filter_input(INPUT_POST, 'params');
     if ($params !== NULL) {
-      // Update params.
       $params = json_decode($params);
       foreach ($params as $id => $param) {
-        $upgraded = json_decode($param);
-        $metadata = isset($upgraded->metadata) ? $upgraded->metadata : array();
-
-        $format = array();
-        $fields = array_merge(\H5PMetadata::toDBArray($metadata, false, false, $format), array(
-          'updated_at' => current_time('mysql', 1),
-          'parameters' => json_encode($upgraded->params),
-          'library_id' => $to_library->id,
-          'filtered' => ''
-        ));
-
-        $format[] = '%s'; // updated_at
-        $format[] = '%s'; // parameters
-        $format[] = '%d'; // library_id
-        $format[] = '%s'; // filtered
-
-        $wpdb->update(
-          $wpdb->prefix . 'h5p_contents',
-          $fields,
-          array('id' => $id),
-          $format,
-          array('%d')
-        );
-
-        // Log content upgrade successful
-        new H5P_Event('content', 'upgrade',
-          $id, $wpdb->get_var($wpdb->prepare("SELECT title FROM {$wpdb->prefix}h5p_contents WHERE id = %d", $id)),
-          $to_library->name, $to_library->major_version . '.' . $to_library->minor_version);
+        $this->apply_upgraded_params($id, json_decode($param), $to_library);
       }
     }
 
-    // Determine if any content has been skipped during the process
+    // Determine if any content has been skipped during process
     $skipped = filter_input(INPUT_POST, 'skipped');
     if ($skipped !== NULL) {
       $out->skipped = json_decode($skipped);
@@ -624,27 +707,14 @@ class H5PLibraryAdmin {
       $out->skipped = array();
     }
 
-    // Prepare our interface
-    $plugin = H5P_Plugin::get_instance();
-    $interface = $plugin->get_h5p_instance('interface');
-
     // Get number of contents for this library
-    $out->left = $interface->getNumContent($library_id, $skipped);
+    $out->left = $this->get_num_content_using_library($library_id, $skipped);
 
     if ($out->left) {
       $skip_query = empty($skipped) ? '' : " AND id NOT IN ($skipped)";
 
-      // Find the 40 first contents using library and add to params
-      $contents = $wpdb->get_results($wpdb->prepare(
-        "SELECT id, parameters AS params, title, authors, source, license,
-                license_version, license_extras, year_from, year_to, changes,
-                author_comments, default_language, a11y_title
-           FROM {$wpdb->prefix}h5p_contents
-          WHERE library_id = %d
-                {$skip_query}
-          LIMIT 40",
-        $library_id
-      ));
+      // Find next batch of contents using library and add to params
+      $contents = $this->get_next_contents($library_id, $skip_query);
       foreach ($contents as $content) {
         $out->params[$content->id] =
           '{"params":' . $content->params .
@@ -658,6 +728,120 @@ class H5PLibraryAdmin {
   }
 
   /**
+   * Validate content upgrade request and load library being upgraded to.
+   *
+   * Ends request with error message if anything is missing or invalid, so callers can
+   * assume a valid library id and target library on return. Shared by single-site and
+   * network implementations of ajax_upgrade_progress().
+   *
+   * @since 1.19.0
+   * @return array{library_id: string, to_library: object}
+   */
+  protected function prepare_upgrade_progress() {
+    global $wpdb;
+
+    header('Cache-Control: no-cache');
+
+    $this->require_manage_libraries();
+
+    if (!wp_verify_nonce(filter_input(INPUT_POST, 'token'), 'h5p_content_upgrade')) {
+      print __('Error, invalid security token!', $this->plugin_slug);
+      exit;
+    }
+
+    $library_id = filter_input(INPUT_GET, 'id');
+    if (!$library_id) {
+      print __('Error, missing library!', $this->plugin_slug);
+      exit;
+    }
+
+    // Get the library we're upgrading to
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+    $to_library = $wpdb->get_row($wpdb->prepare(
+      "SELECT id, name, major_version, minor_version
+        FROM {$table_libraries}
+        WHERE id = %d",
+      filter_input(INPUT_POST, 'libraryId')
+    ));
+    if (!$to_library) {
+      print __('Error, invalid library!', $this->plugin_slug);
+      exit;
+    }
+
+    return array(
+      'library_id' => $library_id,
+      'to_library' => $to_library,
+    );
+  }
+
+  /**
+   * Persist upgraded parameters for single piece of content on current blog.
+   *
+   * @since 1.19.0
+   * @param int $content_id Id of content to update.
+   * @param object $upgraded Decoded upgrade result with params and optional metadata.
+   * @param object $to_library Library that content is being upgraded to.
+   */
+  protected function apply_upgraded_params($content_id, $upgraded, $to_library) {
+    global $wpdb;
+
+    $metadata = isset($upgraded->metadata) ? $upgraded->metadata : array();
+
+    $format = array();
+    $fields = array_merge(\H5PMetadata::toDBArray($metadata, false, false, $format), array(
+      'updated_at' => current_time('mysql', 1),
+      'parameters' => json_encode($upgraded->params),
+      'library_id' => $to_library->id,
+      'filtered' => ''
+    ));
+
+    $format[] = '%s'; // updated_at
+    $format[] = '%s'; // parameters
+    $format[] = '%d'; // library_id
+    $format[] = '%s'; // filtered
+
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+    $wpdb->update(
+      $table_contents,
+      $fields,
+      array('id' => $content_id),
+      $format,
+      array('%d')
+    );
+
+    // Log content upgrade successful
+    new H5P_Event('content', 'upgrade',
+      $content_id, $wpdb->get_var($wpdb->prepare("SELECT title FROM {$table_contents} WHERE id = %d", $content_id)),
+      $to_library->name, $to_library->major_version . '.' . $to_library->minor_version);
+  }
+
+  /**
+   * Fetch next batch of content on current blog that uses given library.
+   *
+   * @since 1.19.0
+   * @param int $library_id If of library to fetch content for.
+   * @param string $skip_query Optional " AND id NOT IN (...)" fragment to exclude content.
+   * @param int $limit Maximum number of rows to return.
+   * @return array Rows with fields needed to build an upgrade request.
+   */
+  protected function get_next_contents($library_id, $skip_query = '', $limit = self::UPGRADE_BATCH_SIZE) {
+    global $wpdb;
+
+    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+    return $wpdb->get_results($wpdb->prepare(
+      "SELECT id, parameters AS params, title, authors, source, license,
+              license_version, license_extras, year_from, year_to, changes,
+              author_comments, default_language, a11y_title
+         FROM {$table_contents}
+        WHERE library_id = %d
+              {$skip_query}
+        LIMIT %d",
+      $library_id,
+      $limit
+    ));
+  }
+
+  /**
    * AJAX loading of libraries for content upgrade script.
    *
    * @since 1.1.0
@@ -667,6 +851,8 @@ class H5PLibraryAdmin {
    */
   public function ajax_upgrade_library() {
     header('Cache-Control: no-cache');
+
+    $this->require_manage_libraries();
 
     $library_string = filter_input(INPUT_GET, 'library');
     if (!$library_string) {
@@ -703,8 +889,16 @@ class H5PLibraryAdmin {
     }
     else {
       $suffix = '/libraries/' . $library->name . '-' . $library->version->major . '.' . $library->version->minor . '/upgrades.js';
-      $upgrades_script_path = $plugin->get_h5p_path() . $suffix;
-      $upgrades_script_url = $plugin->get_h5p_url() . $suffix;
+
+      // Libraries are shared by all blogs in network mode.
+      if (H5PCommons::is_network_enabled()) {
+        $upgrades_script_path = H5PCommons::get_h5p_network_path() . $suffix;
+        $upgrades_script_url = H5PCommons::get_h5p_network_url() . $suffix;
+      }
+      else {
+        $upgrades_script_path = $plugin->get_h5p_path() . $suffix;
+        $upgrades_script_url = $plugin->get_h5p_url() . $suffix;
+      }
     }
 
     if (file_exists($upgrades_script_path)) {
@@ -724,6 +918,8 @@ class H5PLibraryAdmin {
   public function ajax_restrict_access() {
     global $wpdb;
 
+    $this->require_manage_libraries();
+
     $library_id = filter_input(INPUT_GET, 'id');
     $restricted = filter_input(INPUT_GET, 'restrict');
     $restrict = ($restricted === '1');
@@ -734,7 +930,7 @@ class H5PLibraryAdmin {
     }
 
     $wpdb->update(
-      $wpdb->prefix . 'h5p_libraries',
+      H5PCommons::build_full_db_table_name('h5p_libraries'),
       array('restricted' => $restricted),
       array('id' => $library_id),
       array('%d'),
