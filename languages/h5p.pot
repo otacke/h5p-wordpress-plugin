@@ -893,6 +893,34 @@ msgstr ""
 msgid "http://h5p.org/wordpress"
 msgstr ""
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr ""
+
 #. Description of the plugin/theme
 msgid "Allows you to upload, create, share and use rich interactive content on your WordPress site."
 msgstr ""
@@ -903,4 +931,96 @@ msgstr ""
 
 #. Author URI of the plugin/theme
 msgid "http://joubel.com"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr ""
+
+#: admin/views/network-settings.php:19
+msgid "This will migrate all local libraries (files + database) to the network level and revoke h5p library handling capabilities from blog admins. DO YOU HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid "This will migrate all network libraries (files + database) back to the local level and grant h5p library handling capabilities to blog admins. DO YOU HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr ""
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid "Migration failed and could not be rolled back automatically. Please restore from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
 msgstr ""

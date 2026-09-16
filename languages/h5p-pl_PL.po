@@ -15,9 +15,8 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 5.2.1\n"
-"X-Poedit-KeywordsList: __;_e;_n;_x;_ex;_nx;esc_attr__;esc_attr_e;esc_attr_x;e"
-"sc_html__;esc_html_e;esc_html_x;_n_noop;_nx_noop;translate_nooped_plural;__ng"
-"ettext;__ngettext_noop;t;_c;_nc\n"
+"X-Poedit-KeywordsList: "
+"__;_e;_n;_x;_ex;_nx;esc_attr__;esc_attr_e;esc_attr_x;esc_html__;esc_html_e;esc_html_x;_n_noop;_nx_noop;translate_nooped_plural;__ngettext;__ngettext_noop;t;_c;_nc\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
@@ -378,8 +377,8 @@ msgid ""
 "page for inspiration."
 msgstr ""
 "Możesz zacząć <a href=\"%s\">tworzyć</a> interaktywne zasoby. Szukasz "
-"inspiracji? Zajrzyj do naszego działu <a href=\"%s\" target=\"_blank"
-"\">Examples and Downloads</a>."
+"inspiracji? Zajrzyj do naszego działu <a href=\"%s\" "
+"target=\"_blank\">Examples and Downloads</a>."
 
 #: admin/class-h5p-plugin-admin.php:311
 msgid "Thank you for staying up to date with H5P."
@@ -394,8 +393,8 @@ msgid ""
 msgstr ""
 "Zalecamy <strong>aktualizację bibliotek H5P (typów zasobów)</strong>! Stare "
 "biblioteki wciąż działają, lecz w nowych wersjach znacznie poprawiono wygląd "
-"i wygodę korzystania. Tu znajdziesz wskazówki, jak <a href=\"%s\" target="
-"\"_blank\">aktualizować biblioteki</a>."
+"i wygodę korzystania. Tu znajdziesz wskazówki, jak <a href=\"%s\" "
+"target=\"_blank\">aktualizować biblioteki</a>."
 
 #: admin/class-h5p-plugin-admin.php:325
 msgid ""
@@ -413,15 +412,15 @@ msgstr ""
 
 #: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
 msgid ""
-"If you need any help you can always file a <a href=\"%s\" target=\"_blank"
-"\">Support Request</a>, check out our <a href=\"%s\" target=\"_blank"
-"\">Forum</a> or join the conversation in the <a href=\"%s\" target=\"_blank"
-"\">H5P Community Chat</a>."
+"If you need any help you can always file a <a href=\"%s\" "
+"target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
+"target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" "
+"target=\"_blank\">H5P Community Chat</a>."
 msgstr ""
-"Jeśli potrzebujesz pomocy, możesz wysłać <a href=\"%s\" target=\"_blank"
-"\">zgłoszenie do Pomocy Technicznej</a>, wejść na <a href=\"%s\" target="
-"\"_blank\">Forum</a> lub dołączyć do konwersacji na <a href=\"%s\" target="
-"\"_blank\">H5P Community Chat</a>."
+"Jeśli potrzebujesz pomocy, możesz wysłać <a href=\"%s\" "
+"target=\"_blank\">zgłoszenie do Pomocy Technicznej</a>, wejść na <a "
+"href=\"%s\" target=\"_blank\">Forum</a> lub dołączyć do konwersacji na <a "
+"href=\"%s\" target=\"_blank\">H5P Community Chat</a>."
 
 #: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
 msgid "H5P Content"
@@ -807,9 +806,9 @@ msgid ""
 msgstr ""
 "Wygląda na to, że żaden typ zasobu nie jest zainstalowany. Możesz "
 "zainstalować potrzebne Ci typy klikając w mały przycisk 'Pobierz' lewym "
-"dolnym rogu dowolnego przykładowego zasobu na stronie <a href=\"%s\" target="
-"\"_blank\">Examples and Downloads</a>, a następnie wczytując pobrany plik "
-"tutaj."
+"dolnym rogu dowolnego przykładowego zasobu na stronie <a href=\"%s\" "
+"target=\"_blank\">Examples and Downloads</a>, a następnie wczytując pobrany "
+"plik tutaj."
 
 #: admin/views/new-content.php:50 admin/views/new-content.php:59
 msgid "Create"
@@ -1015,8 +1014,8 @@ msgstr "Automatycznie wysyłaj statystyki użytkowania"
 msgid ""
 "Usage statistics numbers will automatically be reported to help the "
 "developers better understand how H5P is used and to determine potential "
-"areas of improvement. Read more about which <a href=\"%s\" target=\"_blank"
-"\">data is collected on h5p.org</a>."
+"areas of improvement. Read more about which <a href=\"%s\" "
+"target=\"_blank\">data is collected on h5p.org</a>."
 msgstr ""
 "Statystyki użytkowania będą automatycznie przesyłane do autorów H5P, aby "
 "mogli go poprawiać w oparciu o wiarygodne dane. Przeczytaj o tym, jakie "
@@ -1111,6 +1110,34 @@ msgstr ""
 msgid "http://h5p.org/wordpress"
 msgstr ""
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "Sieć H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "Biblioteki H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "Zarządzanie H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Nie masz uprawnień do zarządzania typami zasobów H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Zarządzaj typem zasobu"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Brak uprawnień."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Biblioteki przeniesiono na poziom sieci."
+
 #. Description of the plugin/theme
 msgid ""
 "Allows you to upload, create, share and use rich interactive content on your "
@@ -1127,17 +1154,105 @@ msgstr ""
 msgid "http://joubel.com"
 msgstr ""
 
-#~ msgid "Confirmation action"
-#~ msgstr "Potwierdź działanie"
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
 
-#~ msgid "Do you still want to enable the hub ?"
-#~ msgstr "Czy na pewno chcesz aktywować połączenie z serwerem bibliotek?"
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
 
-#~ msgid "Cancel"
-#~ msgstr "Anuluj"
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
 
-#~ msgid "Confirm"
-#~ msgstr "Połącz"
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr "Potwierdź działanie"
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr "Anuluj"
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr "Połącz"
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
+msgstr "Czy na pewno chcesz aktywować połączenie z serwerem bibliotek?"
 
 #~ msgid "File not found on server. Check file upload settings."
 #~ msgstr ""
@@ -1209,11 +1324,11 @@ msgstr ""
 #~ "poprawnej pracy"
 
 #~ msgid ""
-#~ "The file you uploaded is not a valid HTML5 Package (It does not have the ."
-#~ "h5p file extension)"
+#~ "The file you uploaded is not a valid HTML5 Package (It does not have "
+#~ "the .h5p file extension)"
 #~ msgstr ""
-#~ "Wysłany plik nie jest poprawnym archiwum HTML5 (nie posiada rozszerzenia ."
-#~ "h5p)"
+#~ "Wysłany plik nie jest poprawnym archiwum HTML5 (nie posiada "
+#~ "rozszerzenia .h5p)"
 
 #~ msgid ""
 #~ "The file you uploaded is not a valid HTML5 Package (We are unable to "
@@ -1257,10 +1372,10 @@ msgstr ""
 #~ msgstr "Nie udało się odczytać pliku z archiwum: %fileName"
 
 #~ msgid ""
-#~ "Library directory name must match machineName or machineName-majorVersion."
-#~ "minorVersion (from library.json). (Directory: %directoryName , "
-#~ "machineName: %machineName, majorVersion: %majorVersion, minorVersion: "
-#~ "%minorVersion)"
+#~ "Library directory name must match machineName or machineName-"
+#~ "majorVersion.minorVersion (from library.json). (Directory: "
+#~ "%directoryName , machineName: %machineName, majorVersion: %majorVersion, "
+#~ "minorVersion: %minorVersion)"
 #~ msgstr ""
 #~ "Katalog bibioteki musi mieć nazwę machineName lub machineName-"
 #~ "majorVersion.minorVersion (z library.json). (Katalog: %directoryName, "
@@ -1779,8 +1894,8 @@ msgstr ""
 #~ "H5P fetches content types directly from the H5P Hub. In order to do this, "
 #~ "the H5P plugin will communicate with the Hub once a day to fetch "
 #~ "information about new and updated content types. It will send in "
-#~ "anonymous data to the Hub about H5P usage. Read more at <a href=\"%s"
-#~ "\">the plugin communication page at H5P.org</a>."
+#~ "anonymous data to the Hub about H5P usage. Read more at <a "
+#~ "href=\"%s\">the plugin communication page at H5P.org</a>."
 #~ msgstr ""
 #~ "H5P henter innholdstyper direkt fra H5P Hub. For å gjøre dette vil H5P-"
 #~ "utvidelsen kommunisere med Hub en gang om dagen for å hente informasjon "
@@ -1817,18 +1932,18 @@ msgstr ""
 
 #~ msgid ""
 #~ "Unfortunately, we were unable to update your installed content types. You "
-#~ "must manually download the update from <a href=\"%s\" target=\"_blank"
-#~ "\">H5P.org</a>, and then upload it through the <em>Upload Libraries</em> "
-#~ "section. If you need futher assistance, please file a <a href=\"%s\" "
-#~ "target=\"_blank\">support request</a> or check out our <a href=\"%s\" "
-#~ "target=\"_blank\">forum</a>."
+#~ "must manually download the update from <a href=\"%s\" "
+#~ "target=\"_blank\">H5P.org</a>, and then upload it through the <em>Upload "
+#~ "Libraries</em> section. If you need futher assistance, please file a <a "
+#~ "href=\"%s\" target=\"_blank\">support request</a> or check out our <a "
+#~ "href=\"%s\" target=\"_blank\">forum</a>."
 #~ msgstr ""
 #~ "Dessverre var det ikke mulig å oppdatere de innstallerte innholdstypene "
 #~ "automatisk. Du må laste ned oppdateringen manuelt fra <a href=\"%s\" "
 #~ "target=\"_blank\">H5P.org</a>, for så å laste dem opp via <em>Last opp "
 #~ "biblioteker</em>-seksjon.  Hvis du trenger mer hjelp, kan du sende inn en "
-#~ "<a href=\"%s\" target=\"_blank\">henvendelse</a> eller sjekke <a href=\"%s"
-#~ "\" target=\"_blank\">forumet</a> vårt."
+#~ "<a href=\"%s\" target=\"_blank\">henvendelse</a> eller sjekke <a "
+#~ "href=\"%s\" target=\"_blank\">forumet</a> vårt."
 
 #~ msgid ""
 #~ "Head over to the <a href=\"%s\">Libraries</a> page and update your "
@@ -1846,8 +1961,8 @@ msgstr ""
 #~ "Som standard er H5P-utvidelsen satt opp til å automatisk hente "
 #~ "informasjon om oppdateringer til innholdstyper fra H5P.org. Når dette "
 #~ "gjøres vil H5P-utvidelsen også bidra med anonyme bruksdata for å hjelpe "
-#~ "utviklingen av H5P. Denne atferden kan endres gjennom siden for <a href="
-#~ "\"%s\">Innstillinger </a>."
+#~ "utviklingen av H5P. Denne atferden kan endres gjennom siden for <a "
+#~ "href=\"%s\">Innstillinger </a>."
 
 #~ msgid ""
 #~ "Unfortunately, we were unable to automatically install the default "
@@ -1858,8 +1973,8 @@ msgstr ""
 #~ "Dessverre var det ikke mulig å legge inn et sett med standard "
 #~ "innholdstyper automatisk. Du må manuelt laste ned de innholdstypene du "
 #~ "ønsker å bruke fra <a href=\"%s\" target=\"_blank\">Examples and "
-#~ "Downloads</a>-siden, for så å laste dem opp til <a href=\"%s"
-#~ "\">bibliotekene</a>-siden."
+#~ "Downloads</a>-siden, for så å laste dem opp til <a "
+#~ "href=\"%s\">bibliotekene</a>-siden."
 
 #~ msgid ""
 #~ "We've automatically installed the default content types for your "

@@ -15,11 +15,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 4.14.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Poedit-KeywordsList: _:1;gettext:1;dgettext:2;ngettext:1,2;dngettext:2,3;__"
-":1;_e:1;_c:1;_n:1,2;_n_noop:1,2;_nc:1,2;__ngettext:1,2;__ngettext_noop:1,2;_x"
-":1,2c;_ex:1,2c;_nx:1,2,4c;_nx_noop:1,2,3c;_n_js:1,2;_nx_js:1,2,3c;esc_attr__:"
-"1;esc_html__:1;esc_attr_e:1;esc_html_e:1;esc_attr_x:1,2c;esc_html_x:1,2c;comm"
-"ents_number_link:2,3;t:1;st:1;trans:1;transChoice:1,2\n"
+"X-Poedit-KeywordsList: "
+"_:1;gettext:1;dgettext:2;ngettext:1,2;dngettext:2,3;__:1;_e:1;_c:1;_n:1,2;_n_noop:1,2;_nc:1,2;__ngettext:1,2;__ngettext_noop:1,2;_x:1,2c;_ex:1,2c;_nx:1,2,4c;_nx_noop:1,2,3c;_n_js:1,2;_nx_js:1,2,3c;esc_attr__:1;esc_html__:1;esc_attr_e:1;esc_html_e:1;esc_attr_x:1,2c;esc_html_x:1,2c;comments_number_link:2,3;t:1;st:1;trans:1;transChoice:1,2\n"
 "X-Poedit-Basepath: ..\n"
 "X-Loco-Target-Locale: fr_FR\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -421,15 +418,15 @@ msgstr ""
 
 #: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
 msgid ""
-"If you need any help you can always file a <a href=\"%s\" target=\"_blank"
-"\">Support Request</a>, check out our <a href=\"%s\" target=\"_blank"
-"\">Forum</a> or join the conversation in the <a href=\"%s\" target=\"_blank"
-"\">H5P Community Chat</a>."
+"If you need any help you can always file a <a href=\"%s\" "
+"target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
+"target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" "
+"target=\"_blank\">H5P Community Chat</a>."
 msgstr ""
-"Si vous avez besoin d'aide, vous pouvez déposer une <a href=\"%s\" target="
-"\"_blank\">demande d'aide</a>, consulter le <a href=\"%s\" target=\"_blank"
-"\">forum</a> ou prendre part à une discussion sur le <a href=\"%s\" target="
-"\"_blank\">chat de la communauté H5P</a>."
+"Si vous avez besoin d'aide, vous pouvez déposer une <a href=\"%s\" "
+"target=\"_blank\">demande d'aide</a>, consulter le <a href=\"%s\" "
+"target=\"_blank\">forum</a> ou prendre part à une discussion sur le <a "
+"href=\"%s\" target=\"_blank\">chat de la communauté H5P</a>."
 
 #: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
 msgid "H5P Content"
@@ -545,8 +542,8 @@ msgstr ""
 #: admin/class-h5p-privacy-policy.php:73
 msgid "Suggested text (\"We\" and \"our\" mean \"you\", not \"us\"!):"
 msgstr ""
-"Texte suggéré (\"Nous\" et \"notre\" signifient \"vous\" et non pas \"nous"
-"\" !)"
+"Texte suggéré (\"Nous\" et \"notre\" signifient \"vous\" et non pas "
+"\"nous\" !)"
 
 #: admin/class-h5p-privacy-policy.php:74
 msgid ""
@@ -764,8 +761,8 @@ msgid ""
 "Files uploaded here must be in the .h5p file format."
 msgstr ""
 "Vous pouvez charger ici de nouvelles bibliothèques ou mettre à jour celles "
-"que vous avez déjà installées. Les fichiers chargés doivent être au format ."
-"h5p."
+"que vous avez déjà installées. Les fichiers chargés doivent être au "
+"format .h5p."
 
 #: admin/views/libraries.php:58
 msgid "Only update existing libraries"
@@ -1040,13 +1037,13 @@ msgstr "Contribuer automatiquement aux statistiques d'utilisation"
 msgid ""
 "Usage statistics numbers will automatically be reported to help the "
 "developers better understand how H5P is used and to determine potential "
-"areas of improvement. Read more about which <a href=\"%s\" target=\"_blank"
-"\">data is collected on h5p.org</a>."
+"areas of improvement. Read more about which <a href=\"%s\" "
+"target=\"_blank\">data is collected on h5p.org</a>."
 msgstr ""
 "Les statistiques d'utilisation seront automatiquement rapportées pour aider "
 "les développeurs à mieux comprendre comment H5P est utilisé et à déterminer "
-"les domaines potentiels d'amélioration. En savoir plus sur les <a href=\"%s"
-"\" target=\"_blank\"> données collectées sur h5p.org </a>."
+"les domaines potentiels d'amélioration. En savoir plus sur les <a "
+"href=\"%s\" target=\"_blank\"> données collectées sur h5p.org </a>."
 
 #: admin/views/show-content.php:30
 msgid "Shortcode"
@@ -1138,6 +1135,34 @@ msgstr "H5P"
 msgid "http://h5p.org/wordpress"
 msgstr "http://h5p.org/wordpress"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "Réseau H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "Bibliothèques H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "Gestion H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Vous n'êtes pas autorisé à gérer les types d'activité H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Gérer le type d'activité"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Autorisation refusée."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Bibliothèques migrées au niveau du réseau."
+
 #. Description of the plugin/theme
 msgid ""
 "Allows you to upload, create, share and use rich interactive content on your "
@@ -1154,17 +1179,105 @@ msgstr "Joubel"
 msgid "http://joubel.com"
 msgstr "http://joubel.com"
 
-#~ msgid "Confirmation action"
-#~ msgstr "Confirmer l'action"
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
 
-#~ msgid "Do you still want to enable the hub ?"
-#~ msgstr "Voulez-vous toujours activer le Hub?"
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
 
-#~ msgid "Cancel"
-#~ msgstr "Annuler"
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
 
-#~ msgid "Confirm"
-#~ msgstr "Confirmer"
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr "Confirmer l'action"
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr "Annuler"
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr "Confirmer"
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
+msgstr "Voulez-vous toujours activer le Hub?"
 
 #~ msgid "File not found on server. Check file upload settings."
 #~ msgstr ""
@@ -1230,8 +1343,8 @@ msgstr "http://joubel.com"
 #~ msgstr "Votre version PHP se supporte pas ZipArchive."
 
 #~ msgid ""
-#~ "The file you uploaded is not a valid HTML5 Package (It does not have the ."
-#~ "h5p file extension)"
+#~ "The file you uploaded is not a valid HTML5 Package (It does not have "
+#~ "the .h5p file extension)"
 #~ msgstr ""
 #~ "Le fichier que vous avez chargé n'est pas un paquetage HTML5 valide (il "
 #~ "n'a pas l'extension .h5p)"
@@ -1256,10 +1369,10 @@ msgstr "http://joubel.com"
 #~ msgstr "Impossible de trouver ou d'exécuter le fichier content.json"
 
 #~ msgid ""
-#~ "Library directory name must match machineName or machineName-majorVersion."
-#~ "minorVersion (from library.json). (Directory: %directoryName , "
-#~ "machineName: %machineName, majorVersion: %majorVersion, minorVersion: "
-#~ "%minorVersion)"
+#~ "Library directory name must match machineName or machineName-"
+#~ "majorVersion.minorVersion (from library.json). (Directory: "
+#~ "%directoryName , machineName: %machineName, majorVersion: %majorVersion, "
+#~ "minorVersion: %minorVersion)"
 #~ msgstr ""
 #~ "Le nom du répertoire doit correspondre au nom du \"moteur\" ou au nom du "
 #~ "\"moteur\".version majeure.version mineure (Répertoire: %directoryName , "

@@ -12,10 +12,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 2.2.3\n"
-"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;"
-"_n_noop:1,2;_c;_nc:4c,1,2;_x:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;"
-"esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;"
-"t\n"
+"X-Poedit-KeywordsList: "
+"__;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c;_nc:4c,1,2;_x:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;t\n"
 "X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -396,15 +394,15 @@ msgstr ""
 
 #: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
 msgid ""
-"If you need any help you can always file a <a href=\"%s\" target=\"_blank"
-"\">Support Request</a>, check out our <a href=\"%s\" target=\"_blank"
-"\">Forum</a> or join the conversation in the <a href=\"%s\" target=\"_blank"
-"\">H5P Community Chat</a>."
+"If you need any help you can always file a <a href=\"%s\" "
+"target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
+"target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" "
+"target=\"_blank\">H5P Community Chat</a>."
 msgstr ""
-"Ако имате нужда от помощ, винаги можете да подадете <a href=\"%s\" target="
-"\"_blank\"> Заявка за поддръжка </a>, да разгледате нашия <a href=\"%s\" "
-"target=\"_blank\"> Форум < / a> или да се присъедините към разговора в <a "
-"href=\"%s\" target=\"_blank\"> H5P общ чат </a>."
+"Ако имате нужда от помощ, винаги можете да подадете <a href=\"%s\" "
+"target=\"_blank\"> Заявка за поддръжка </a>, да разгледате нашия <a "
+"href=\"%s\" target=\"_blank\"> Форум < / a> или да се присъедините към "
+"разговора в <a href=\"%s\" target=\"_blank\"> H5P общ чат </a>."
 
 #: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
 msgid "H5P Content"
@@ -942,8 +940,8 @@ msgstr ""
 msgid ""
 "Usage statistics numbers will automatically be reported to help the "
 "developers better understand how H5P is used and to determine potential "
-"areas of improvement. Read more about which <a href=\"%s\" target=\"_blank"
-"\">data is collected on h5p.org</a>."
+"areas of improvement. Read more about which <a href=\"%s\" "
+"target=\"_blank\">data is collected on h5p.org</a>."
 msgstr ""
 
 #: admin/views/show-content.php:30
@@ -1022,6 +1020,34 @@ msgstr ""
 msgid "http://h5p.org/wordpress"
 msgstr ""
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "H5P мрежа"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "H5P библиотеки"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "H5P управление"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Нямате право да управлявате типовете съдържание на H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Управление на тип съдържание"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Достъпът е отказан."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Библиотеките са мигрирани на ниво мрежа."
+
 #. Description of the plugin/theme
 msgid ""
 "Allows you to upload, create, share and use rich interactive content on your "
@@ -1036,6 +1062,106 @@ msgstr ""
 
 #. Author URI of the plugin/theme
 msgid "http://joubel.com"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr ""
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr ""
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
 msgstr ""
 
 #~ msgid "Unable to create directory."
@@ -1151,18 +1277,18 @@ msgstr ""
 #, php-format
 #~ msgid ""
 #~ "Unfortunately, we were unable to update your installed content types. You "
-#~ "must manually download the update from <a href=\"%s\" target=\"_blank"
-#~ "\">H5P.org</a>, and then upload it through the <em>Upload Libraries</em> "
-#~ "section. If you need futher assistance, please file a <a href=\"%s\" "
-#~ "target=\"_blank\">support request</a> or check out our <a href=\"%s\" "
-#~ "target=\"_blank\">forum</a>."
+#~ "must manually download the update from <a href=\"%s\" "
+#~ "target=\"_blank\">H5P.org</a>, and then upload it through the <em>Upload "
+#~ "Libraries</em> section. If you need futher assistance, please file a <a "
+#~ "href=\"%s\" target=\"_blank\">support request</a> or check out our <a "
+#~ "href=\"%s\" target=\"_blank\">forum</a>."
 #~ msgstr ""
 #~ "За съжаление не успяхме да актуализираме инсталираните типове съдържание. "
-#~ "Трябва да изтеглите актуализация от <a href=\"%s\" target=\"_blank\">H5P."
-#~ "org</a> и след това да я качите чрез секцията <em>Качване на библиотеки</"
-#~ "em>. Ако имате нужда от помощ, моля, изпратете <a href=\"%s\" target="
-#~ "\"_blank\">искане за поддръжка</a> или проверете нашия <a href=\"%s\" "
-#~ "target=\"_blank\">форум</a>."
+#~ "Трябва да изтеглите актуализация от <a href=\"%s\" "
+#~ "target=\"_blank\">H5P.org</a> и след това да я качите чрез секцията "
+#~ "<em>Качване на библиотеки</em>. Ако имате нужда от помощ, моля, изпратете "
+#~ "<a href=\"%s\" target=\"_blank\">искане за поддръжка</a> или проверете "
+#~ "нашия <a href=\"%s\" target=\"_blank\">форум</a>."
 
 #~ msgid "Error, could not library semantics!"
 #~ msgstr "Грешка в семантиката на библиотеката!"
@@ -1295,8 +1421,8 @@ msgstr ""
 #~ msgstr "Вашата PHP версия не поддържа Zip архив."
 
 #~ msgid ""
-#~ "The file you uploaded is not a valid HTML5 Package (It does not have the ."
-#~ "h5p file extension)"
+#~ "The file you uploaded is not a valid HTML5 Package (It does not have "
+#~ "the .h5p file extension)"
 #~ msgstr ""
 #~ "Каченият от вас файл не е валиден HTML5 пакет (няма разширение .h5p)"
 
@@ -1320,14 +1446,14 @@ msgstr ""
 #~ msgstr "Файлът content.json не може да бъде намерен или анализиран"
 
 #~ msgid ""
-#~ "Library directory name must match machineName or machineName-majorVersion."
-#~ "minorVersion (from library.json). (Directory: %directoryName , "
-#~ "machineName: %machineName, majorVersion: %majorVersion, minorVersion: "
-#~ "%minorVersion)"
+#~ "Library directory name must match machineName or machineName-"
+#~ "majorVersion.minorVersion (from library.json). (Directory: "
+#~ "%directoryName , machineName: %machineName, majorVersion: %majorVersion, "
+#~ "minorVersion: %minorVersion)"
 #~ msgstr ""
 #~ "Името на директорията на библиотеката трябва да съответства на "
-#~ "machineName или на machineName-mainVersion.minorVersion (от library."
-#~ "json). (Directory: %directoryName, machineName: %machineName, "
+#~ "machineName или на machineName-mainVersion.minorVersion (от "
+#~ "library.json). (Directory: %directoryName, machineName: %machineName, "
 #~ "majorVersion: %majorVersion, minorVersion: %minorVersion)"
 
 #~ msgid "A valid content folder is missing"

@@ -204,7 +204,9 @@ msgid "Actions"
 msgstr "Actions"
 
 #: admin/class-h5p-library-admin.php:308
-msgid "This Library is used by content or other libraries and can therefore not be deleted."
+msgid ""
+"This Library is used by content or other libraries and can therefore not be "
+"deleted."
 msgstr ""
 "Maktaba hii inatumiwa na maudhui au maktaba zingine na kwa hivyo haiwezi "
 "kufutwa."
@@ -304,7 +306,8 @@ msgid "Missing required library %lib."
 msgstr "Inakosa maktaba inayohitajika %lib."
 
 #: admin/class-h5p-library-admin.php:445
-msgid "Parameters contain %used while only %supported or earlier are supported."
+msgid ""
+"Parameters contain %used while only %supported or earlier are supported."
 msgstr ""
 "Vigezo vina % vilivyotumika huku % vilivyotumika au vya awali pekee ndivyo "
 "vinavyotumika."
@@ -326,7 +329,9 @@ msgid "Upgrade"
 msgstr "Boresha"
 
 #: admin/class-h5p-library-admin.php:532
-msgid "Not all content has gotten their cache rebuilt. This is required to be able to delete libraries, and to display how many contents that uses the library."
+msgid ""
+"Not all content has gotten their cache rebuilt. This is required to be able "
+"to delete libraries, and to display how many contents that uses the library."
 msgstr ""
 "Siyo maudhui yote ambayo akiba yao imeundwa upya. Hii inahitajika ili kuweza "
 "kufuta maktaba, na kuonyesha ni maudhui ngapi yanayotumia maktaba."
@@ -362,7 +367,10 @@ msgid "Thank you for choosing H5P."
 msgstr "Asante kwa kuchagua H5P /kifupisho cha HTML5 Package."
 
 #: admin/class-h5p-plugin-admin.php:307
-msgid "You are ready to <a href=\"%s\">start creating</a> interactive content. Check out our <a href=\"%s\" target=\"_blank\">Examples and Downloads</a> page for inspiration."
+msgid ""
+"You are ready to <a href=\"%s\">start creating</a> interactive content. "
+"Check out our <a href=\"%s\" target=\"_blank\">Examples and Downloads</a> "
+"page for inspiration."
 msgstr ""
 "Uko tayari <a href=\"%s\">kuanza kuunda</a> maudhui wasilianifu. Tazama "
 "ukurasa wetu wa <a href=\"%s\" target=\"_blank\">Mifano na Vipakuliwa</a> "
@@ -373,7 +381,11 @@ msgid "Thank you for staying up to date with H5P."
 msgstr "Asante kwa kusasishwa na H5P."
 
 #: admin/class-h5p-plugin-admin.php:319
-msgid "You should <strong>upgrade your H5P content types!</strong> The old content types still work, but the authoring tool's look and feel is greatly improved with the new content types. Here's some more info about <a href=\"%s\" target=\"_blank\">upgrading the content types</a>."
+msgid ""
+"You should <strong>upgrade your H5P content types!</strong> The old content "
+"types still work, but the authoring tool's look and feel is greatly improved "
+"with the new content types. Here's some more info about <a href=\"%s\" "
+"target=\"_blank\">upgrading the content types</a>."
 msgstr ""
 "Unapaswa <strong>kuboresha aina zako za maudhui ya H5P!</strong> Aina za "
 "awali za maudhui bado zinafanya kazi, lakini mwonekano na hisia za zana ya "
@@ -382,7 +394,12 @@ msgstr ""
 "maudhui</a>."
 
 #: admin/class-h5p-plugin-admin.php:325
-msgid "H5P now fetches content types directly from the H5P Hub. In order to do this, the H5P plugin will communicate with H5P.org once per day to fetch information about new and updated content types. It will send in anonymous data to the hub about H5P usage. You may disable the data contribution and/or the H5P Hub in the H5P settings."
+msgid ""
+"H5P now fetches content types directly from the H5P Hub. In order to do "
+"this, the H5P plugin will communicate with H5P.org once per day to fetch "
+"information about new and updated content types. It will send in anonymous "
+"data to the hub about H5P usage. You may disable the data contribution and/"
+"or the H5P Hub in the H5P settings."
 msgstr ""
 "H5P sasa huleta aina za maudhui moja kwa moja kutoka H5P Hub. Ili kufanya "
 "hivyo, programu-jalizi ya H5P itawasiliana na H5P.org mara moja kwa siku ili "
@@ -391,12 +408,17 @@ msgstr ""
 "data na/au H5P Hub katika mipangilio ya H5P."
 
 #: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
-msgid "If you need any help you can always file a <a href=\"%s\" target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" target=\"_blank\">H5P Community Chat</a>."
+msgid ""
+"If you need any help you can always file a <a href=\"%s\" "
+"target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
+"target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" "
+"target=\"_blank\">H5P Community Chat</a>."
 msgstr ""
-"Ikiwa unahitaji usaidizi wowote unaweza kutuma faili <a href=\"%s\" target="
-"\"_blank\">Ombi la Usaidizi</a> kila wakati, angalia <a href=\"%s\" target="
-"\"_blank\">Mijadala yetu<a href=\"%s\" target=\"_blank\"> /a> au jiunge na "
-"mazungumzo katika <a href=\"%s\" target=\"_blank\">H5P Gumzo la Jumuiya</a>."
+"Ikiwa unahitaji usaidizi wowote unaweza kutuma faili <a href=\"%s\" "
+"target=\"_blank\">Ombi la Usaidizi</a> kila wakati, angalia <a href=\"%s\" "
+"target=\"_blank\">Mijadala yetu<a href=\"%s\" target=\"_blank\"> /a> au "
+"jiunge na mazungumzo katika <a href=\"%s\" target=\"_blank\">H5P Gumzo la "
+"Jumuiya</a>."
 
 #: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
 msgid "H5P Content"
@@ -423,7 +445,10 @@ msgid "My Results"
 msgstr "Matokeo Yangu"
 
 #: admin/class-h5p-plugin-admin.php:592
-msgid "You're trying to upload content of an older version of H5P. Please upgrade the content on the server it originated from and try to upload again or turn on the H5P Hub to have this server upgrade it for your automaticall."
+msgid ""
+"You're trying to upload content of an older version of H5P. Please upgrade "
+"the content on the server it originated from and try to upload again or turn "
+"on the H5P Hub to have this server upgrade it for your automaticall."
 msgstr ""
 "Unajaribu kupakia maudhui ya toleo la awali la H5P. Tafadhali pata toleo "
 "jipya la maudhui kwenye seva ilikotoka na ujaribu kupakia tena au washa H5P "
@@ -510,7 +535,12 @@ msgstr ""
 "\"sisi\"!):"
 
 #: admin/class-h5p-privacy-policy.php:74
-msgid "We may process and store personal data about your interactions using %s. We use the data to learn about how well the interactions are designed and how it could be adapted to improve the usability and your learning outcomes. The data is processed and stored [on our platform|on an external platform] until further notice."
+msgid ""
+"We may process and store personal data about your interactions using %s. We "
+"use the data to learn about how well the interactions are designed and how "
+"it could be adapted to improve the usability and your learning outcomes. The "
+"data is processed and stored [on our platform|on an external platform] until "
+"further notice."
 msgstr ""
 "Tunaweza kuchakata na kuhifadhi data ya kibinafsi kuhusu mwingiliano wako "
 "kwa kutumia %s. Tunatumia data kujifunza kuhusu jinsi mwingiliano umeundwa "
@@ -519,7 +549,12 @@ msgstr ""
 "kwenye jukwaa la nje] hadi ilani nyingine."
 
 #: admin/class-h5p-privacy-policy.php:75
-msgid "We may store the results of your interactions on our platform until further notice. The results may contain your score, the maximum score possible, when you started, when you finished, and how much time you used. We use the results to learn about how well you performed and to help us give you feedback."
+msgid ""
+"We may store the results of your interactions on our platform until further "
+"notice. The results may contain your score, the maximum score possible, when "
+"you started, when you finished, and how much time you used. We use the "
+"results to learn about how well you performed and to help us give you "
+"feedback."
 msgstr ""
 "Tunaweza kuhifadhi matokeo ya mwingiliano wako kwenye jukwaa letu hadi ilani "
 "zaidi. Matokeo yanaweza kuwa na alama zako, alama ya juu iwezekanavyo, lini "
@@ -527,7 +562,10 @@ msgstr ""
 "ulivyofanya vyema na kutusaidia kukupa maoni."
 
 #: admin/class-h5p-privacy-policy.php:76
-msgid "We may store interactive content that you create on our platform. We also may send anonymized reports about content creation without any personal data to the plugin creators. Please consult the %s page for details."
+msgid ""
+"We may store interactive content that you create on our platform. We also "
+"may send anonymized reports about content creation without any personal data "
+"to the plugin creators. Please consult the %s page for details."
 msgstr ""
 "Tunaweza kuhifadhi maudhui wasilianifu unayounda kwenye jukwaa letu. Pia "
 "tunaweza kutuma ripoti ambazo hazikutambulisha mtu kuhusu kuunda maudhui "
@@ -535,7 +573,14 @@ msgstr ""
 "ukurasa wa %s kwa maelezo zaidi."
 
 #: admin/class-h5p-privacy-policy.php:77
-msgid "If you use interactive content that contains a video that is hosted on YouTube, YouTube will set cookies on your computer. YouTube uses these cookies to help them and their partners to analyze the traffic to their websites. Please consult %s for details. It is our legitimate interest to use YouTube, because we we need their services for our interactive content and would not be able to provide you with their video content features otherwise."
+msgid ""
+"If you use interactive content that contains a video that is hosted on "
+"YouTube, YouTube will set cookies on your computer. YouTube uses these "
+"cookies to help them and their partners to analyze the traffic to their "
+"websites. Please consult %s for details. It is our legitimate interest to "
+"use YouTube, because we we need their services for our interactive content "
+"and would not be able to provide you with their video content features "
+"otherwise."
 msgstr ""
 "Ukitumia maudhui wasilianifu ambayo yana video iliyopangishwa kwenye "
 "YouTube, YouTube itaweka vidakuzi kwenye kompyuta yako. YouTube hutumia "
@@ -546,7 +591,13 @@ msgstr ""
 "vinginevyo."
 
 #: admin/class-h5p-privacy-policy.php:78
-msgid "If you use interactive content that contains a Twitter feed, Twitter will set a cookie on your computer. Twitter uses these cookies to help them and their partners to make their advertizing more relevant to you. Please consult %s for details. It is our legitimate interest to use Twitter, because we need their services for our interactive content and would not be able to provide you with it otherwise."
+msgid ""
+"If you use interactive content that contains a Twitter feed, Twitter will "
+"set a cookie on your computer. Twitter uses these cookies to help them and "
+"their partners to make their advertizing more relevant to you. Please "
+"consult %s for details. It is our legitimate interest to use Twitter, "
+"because we need their services for our interactive content and would not be "
+"able to provide you with it otherwise."
 msgstr ""
 "Ikiwa unatumia maudhui wasilianifu ambayo yana mlisho wa Twitter, Twitter "
 "itaweka kidakuzi kwenye kompyuta yako. Twitter hutumia vidakuzi hivi "
@@ -556,7 +607,12 @@ msgstr ""
 "hatutaweza kukupa vinginevyo."
 
 #: admin/class-h5p-privacy-policy.php:79
-msgid "If you use interactive content that contains speech recognition, Google Cloud will process your voice for converting it to text. Please consult %s for details. It is our legitimate interest to use Google Cloud, because we we need their services for our interactive content and would not be able to provide you with speech recognition features otherwise."
+msgid ""
+"If you use interactive content that contains speech recognition, Google "
+"Cloud will process your voice for converting it to text. Please consult %s "
+"for details. It is our legitimate interest to use Google Cloud, because we "
+"we need their services for our interactive content and would not be able to "
+"provide you with speech recognition features otherwise."
 msgstr ""
 "Ukitumia maudhui wasilianifu ambayo yana utambuzi wa usemi, Google Cloud "
 "itachakata sauti yako ili kuibadilisha kuwa maandishi. Tafadhali wasiliana "
@@ -664,7 +720,10 @@ msgid "Content Type Cache"
 msgstr "Akiba ya Aina ya Maudhui"
 
 #: admin/views/libraries.php:20
-msgid "Making sure the content type cache is up to date will ensure that you can view, download and use the latest libraries. This is different from updating the libraries themselves."
+msgid ""
+"Making sure the content type cache is up to date will ensure that you can "
+"view, download and use the latest libraries. This is different from updating "
+"the libraries themselves."
 msgstr ""
 "Kuhakikisha kuwa akiba ya aina ya maudhui imesasishwa kutahakikisha kuwa "
 "unaweza kutazama, kupakua na kutumia maktaba za hivi punde. Hii ni tofauti "
@@ -683,7 +742,9 @@ msgid "Upload Libraries"
 msgstr "Pakia Maktaba"
 
 #: admin/views/libraries.php:55
-msgid "Here you can upload new libraries or upload updates to existing libraries. Files uploaded here must be in the .h5p file format."
+msgid ""
+"Here you can upload new libraries or upload updates to existing libraries. "
+"Files uploaded here must be in the .h5p file format."
 msgstr ""
 "Hapa unaweza kupakia maktaba mpya au kupakia masasisho kwa maktaba zilizopo. "
 "Faili zilizopakiwa hapa lazima ziwe katika umbizo la faili la .h5p."
@@ -697,7 +758,11 @@ msgid "Disable file extension check"
 msgstr "Zima ukaguzi wa kiendelezi cha faili"
 
 #: admin/views/libraries.php:62 admin/views/new-content.php:34
-msgid "Warning! This may have security implications as it allows for uploading php files. That in turn could make it possible for attackers to execute malicious code on your site. Please make sure you know exactly what you're uploading."
+msgid ""
+"Warning! This may have security implications as it allows for uploading php "
+"files. That in turn could make it possible for attackers to execute "
+"malicious code on your site. Please make sure you know exactly what you're "
+"uploading."
 msgstr ""
 "Onyo! Hii inaweza kuwa na athari za usalama kwani inaruhusu kupakia faili za "
 "php. Hilo linaweza kufanya iwezekane kwa washambuliaji kutekeleza msimbo "
@@ -732,7 +797,11 @@ msgid "Waiting for javascript..."
 msgstr "Inasubiri javascript."
 
 #: admin/views/new-content.php:41
-msgid "It looks like there are no content types installed. You can get the ones you want by using the small 'Download' button in the lower left corner on any example from the <a href=\"%s\" target=\"_blank\">Examples and Downloads</a> page and then you upload the file here."
+msgid ""
+"It looks like there are no content types installed. You can get the ones you "
+"want by using the small 'Download' button in the lower left corner on any "
+"example from the <a href=\"%s\" target=\"_blank\">Examples and Downloads</a> "
+"page and then you upload the file here."
 msgstr ""
 "Inaonekana hakuna aina za maudhui zilizosakinishwa. Unaweza kupata unazotaka "
 "kwa kutumia kitufe kidogo cha 'Pakua' katika kona ya chini kushoto kwenye "
@@ -756,7 +825,9 @@ msgid "Display toolbar below content"
 msgstr "Onyesha upau wa vidhibiti chini ya maudhui"
 
 #: admin/views/new-content.php:74
-msgid "If checked a reuse button will always be displayed for this content and allow users to download the content as an .h5p file"
+msgid ""
+"If checked a reuse button will always be displayed for this content and "
+"allow users to download the content as an .h5p file"
 msgstr ""
 "Ikiwekwa alama, kitufe cha kutumia tena kitaonyeshwa kila mara kwa maudhui "
 "haya na kuwaruhusu watumiaji kupakua maudhui kama faili ya .h5p"
@@ -791,7 +862,9 @@ msgid "Controlled by author - on by default"
 msgstr "Inadhibitiwa na mwandishi - imewashwa kwa chaguo-msingi"
 
 #: admin/views/settings.php:31
-msgid "By default, a toolbar with 4 buttons is displayed below each interactive content."
+msgid ""
+"By default, a toolbar with 4 buttons is displayed below each interactive "
+"content."
 msgstr ""
 "Kwa chaguo-msingi, upau wa vidhibiti wenye vitufe 4 huonyeshwa chini ya kila "
 "maudhui wasilianifu."
@@ -818,7 +891,9 @@ msgid "Controlled by author - off by default"
 msgstr "Inadhibitiwa na mwandishi - imezimwa kwa chaguo-msingi"
 
 #: admin/views/settings.php:56
-msgid "Setting this to 'Never' will reduce the amount of disk space required for interactive content."
+msgid ""
+"Setting this to 'Never' will reduce the amount of disk space required for "
+"interactive content."
 msgstr ""
 "Kuweka hii kuwa 'Kamwe' kutapunguza kiasi cha nafasi ya diski inayohitajika "
 "kwa maudhui wasilianifu."
@@ -864,7 +939,10 @@ msgid "Yes, show only current user's contents by default"
 msgstr "Ndiyo, onyesha tu maudhui ya mtumiaji wa sasa kwa chaguo-msingi"
 
 #: admin/views/settings.php:141
-msgid "Allow to restrict the view of H5P contents to the current user's content. The setting has no effect if the user is not allowed to see other users' content."
+msgid ""
+"Allow to restrict the view of H5P contents to the current user's content. "
+"The setting has no effect if the user is not allowed to see other users' "
+"content."
 msgstr ""
 "Ruhusu kuzuia mwonekano wa maudhui ya H5P kwa maudhui ya mtumiaji wa sasa. "
 "Mipangilio haina athari ikiwa mtumiaji haruhusiwi kuona maudhui ya watumiaji "
@@ -875,7 +953,8 @@ msgid "Add Content Method"
 msgstr "Ongeza Mbinu ya Maudhui"
 
 #: admin/views/settings.php:148
-msgid "When adding H5P content to posts and pages using the \"Add H5P\" button:"
+msgid ""
+"When adding H5P content to posts and pages using the \"Add H5P\" button:"
 msgstr ""
 "Unapoongeza maudhui ya H5P kwenye machapisho na kurasa kwa kutumia kitufe "
 "cha \"Ongeza H5P\":"
@@ -899,7 +978,9 @@ msgstr ""
 "Record Store /LRS"
 
 #: admin/views/settings.php:176
-msgid "Makes it possible to use content types that rely upon a Learning Record Store to function properly, like the Questionnaire content type."
+msgid ""
+"Makes it possible to use content types that rely upon a Learning Record "
+"Store to function properly, like the Questionnaire content type."
 msgstr ""
 "Huwezesha kutumia aina za maudhui zinazotegemea Duka la Rekodi za Mafunzo "
 "kufanya kazi vizuri, kama vile aina ya maudhui ya Hojaji."
@@ -909,7 +990,12 @@ msgid "Use H5P Hub"
 msgstr "Tumia H5P Hub"
 
 #: admin/views/settings.php:188
-msgid "It's strongly encouraged to keep this option <strong>enabled</strong>. The H5P Hub provides an easy interface for getting new content types and keeping existing content types up to date. In the future, it will also make it easier to share and reuse content. If this option is disabled you'll have to install and update content types through file upload forms."
+msgid ""
+"It's strongly encouraged to keep this option <strong>enabled</strong>. The "
+"H5P Hub provides an easy interface for getting new content types and keeping "
+"existing content types up to date. In the future, it will also make it "
+"easier to share and reuse content. If this option is disabled you'll have to "
+"install and update content types through file upload forms."
 msgstr ""
 "Inahimizwa sana kuweka chaguo hili <strong> likiwashwa</strong>. H5P Hub "
 "hutoa kiolesura rahisi cha kupata aina mpya za maudhui na kusasisha aina "
@@ -926,12 +1012,16 @@ msgid "Automatically contribute usage statistics"
 msgstr "Changia takwimu za matumizi kiotomatiki"
 
 #: admin/views/settings.php:210
-msgid "Usage statistics numbers will automatically be reported to help the developers better understand how H5P is used and to determine potential areas of improvement. Read more about which <a href=\"%s\" target=\"_blank\">data is collected on h5p.org</a>."
+msgid ""
+"Usage statistics numbers will automatically be reported to help the "
+"developers better understand how H5P is used and to determine potential "
+"areas of improvement. Read more about which <a href=\"%s\" "
+"target=\"_blank\">data is collected on h5p.org</a>."
 msgstr ""
 "Nambari za takwimu za matumizi zitaripotiwa kiotomatiki ili kuwasaidia "
 "wasanidi programu kuelewa vyema jinsi H5P inavyotumiwa na kubainisha maeneo "
-"yanayoweza kuboreshwa. Soma zaidi kuhusu <a href=\"%s\" target=\"_blank\""
-">data gani inakusanywa kwenye h5p.org</a>."
+"yanayoweza kuboreshwa. Soma zaidi kuhusu <a href=\"%s\" "
+"target=\"_blank\">data gani inakusanywa kwenye h5p.org</a>."
 
 #: admin/views/show-content.php:30
 msgid "Shortcode"
@@ -942,7 +1032,9 @@ msgid "What's next?"
 msgstr "Nini kinafuata?"
 
 #: admin/views/show-content.php:33
-msgid "You can use the following shortcode to insert this interactive content into posts, pages, widgets, templates etc."
+msgid ""
+"You can use the following shortcode to insert this interactive content into "
+"posts, pages, widgets, templates etc."
 msgstr ""
 "Unaweza kutumia msimbo mfupi ufuatao kuingiza maudhui haya wasilianifu "
 "kwenye machapisho, kurasa, wijeti, violezo na kadhalika."
@@ -956,13 +1048,17 @@ msgid "Before you start"
 msgstr "Kabla ya kuanza"
 
 #: admin/views/user-consent.php:19
-msgid "To be able to start creating interactive content you must first install at least one content type."
+msgid ""
+"To be able to start creating interactive content you must first install at "
+"least one content type."
 msgstr ""
 "Ili kuweza kuanza kuunda maudhui wasilianifu lazima kwanza usakinishe "
 "angalau aina moja ya maudhui."
 
 #: admin/views/user-consent.php:20
-msgid "The H5P Hub is here to simplify this process by automatically installing the content types you choose and providing updates for those already installed."
+msgid ""
+"The H5P Hub is here to simplify this process by automatically installing the "
+"content types you choose and providing updates for those already installed."
 msgstr ""
 "H5P Hub (kituo cha shughuli) iko hapa ili kurahisisha mchakato huu kwa "
 "kusakinisha kiotomatiki aina za maudhui unazochagua na kutoa masasisho kwa "
@@ -970,9 +1066,12 @@ msgstr ""
 
 #: admin/views/user-consent.php:22
 msgid ""
-"In order for the H5P Hub to be able to do this, communication with H5P.org is required.<br/>\n"
-"        As this will provide H5P.org with anonymous data on how H5P is used we kindly ask for your consent before proceeding.<br/>\n"
-"        You can read more on <a href=\"%s\" target=\"_blank\">the plugin communication page</a>."
+"In order for the H5P Hub to be able to do this, communication with H5P.org "
+"is required.<br/>\n"
+"        As this will provide H5P.org with anonymous data on how H5P is used "
+"we kindly ask for your consent before proceeding.<br/>\n"
+"        You can read more on <a href=\"%s\" target=\"_blank\">the plugin "
+"communication page</a>."
 msgstr ""
 "Ili H5P Hub iweze kufanya hivi, mawasiliano na H5P.org yanahitajika.<br/>\n"
 "        Kwa vile hii itaipa H5P.org data isiyojulikana kuhusu jinsi H5P "
@@ -1014,8 +1113,38 @@ msgstr "H5P"
 msgid "http://h5p.org/wordpress"
 msgstr "http://h5p.org/wordpress"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "Mtandao wa H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "Maktaba za H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "Usimamizi wa H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Huruhusiwi kusimamia aina za maudhui za H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Simamia aina ya maudhui"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Ruhusa imekataliwa."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Maktaba zimehamishiwa kwenye ngazi ya mtandao."
+
 #. Description of the plugin/theme
-msgid "Allows you to upload, create, share and use rich interactive content on your WordPress site."
+msgid ""
+"Allows you to upload, create, share and use rich interactive content on your "
+"WordPress site."
 msgstr ""
 "Hukuruhusu kupakia, kuunda, kushiriki na kutumia maudhui wasilianifu tele "
 "kwenye tovuti yako ya WordPress."
@@ -1027,3 +1156,103 @@ msgstr "Joubel"
 #. Author URI of the plugin/theme
 msgid "http://joubel.com"
 msgstr "http://joubel.com"
+
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr ""
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr ""
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
+msgstr ""

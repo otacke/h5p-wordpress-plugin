@@ -12,13 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.8.6\n"
-"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;"
-"_n_noop:1,2;_c;_nc:4c,1,2;_x:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;"
-"esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;"
-"t\n"
+"X-Poedit-KeywordsList: "
+"__;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c;_nc:4c,1,2;_x:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;t\n"
 "X-Poedit-Basepath: ..\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Poedit-SearchPath-0: .\n"
 
 #: admin/class-h5p-content-admin.php:185 admin/class-h5p-content-admin.php:697
@@ -126,18 +124,6 @@ msgstr "Отсутствует %s."
 #: admin/class-h5p-content-admin.php:602
 msgid "Title is too long. Must be 256 letters or shorter."
 msgstr "Название слишком длинное. Должно быть 256 символов или меньше."
-
-#: admin/class-h5p-plugin-admin.php:883
-msgid "Content"
-msgstr "Контент"
-
-#: admin/class-h5p-plugin-admin.php:887 admin/class-h5p-content-admin.php:253
-msgid "Score"
-msgstr "Оценка"
-
-#: admin/class-h5p-plugin-admin.php:891 admin/class-h5p-content-admin.php:257
-msgid "Maximum Score"
-msgstr "Максимальная оценка"
 
 #: admin/class-h5p-content-admin.php:674
 msgid "Insert interactive content"
@@ -407,15 +393,15 @@ msgstr ""
 
 #: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
 msgid ""
-"If you need any help you can always file a <a href=\"%s\" target=\"_blank"
-"\">Support Request</a>, check out our <a href=\"%s\" target=\"_blank"
-"\">Forum</a> or join the conversation in the <a href=\"%s\" target=\"_blank"
-"\">H5P Community Chat</a>."
+"If you need any help you can always file a <a href=\"%s\" "
+"target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
+"target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" "
+"target=\"_blank\">H5P Community Chat</a>."
 msgstr ""
-"Если вам нужна помощь, вы всегда можете отправить <a href=\"%s\" target="
-"\"_blank\">Запрос на поддержку</a>, проверить наш<a href=\"%s\" target="
-"\"_blank\">Форум</a> или присоединиться к разговору в<a href=\"%s\" target="
-"\"_blank\">H5P Общий Чат</a>."
+"Если вам нужна помощь, вы всегда можете отправить <a href=\"%s\" "
+"target=\"_blank\">Запрос на поддержку</a>, проверить наш<a href=\"%s\" "
+"target=\"_blank\">Форум</a> или присоединиться к разговору в<a href=\"%s\" "
+"target=\"_blank\">H5P Общий Чат</a>."
 
 #: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
 msgid "H5P Content"
@@ -496,7 +482,7 @@ msgstr ""
 #: admin/class-h5p-privacy-policy.php:311
 #: admin/class-h5p-privacy-policy.php:393
 msgid "Content"
-msgstr "Содержание"
+msgstr "Контент"
 
 #: admin/class-h5p-plugin-admin.php:1060
 msgid "There are no logged results for your user."
@@ -824,10 +810,6 @@ msgstr ""
 msgid "Allow download"
 msgstr ""
 
-#: admin/views/settings.php:23
-msgid "External communication"
-msgstr "Внешнее взаимодействие"
-
 #: admin/views/settings.php:40 admin/views/settings.php:65
 msgid "Never"
 msgstr ""
@@ -956,8 +938,8 @@ msgstr ""
 msgid ""
 "Usage statistics numbers will automatically be reported to help the "
 "developers better understand how H5P is used and to determine potential "
-"areas of improvement. Read more about which <a href=\"%s\" target=\"_blank"
-"\">data is collected on h5p.org</a>."
+"areas of improvement. Read more about which <a href=\"%s\" "
+"target=\"_blank\">data is collected on h5p.org</a>."
 msgstr ""
 
 #: admin/views/show-content.php:30
@@ -993,16 +975,8 @@ msgid ""
 "The H5P Hub is here to simplify this process by automatically installing the "
 "content types you choose and providing updates for those already installed."
 msgstr ""
-"Файл, который вы загрузили, не является допустимым HTML5 пакетом (Мы не можем извлечь "
-"его)"
-
-#: h5p-php-library/h5p.classes.php:733
-msgid "Could not parse the main h5p.json file"
-msgstr "Не удалось разобрать основной h5p.json файл"
-
-#: h5p-php-library/h5p.classes.php:742
-msgid "The main h5p.json file is not valid"
-msgstr "Основной h5p.json файл не является допустимым"
+"Файл, который вы загрузили, не является допустимым HTML5 пакетом (Мы не "
+"можем извлечь его)"
 
 #: admin/views/user-consent.php:22
 msgid ""
@@ -1046,6 +1020,34 @@ msgstr ""
 msgid "http://h5p.org/wordpress"
 msgstr ""
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "Сеть H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "Библиотеки H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "Управление H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "У вас нет прав для управления типами контента H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Управление типом контента"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Доступ запрещён."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Библиотеки перенесены на уровень сети."
+
 #. Description of the plugin/theme
 msgid ""
 "Allows you to upload, create, share and use rich interactive content on your "
@@ -1061,6 +1063,121 @@ msgstr ""
 #. Author URI of the plugin/theme
 msgid "http://joubel.com"
 msgstr ""
+
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr ""
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr ""
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
+msgstr ""
+
+#~ msgid "External communication"
+#~ msgstr "Внешнее взаимодействие"
+
+#~ msgid "Could not parse the main h5p.json file"
+#~ msgstr "Не удалось разобрать основной h5p.json файл"
+
+#~ msgid "The main h5p.json file is not valid"
+#~ msgstr "Основной h5p.json файл не является допустимым"
+
+#~ msgid "Illegal option %option in %library"
+#~ msgstr "Недопустимый параметр %option в %library"
+
+#~ msgid "User Tracking"
+#~ msgstr "Отслеживание пользователя"
 
 #~ msgid "Unable to create directory."
 #~ msgstr "Невозможно создать каталог."
@@ -1079,10 +1196,6 @@ msgstr ""
 
 #~ msgid "File is not an image."
 #~ msgstr "Файл не является изображением."
-
-#: h5p-php-library/h5p.classes.php:1204
-msgid "Illegal option %option in %library"
-msgstr "Недопустимый параметр %option в %library"
 
 #~ msgid "Invalid audio file format. Use mp3 or wav."
 #~ msgstr "Неверный формат аудиофайла. Используйте mp3 or wav."
@@ -1111,8 +1224,8 @@ msgstr "Недопустимый параметр %option в %library"
 #~ "По умолчанию H5P настроен на автоматическую выборку информации об "
 #~ "обновлениях типов Контента из H5P.org. При этом H5P также будет "
 #~ "предоставлять анонимные данные об использовании для содействия развитию "
-#~ "H5P. Это поведение можно изменить через страницу <a href=\"%s"
-#~ "\">Настройки</a>"
+#~ "H5P. Это поведение можно изменить через страницу <a "
+#~ "href=\"%s\">Настройки</a>"
 
 #, php-format
 #~ msgid ""
@@ -1132,8 +1245,8 @@ msgstr "Недопустимый параметр %option в %library"
 #~ "К сожалению, мы не смогли автоматически установить типы контента по "
 #~ "умолчанию. Необходимо вручную загрузить типы контента, которые вы хотите "
 #~ "использовать ,со страницы<a href=\"%s\" target=\"_blank\">Примеры и "
-#~ "загрузки </a>, а затем загрузить их через страницу<a href=\"%s"
-#~ "\">Библиотеки < /a>."
+#~ "загрузки </a>, а затем загрузить их через страницу<a "
+#~ "href=\"%s\">Библиотеки < /a>."
 
 #, php-format
 #~ msgid ""
@@ -1180,18 +1293,18 @@ msgstr "Недопустимый параметр %option в %library"
 #, php-format
 #~ msgid ""
 #~ "Unfortunately, we were unable to update your installed content types. You "
-#~ "must manually download the update from <a href=\"%s\" target=\"_blank"
-#~ "\">H5P.org</a>, and then upload it through the <em>Upload Libraries</em> "
-#~ "section. If you need futher assistance, please file a <a href=\"%s\" "
-#~ "target=\"_blank\">support request</a> or check out our <a href=\"%s\" "
-#~ "target=\"_blank\">forum</a>."
+#~ "must manually download the update from <a href=\"%s\" "
+#~ "target=\"_blank\">H5P.org</a>, and then upload it through the <em>Upload "
+#~ "Libraries</em> section. If you need futher assistance, please file a <a "
+#~ "href=\"%s\" target=\"_blank\">support request</a> or check out our <a "
+#~ "href=\"%s\" target=\"_blank\">forum</a>."
 #~ msgstr ""
 #~ "К сожалению, мы не смогли обновить установленные типы контента. Вы должны "
 #~ "вручную загрузить из <a href=\"%s\" target=\"_blank\">H5P.org</a>, а "
 #~ "затем загрузить его через секцию <em>Загрузка библиотек</em> . Если вам "
-#~ "нужна дополнительная помощь, пожалуйста, подайте <a href=\"%s\" target="
-#~ "\"_blank\">запрос на поддержку</a> или проверьте наш <a href=\"%s\" "
-#~ "target=\"_blank\">форум</a>."
+#~ "нужна дополнительная помощь, пожалуйста, подайте <a href=\"%s\" "
+#~ "target=\"_blank\">запрос на поддержку</a> или проверьте наш <a "
+#~ "href=\"%s\" target=\"_blank\">форум</a>."
 
 #~ msgid "Error, could not library semantics!"
 #~ msgstr "Ошибка, неверная семантика библиотеки!"
@@ -1233,9 +1346,6 @@ msgstr "Недопустимый параметр %option в %library"
 #~ msgstr ""
 #~ "Вы можете использовать следующий шорткод для вставки этого интерактивного "
 #~ "контента в записи, страницы, виджеты, шаблоны и т. д."
-
-#~ msgid "External communication"
-#~ msgstr "Внешняя связь"
 
 #~ msgid ""
 #~ "I wish to aid in the development of H5P by contributing anonymous usage "
@@ -1321,8 +1431,8 @@ msgstr "Недопустимый параметр %option в %library"
 #~ msgstr "Ваша версия PHP не поддерживает ZipArchive."
 
 #~ msgid ""
-#~ "The file you uploaded is not a valid HTML5 Package (It does not have the ."
-#~ "h5p file extension)"
+#~ "The file you uploaded is not a valid HTML5 Package (It does not have "
+#~ "the .h5p file extension)"
 #~ msgstr ""
 #~ "Файл, который вы загрузили, не является допустимым пакетом HTML5 (он не "
 #~ "имеет .h5p расширение файла)"
@@ -1334,12 +1444,6 @@ msgstr "Недопустимый параметр %option в %library"
 #~ "The file you uploaded is not a valid HTML5 Package (We are unable to "
 #~ "unzip it)"
 
-#~ msgid "Could not parse the main h5p.json file"
-#~ msgstr "Не удалось разобрать основной h5p.json файл"
-
-#~ msgid "The main h5p.json file is not valid"
-#~ msgstr "Основной h5p.json файл не является допустимым"
-
 #~ msgid "Invalid content folder"
 #~ msgstr "Недопустимая папка контента"
 
@@ -1347,10 +1451,10 @@ msgstr "Недопустимый параметр %option в %library"
 #~ msgstr "Не удалось найти или проанализировать content.json файл"
 
 #~ msgid ""
-#~ "Library directory name must match machineName or machineName-majorVersion."
-#~ "minorVersion (from library.json). (Directory: %directoryName , "
-#~ "machineName: %machineName, majorVersion: %majorVersion, minorVersion: "
-#~ "%minorVersion)"
+#~ "Library directory name must match machineName or machineName-"
+#~ "majorVersion.minorVersion (from library.json). (Directory: "
+#~ "%directoryName , machineName: %machineName, majorVersion: %majorVersion, "
+#~ "minorVersion: %minorVersion)"
 #~ msgstr ""
 #~ "Имя каталога библиотеки должно совпадать с machineName или machineName-"
 #~ "majorVersion.minorVersion (from library.json). (Директория:"
@@ -1416,9 +1520,6 @@ msgstr "Недопустимый параметр %option в %library"
 
 #~ msgid "The required property %property is missing from %library"
 #~ msgstr "Требуемое свойство %property отсутствует в библиотеке %library"
-
-#~ msgid "Illegal option %option in %library"
-#~ msgstr "Незаконный вариант %option в %library"
 
 #~ msgid "Added %new new H5P libraries and updated %old old."
 #~ msgstr "Добавлены %new новые H5P библиотеки и обновлены %old старые."
@@ -1522,9 +1623,6 @@ msgstr "Недопустимый параметр %option в %library"
 #~ msgid "Thumbnail"
 #~ msgstr "Миниатюра"
 
-msgid "User Tracking"
-msgstr "Отслеживание пользователя"
-
 #~ msgid "No copyright information available for this content."
 #~ msgstr "Информация об авторских правах на данный контент отсутствует."
 
@@ -1551,9 +1649,6 @@ msgstr "Отслеживание пользователя"
 
 #~ msgid "Created"
 #~ msgstr "Создано"
-
-#~ msgid "User Tracking"
-#~ msgstr "Отслеживание Пользователя"
 
 #~ msgid "Library updates"
 #~ msgstr "Обновления библиотеки"

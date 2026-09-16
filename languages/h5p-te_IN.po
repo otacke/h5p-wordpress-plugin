@@ -48,9 +48,7 @@ msgstr "ID"
 #: admin/class-h5p-content-admin.php:227 admin/class-h5p-content-admin.php:724
 #: admin/views/select-content.php:31
 msgid "No H5P content available. You must upload or create new content."
-msgstr ""
-"H5P కంటెంట్ అందుబాటులో లేదు. మీరు తప్పనిసరిగా కొత్త కంటెంట్‌ను అప్‌లోడ్ "
-"చేయాలి లేదా సృష్టించాలి."
+msgstr "H5P కంటెంట్ అందుబాటులో లేదు. మీరు తప్పనిసరిగా కొత్త కంటెంట్‌ను అప్‌లోడ్ చేయాలి లేదా సృష్టించాలి."
 
 #: admin/class-h5p-content-admin.php:238
 msgid "You are not allowed to view this content."
@@ -204,9 +202,10 @@ msgid "Actions"
 msgstr "యాక్షన్స్"
 
 #: admin/class-h5p-library-admin.php:308
-msgid "This Library is used by content or other libraries and can therefore not be deleted."
-msgstr ""
-"ఈ లైబ్రరీని కంటెంట్ లేదా ఇతర లైబ్రరీలు ఉపయోగిస్తాయి కాబట్టి తొలగించబడదు."
+msgid ""
+"This Library is used by content or other libraries and can therefore not be "
+"deleted."
+msgstr "ఈ లైబ్రరీని కంటెంట్ లేదా ఇతర లైబ్రరీలు ఉపయోగిస్తాయి కాబట్టి తొలగించబడదు."
 
 #: admin/class-h5p-library-admin.php:344
 msgid "No content is using this library"
@@ -269,8 +268,7 @@ msgstr "అప్‌గ్రేడ్ చేయడానికి కంటె�
 
 #: admin/class-h5p-library-admin.php:437
 msgid "You are about to upgrade %s. Please select upgrade version."
-msgstr ""
-"మీరు %sని అప్‌గ్రేడ్ చేయబోతున్నారు. దయచేసి అప్‌గ్రేడ్ వెర్షన్‌ని ఎంచుకోండి."
+msgstr "మీరు %sని అప్‌గ్రేడ్ చేయబోతున్నారు. దయచేసి అప్‌గ్రేడ్ వెర్షన్‌ని ఎంచుకోండి."
 
 #: admin/class-h5p-library-admin.php:438
 msgid "Upgrading to %ver..."
@@ -301,10 +299,10 @@ msgid "Missing required library %lib."
 msgstr "అవసరమైన లైబ్రరీ %lib లేదు."
 
 #: admin/class-h5p-library-admin.php:445
-msgid "Parameters contain %used while only %supported or earlier are supported."
+msgid ""
+"Parameters contain %used while only %supported or earlier are supported."
 msgstr ""
-"పారామీటర్‌లు %ఉపయోగించినవి కలిగి ఉంటాయి, అయితే %మద్దతు ఉన్నవి లేదా అంతకు "
-"ముందు మాత్రమే మద్దతివ్వబడతాయి."
+"పారామీటర్‌లు %ఉపయోగించినవి కలిగి ఉంటాయి, అయితే %మద్దతు ఉన్నవి లేదా అంతకు ముందు మాత్రమే మద్దతివ్వబడతాయి."
 
 #: admin/class-h5p-library-admin.php:446
 msgid "Parameters contain %used which is not supported."
@@ -323,10 +321,12 @@ msgid "Upgrade"
 msgstr "అప్‌గ్రేడ్ చేయండి"
 
 #: admin/class-h5p-library-admin.php:532
-msgid "Not all content has gotten their cache rebuilt. This is required to be able to delete libraries, and to display how many contents that uses the library."
+msgid ""
+"Not all content has gotten their cache rebuilt. This is required to be able "
+"to delete libraries, and to display how many contents that uses the library."
 msgstr ""
-"మొత్తం కంటెంట్ వాటి కాష్‌ని పునర్నిర్మించలేదు. లైబ్రరీలను తొలగించడానికి మరియు"
-" ఈ లైబ్రరీని ఉపయోగించే కంటెంట్‌ లు ఎన్ని అని తెలియచేయడానికి ఇది అవసరం."
+"మొత్తం కంటెంట్ వాటి కాష్‌ని పునర్నిర్మించలేదు. లైబ్రరీలను తొలగించడానికి మరియు ఈ లైబ్రరీని ఉపయోగించే కంటెంట్‌ "
+"లు ఎన్ని అని తెలియచేయడానికి ఇది అవసరం."
 
 #: admin/class-h5p-library-admin.php:533
 msgid "1 content need to get its cache rebuilt."
@@ -359,40 +359,54 @@ msgid "Thank you for choosing H5P."
 msgstr "H5Pని ఎంచుకున్నందుకు ధన్యవాదాలు."
 
 #: admin/class-h5p-plugin-admin.php:307
-msgid "You are ready to <a href=\"%s\">start creating</a> interactive content. Check out our <a href=\"%s\" target=\"_blank\">Examples and Downloads</a> page for inspiration."
+msgid ""
+"You are ready to <a href=\"%s\">start creating</a> interactive content. "
+"Check out our <a href=\"%s\" target=\"_blank\">Examples and Downloads</a> "
+"page for inspiration."
 msgstr ""
-"మీరు ఇంటరాక్టివ్ కంటెంట్‌ను <a href=\"%s\"> సృష్టించడం ప్రారంభించడానికి</a> "
-"సిద్ధంగా ఉన్నారు. ప్రేరణ కోసం మా <a href=\"%s\" target=\"_blank\">ఉదాహరణలు "
-"మరియు డౌన్‌లోడ్‌లు</a> పేజీని చూడండి."
+"మీరు ఇంటరాక్టివ్ కంటెంట్‌ను <a href=\"%s\"> సృష్టించడం ప్రారంభించడానికి</a> సిద్ధంగా ఉన్నారు. "
+"ప్రేరణ కోసం మా <a href=\"%s\" target=\"_blank\">ఉదాహరణలు మరియు డౌన్‌లోడ్‌లు</a> పేజీని "
+"చూడండి."
 
 #: admin/class-h5p-plugin-admin.php:311
 msgid "Thank you for staying up to date with H5P."
 msgstr "H5Pతో అప్ టు డేట్ గా ఉన్నందుకు ధన్యవాదాలు."
 
 #: admin/class-h5p-plugin-admin.php:319
-msgid "You should <strong>upgrade your H5P content types!</strong> The old content types still work, but the authoring tool's look and feel is greatly improved with the new content types. Here's some more info about <a href=\"%s\" target=\"_blank\">upgrading the content types</a>."
+msgid ""
+"You should <strong>upgrade your H5P content types!</strong> The old content "
+"types still work, but the authoring tool's look and feel is greatly improved "
+"with the new content types. Here's some more info about <a href=\"%s\" "
+"target=\"_blank\">upgrading the content types</a>."
 msgstr ""
-"మీరు <strong>మీ H5P కంటెంట్ రకాలను అప్‌గ్రేడ్ చేయాలి!</strong> పాత కంటెంట్ "
-"రకాలు ఇప్పటికీ పని చేస్తాయి, అయితే కొత్త కంటెంట్ రకాలతో రచనా సాధనం యొక్క రూపం"
-" మరియు అనుభూతి బాగా మెరుగుపడింది. <a href=\"%s\" target=\"_blank\">కంటెంట్ "
-"రకాలను</a> అప్‌గ్రేడ్ చేయడం గురించి ఇక్కడ మరికొంత సమాచారం ఉంది."
+"మీరు <strong>మీ H5P కంటెంట్ రకాలను అప్‌గ్రేడ్ చేయాలి!</strong> పాత కంటెంట్ రకాలు ఇప్పటికీ పని "
+"చేస్తాయి, అయితే కొత్త కంటెంట్ రకాలతో రచనా సాధనం యొక్క రూపం మరియు అనుభూతి బాగా మెరుగుపడింది. <a "
+"href=\"%s\" target=\"_blank\">కంటెంట్ రకాలను</a> అప్‌గ్రేడ్ చేయడం గురించి ఇక్కడ మరికొంత "
+"సమాచారం ఉంది."
 
 #: admin/class-h5p-plugin-admin.php:325
-msgid "H5P now fetches content types directly from the H5P Hub. In order to do this, the H5P plugin will communicate with H5P.org once per day to fetch information about new and updated content types. It will send in anonymous data to the hub about H5P usage. You may disable the data contribution and/or the H5P Hub in the H5P settings."
+msgid ""
+"H5P now fetches content types directly from the H5P Hub. In order to do "
+"this, the H5P plugin will communicate with H5P.org once per day to fetch "
+"information about new and updated content types. It will send in anonymous "
+"data to the hub about H5P usage. You may disable the data contribution and/"
+"or the H5P Hub in the H5P settings."
 msgstr ""
-"H5P ఇప్పుడు నేరుగా H5P హబ్ నుండి కంటెంట్ రకాలను పొందుతుంది. దీన్ని చేయడానికి"
-", కొత్త మరియు నవీకరించబడిన కంటెంట్ రకాల గురించి సమాచారాన్ని పొందడానికి H5P "
-"ప్లగ్ఇన్ రోజుకు ఒకసారి H5P.orgతో కమ్యూనికేట్ చేస్తుంది. ఇది H5P వినియోగం "
-"గురించి హబ్‌కి అనామక డేటాను పంపుతుంది. మీరు H5P సెట్టింగ్‌లలో డేటా సహకారం "
-"మరియు/లేదా H5P హబ్‌ని నిలిపివేయవచ్చు."
+"H5P ఇప్పుడు నేరుగా H5P హబ్ నుండి కంటెంట్ రకాలను పొందుతుంది. దీన్ని చేయడానికి, కొత్త మరియు "
+"నవీకరించబడిన కంటెంట్ రకాల గురించి సమాచారాన్ని పొందడానికి H5P ప్లగ్ఇన్ రోజుకు ఒకసారి H5P.orgతో "
+"కమ్యూనికేట్ చేస్తుంది. ఇది H5P వినియోగం గురించి హబ్‌కి అనామక డేటాను పంపుతుంది. మీరు H5P సెట్టింగ్‌లలో "
+"డేటా సహకారం మరియు/లేదా H5P హబ్‌ని నిలిపివేయవచ్చు."
 
 #: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
-msgid "If you need any help you can always file a <a href=\"%s\" target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" target=\"_blank\">H5P Community Chat</a>."
+msgid ""
+"If you need any help you can always file a <a href=\"%s\" "
+"target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
+"target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" "
+"target=\"_blank\">H5P Community Chat</a>."
 msgstr ""
-"మీకు ఏదైనా సహాయం కావాలంటే మీరు ఎల్లప్పుడూ <a href=\"%s\" target=\"_blank\""
-">మద్దతు అభ్యర్థన</a> ఫైల్ చేయవచ్చు, మా <a href=\"%s\" target=\"_blank\""
-">ఫోరమ్</a>ని చూడండి లేదా <a href=\"%s\" target=\"_blank\">H5P కమ్యూనిటీ "
-"చాట్</a>లో సంభాషణలో చేరండి."
+"మీకు ఏదైనా సహాయం కావాలంటే మీరు ఎల్లప్పుడూ <a href=\"%s\" target=\"_blank\">మద్దతు "
+"అభ్యర్థన</a> ఫైల్ చేయవచ్చు, మా <a href=\"%s\" target=\"_blank\">ఫోరమ్</a>ని చూడండి లేదా "
+"<a href=\"%s\" target=\"_blank\">H5P కమ్యూనిటీ చాట్</a>లో సంభాషణలో చేరండి."
 
 #: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
 msgid "H5P Content"
@@ -419,11 +433,13 @@ msgid "My Results"
 msgstr "నా ఫలితాలు"
 
 #: admin/class-h5p-plugin-admin.php:592
-msgid "You're trying to upload content of an older version of H5P. Please upgrade the content on the server it originated from and try to upload again or turn on the H5P Hub to have this server upgrade it for your automaticall."
+msgid ""
+"You're trying to upload content of an older version of H5P. Please upgrade "
+"the content on the server it originated from and try to upload again or turn "
+"on the H5P Hub to have this server upgrade it for your automaticall."
 msgstr ""
-"మీరు H5P యొక్క పాత వెర్షన్ కంటెంట్‌ని అప్‌లోడ్ చేయడానికి ప్రయత్నిస్తున్నారు. "
-"దయచేసి కంటెంట్‌ను సర్వర్‌లో అప్‌గ్రేడ్ చేయండి మరియు మళ్లీ అప్‌లోడ్ చేయడానికి "
-"ప్రయత్నించండి లేదా మీ స్వయంచాలకంగా ఈ సర్వర్‌ని అప్‌గ్రేడ్ చేయడానికి H5P "
+"మీరు H5P యొక్క పాత వెర్షన్ కంటెంట్‌ని అప్‌లోడ్ చేయడానికి ప్రయత్నిస్తున్నారు. దయచేసి కంటెంట్‌ను సర్వర్‌లో అప్‌గ్రేడ్ "
+"చేయండి మరియు మళ్లీ అప్‌లోడ్ చేయడానికి ప్రయత్నించండి లేదా మీ స్వయంచాలకంగా ఈ సర్వర్‌ని అప్‌గ్రేడ్ చేయడానికి H5P "
 "హబ్‌ను ఆన్ చేయండి."
 
 #: admin/class-h5p-plugin-admin.php:749
@@ -503,65 +519,89 @@ msgstr "మేము ఏ వ్యక్తిగత డేటాను సే�
 #: admin/class-h5p-privacy-policy.php:73
 msgid "Suggested text (\"We\" and \"our\" mean \"you\", not \"us\"!):"
 msgstr ""
-"సూచించబడిన టెక్స్ట్ (&quot;మేము&quot; మరియు &quot;మా&quot; అంటే "
-"&quot;మీరు&quot;, &quot;మా&quot; కాదు!):"
+"సూచించబడిన టెక్స్ట్ (&quot;మేము&quot; మరియు &quot;మా&quot; అంటే &quot;మీరు&quot;, "
+"&quot;మా&quot; కాదు!):"
 
 #: admin/class-h5p-privacy-policy.php:74
-msgid "We may process and store personal data about your interactions using %s. We use the data to learn about how well the interactions are designed and how it could be adapted to improve the usability and your learning outcomes. The data is processed and stored [on our platform|on an external platform] until further notice."
+msgid ""
+"We may process and store personal data about your interactions using %s. We "
+"use the data to learn about how well the interactions are designed and how "
+"it could be adapted to improve the usability and your learning outcomes. The "
+"data is processed and stored [on our platform|on an external platform] until "
+"further notice."
 msgstr ""
-"మేము %sని ఉపయోగించి మీ పరస్పర చర్యలకు సంబంధించిన వ్యక్తిగత డేటాను ప్రాసెస్ "
-"చేయవచ్చు మరియు నిల్వ చేయవచ్చు. పరస్పర చర్యలు ఎంత బాగా రూపొందించబడ్డాయి మరియు "
-"వినియోగం మరియు మీ అభ్యాస ఫలితాలను మెరుగుపరచడానికి దానిని ఎలా స్వీకరించవచ్చు "
-"అనే దాని గురించి తెలుసుకోవడానికి మేము డేటాను ఉపయోగిస్తాము. తదుపరి నోటీసు "
-"వచ్చే వరకు డేటా ప్రాసెస్ చేయబడుతుంది మరియు [మా ప్లాట్‌ఫారమ్‌లో|బాహ్య "
-"ప్లాట్‌ఫారమ్‌లో] నిల్వ చేయబడుతుంది."
+"మేము %sని ఉపయోగించి మీ పరస్పర చర్యలకు సంబంధించిన వ్యక్తిగత డేటాను ప్రాసెస్ చేయవచ్చు మరియు నిల్వ "
+"చేయవచ్చు. పరస్పర చర్యలు ఎంత బాగా రూపొందించబడ్డాయి మరియు వినియోగం మరియు మీ అభ్యాస ఫలితాలను "
+"మెరుగుపరచడానికి దానిని ఎలా స్వీకరించవచ్చు అనే దాని గురించి తెలుసుకోవడానికి మేము డేటాను ఉపయోగిస్తాము. "
+"తదుపరి నోటీసు వచ్చే వరకు డేటా ప్రాసెస్ చేయబడుతుంది మరియు [మా ప్లాట్‌ఫారమ్‌లో|బాహ్య ప్లాట్‌ఫారమ్‌లో] నిల్వ "
+"చేయబడుతుంది."
 
 #: admin/class-h5p-privacy-policy.php:75
-msgid "We may store the results of your interactions on our platform until further notice. The results may contain your score, the maximum score possible, when you started, when you finished, and how much time you used. We use the results to learn about how well you performed and to help us give you feedback."
+msgid ""
+"We may store the results of your interactions on our platform until further "
+"notice. The results may contain your score, the maximum score possible, when "
+"you started, when you finished, and how much time you used. We use the "
+"results to learn about how well you performed and to help us give you "
+"feedback."
 msgstr ""
-"తదుపరి నోటీసు వచ్చే వరకు మేము మీ పరస్పర చర్యల ఫలితాలను మా ప్లాట్‌ఫారమ్‌లో "
-"నిల్వ చేయవచ్చు. ఫలితాలు మీ స్కోర్‌ను కలిగి ఉండవచ్చు, సాధ్యమయ్యే గరిష్ట స్కోర్"
-", మీరు ఎప్పుడు ప్రారంభించారు, ఎప్పుడు పూర్తి చేసారు మరియు మీరు ఎంత సమయం "
-"ఉపయోగించారు. మీరు ఎంత బాగా పనిచేశారో తెలుసుకోవడానికి మరియు మీకు అభిప్రాయాన్ని"
-" అందించడంలో మాకు సహాయపడటానికి మేము ఫలితాలను ఉపయోగిస్తాము."
+"తదుపరి నోటీసు వచ్చే వరకు మేము మీ పరస్పర చర్యల ఫలితాలను మా ప్లాట్‌ఫారమ్‌లో నిల్వ చేయవచ్చు. ఫలితాలు మీ "
+"స్కోర్‌ను కలిగి ఉండవచ్చు, సాధ్యమయ్యే గరిష్ట స్కోర్, మీరు ఎప్పుడు ప్రారంభించారు, ఎప్పుడు పూర్తి చేసారు "
+"మరియు మీరు ఎంత సమయం ఉపయోగించారు. మీరు ఎంత బాగా పనిచేశారో తెలుసుకోవడానికి మరియు మీకు అభిప్రాయాన్ని "
+"అందించడంలో మాకు సహాయపడటానికి మేము ఫలితాలను ఉపయోగిస్తాము."
 
 #: admin/class-h5p-privacy-policy.php:76
-msgid "We may store interactive content that you create on our platform. We also may send anonymized reports about content creation without any personal data to the plugin creators. Please consult the %s page for details."
+msgid ""
+"We may store interactive content that you create on our platform. We also "
+"may send anonymized reports about content creation without any personal data "
+"to the plugin creators. Please consult the %s page for details."
 msgstr ""
-"మీరు మా ప్లాట్‌ఫారమ్‌లో సృష్టించే ఇంటరాక్టివ్ కంటెంట్‌ని మేము నిల్వ చేయవచ్చు"
-". మేము ప్లగిన్ సృష్టికర్తలకు ఎలాంటి వ్యక్తిగత డేటా లేకుండా కంటెంట్ సృష్టి "
-"గురించి అనామక నివేదికలను కూడా పంపవచ్చు. వివరాల కోసం దయచేసి %s పేజీని "
-"సంప్రదించండి."
+"మీరు మా ప్లాట్‌ఫారమ్‌లో సృష్టించే ఇంటరాక్టివ్ కంటెంట్‌ని మేము నిల్వ చేయవచ్చు. మేము ప్లగిన్ సృష్టికర్తలకు ఎలాంటి "
+"వ్యక్తిగత డేటా లేకుండా కంటెంట్ సృష్టి గురించి అనామక నివేదికలను కూడా పంపవచ్చు. వివరాల కోసం దయచేసి %s "
+"పేజీని సంప్రదించండి."
 
 #: admin/class-h5p-privacy-policy.php:77
-msgid "If you use interactive content that contains a video that is hosted on YouTube, YouTube will set cookies on your computer. YouTube uses these cookies to help them and their partners to analyze the traffic to their websites. Please consult %s for details. It is our legitimate interest to use YouTube, because we we need their services for our interactive content and would not be able to provide you with their video content features otherwise."
+msgid ""
+"If you use interactive content that contains a video that is hosted on "
+"YouTube, YouTube will set cookies on your computer. YouTube uses these "
+"cookies to help them and their partners to analyze the traffic to their "
+"websites. Please consult %s for details. It is our legitimate interest to "
+"use YouTube, because we we need their services for our interactive content "
+"and would not be able to provide you with their video content features "
+"otherwise."
 msgstr ""
-"మీరు YouTubeలో హోస్ట్ చేయబడిన వీడియోని కలిగి ఉన్న ఇంటరాక్టివ్ కంటెంట్‌ని "
-"ఉపయోగిస్తే, YouTube మీ కంప్యూటర్‌లో కుక్కీలను సెట్ చేస్తుంది. YouTube వారికి "
-"మరియు వారి భాగస్వాములకు వారి వెబ్‌సైట్‌లకు ట్రాఫిక్‌ను విశ్లేషించడానికి సహాయం"
-" చేయడానికి ఈ కుక్కీలను ఉపయోగిస్తుంది. దయచేసి వివరాల కోసం %sని సంప్రదించండి. "
-"YouTubeని ఉపయోగించడం మా చట్టబద్ధమైన ఆసక్తి, ఎందుకంటే మా ఇంటరాక్టివ్ కంటెంట్ "
-"కోసం మాకు వారి సేవలు అవసరం మరియు లేకపోతే వారి వీడియో కంటెంట్ ఫీచర్‌లను మీకు "
-"అందించలేము."
+"మీరు YouTubeలో హోస్ట్ చేయబడిన వీడియోని కలిగి ఉన్న ఇంటరాక్టివ్ కంటెంట్‌ని ఉపయోగిస్తే, YouTube మీ "
+"కంప్యూటర్‌లో కుక్కీలను సెట్ చేస్తుంది. YouTube వారికి మరియు వారి భాగస్వాములకు వారి వెబ్‌సైట్‌లకు ట్రాఫిక్‌ను "
+"విశ్లేషించడానికి సహాయం చేయడానికి ఈ కుక్కీలను ఉపయోగిస్తుంది. దయచేసి వివరాల కోసం %sని సంప్రదించండి. "
+"YouTubeని ఉపయోగించడం మా చట్టబద్ధమైన ఆసక్తి, ఎందుకంటే మా ఇంటరాక్టివ్ కంటెంట్ కోసం మాకు వారి సేవలు "
+"అవసరం మరియు లేకపోతే వారి వీడియో కంటెంట్ ఫీచర్‌లను మీకు అందించలేము."
 
 #: admin/class-h5p-privacy-policy.php:78
-msgid "If you use interactive content that contains a Twitter feed, Twitter will set a cookie on your computer. Twitter uses these cookies to help them and their partners to make their advertizing more relevant to you. Please consult %s for details. It is our legitimate interest to use Twitter, because we need their services for our interactive content and would not be able to provide you with it otherwise."
+msgid ""
+"If you use interactive content that contains a Twitter feed, Twitter will "
+"set a cookie on your computer. Twitter uses these cookies to help them and "
+"their partners to make their advertizing more relevant to you. Please "
+"consult %s for details. It is our legitimate interest to use Twitter, "
+"because we need their services for our interactive content and would not be "
+"able to provide you with it otherwise."
 msgstr ""
-"మీరు Twitter ఫీడ్‌ని కలిగి ఉన్న ఇంటరాక్టివ్ కంటెంట్‌ను ఉపయోగిస్తే, Twitter మీ"
-" కంప్యూటర్‌లో కుక్కీని సెట్ చేస్తుంది. వారి ప్రకటనలను మీకు మరింత "
-"సందర్భోచితంగా చేయడంలో వారికి మరియు వారి భాగస్వాములకు సహాయం చేయడానికి Twitter "
-"ఈ కుక్కీలను ఉపయోగిస్తుంది. దయచేసి వివరాల కోసం %sని సంప్రదించండి. Twitterని "
-"ఉపయోగించడం మా చట్టబద్ధమైన ఆసక్తి, ఎందుకంటే మా ఇంటరాక్టివ్ కంటెంట్ కోసం వారి "
-"సేవలు మాకు అవసరం మరియు లేకపోతే దాన్ని మీకు అందించలేము."
+"మీరు Twitter ఫీడ్‌ని కలిగి ఉన్న ఇంటరాక్టివ్ కంటెంట్‌ను ఉపయోగిస్తే, Twitter మీ కంప్యూటర్‌లో కుక్కీని సెట్ "
+"చేస్తుంది. వారి ప్రకటనలను మీకు మరింత సందర్భోచితంగా చేయడంలో వారికి మరియు వారి భాగస్వాములకు సహాయం "
+"చేయడానికి Twitter ఈ కుక్కీలను ఉపయోగిస్తుంది. దయచేసి వివరాల కోసం %sని సంప్రదించండి. Twitterని "
+"ఉపయోగించడం మా చట్టబద్ధమైన ఆసక్తి, ఎందుకంటే మా ఇంటరాక్టివ్ కంటెంట్ కోసం వారి సేవలు మాకు అవసరం మరియు "
+"లేకపోతే దాన్ని మీకు అందించలేము."
 
 #: admin/class-h5p-privacy-policy.php:79
-msgid "If you use interactive content that contains speech recognition, Google Cloud will process your voice for converting it to text. Please consult %s for details. It is our legitimate interest to use Google Cloud, because we we need their services for our interactive content and would not be able to provide you with speech recognition features otherwise."
+msgid ""
+"If you use interactive content that contains speech recognition, Google "
+"Cloud will process your voice for converting it to text. Please consult %s "
+"for details. It is our legitimate interest to use Google Cloud, because we "
+"we need their services for our interactive content and would not be able to "
+"provide you with speech recognition features otherwise."
 msgstr ""
-"మీరు స్పీచ్ రికగ్నిషన్‌ని కలిగి ఉన్న ఇంటరాక్టివ్ కంటెంట్‌ని ఉపయోగిస్తే, "
-"Google క్లౌడ్ మీ వాయిస్‌ని టెక్స్ట్‌గా మార్చడానికి ప్రాసెస్ చేస్తుంది. దయచేసి"
-" వివరాల కోసం %sని సంప్రదించండి. Google క్లౌడ్‌ని ఉపయోగించడం మా చట్టబద్ధమైన "
-"ఆసక్తి, ఎందుకంటే మా ఇంటరాక్టివ్ కంటెంట్ కోసం మాకు వారి సేవలు అవసరం మరియు "
-"లేకపోతే మీకు స్పీచ్ రికగ్నిషన్ ఫీచర్‌లను అందించలేము."
+"మీరు స్పీచ్ రికగ్నిషన్‌ని కలిగి ఉన్న ఇంటరాక్టివ్ కంటెంట్‌ని ఉపయోగిస్తే, Google క్లౌడ్ మీ వాయిస్‌ని టెక్స్ట్‌గా "
+"మార్చడానికి ప్రాసెస్ చేస్తుంది. దయచేసి వివరాల కోసం %sని సంప్రదించండి. Google క్లౌడ్‌ని ఉపయోగించడం మా "
+"చట్టబద్ధమైన ఆసక్తి, ఎందుకంటే మా ఇంటరాక్టివ్ కంటెంట్ కోసం మాకు వారి సేవలు అవసరం మరియు లేకపోతే మీకు "
+"స్పీచ్ రికగ్నిషన్ ఫీచర్‌లను అందించలేము."
 
 #: admin/class-h5p-privacy-policy.php:260
 #: admin/class-h5p-privacy-policy.php:315
@@ -663,11 +703,13 @@ msgid "Content Type Cache"
 msgstr "కంటెంట్ రకం కాష్"
 
 #: admin/views/libraries.php:20
-msgid "Making sure the content type cache is up to date will ensure that you can view, download and use the latest libraries. This is different from updating the libraries themselves."
+msgid ""
+"Making sure the content type cache is up to date will ensure that you can "
+"view, download and use the latest libraries. This is different from updating "
+"the libraries themselves."
 msgstr ""
-"కంటెంట్ రకం కాష్ తాజాగా ఉందని నిర్ధారించుకోవడం వలన మీరు తాజా లైబ్రరీలను "
-"వీక్షించవచ్చని, డౌన్‌లోడ్ చేసుకోవచ్చని మరియు ఉపయోగించవచ్చని నిర్ధారిస్తుంది. "
-"ఇది లైబ్రరీలను స్వయంగా నవీకరించడానికి భిన్నంగా ఉంటుంది."
+"కంటెంట్ రకం కాష్ తాజాగా ఉందని నిర్ధారించుకోవడం వలన మీరు తాజా లైబ్రరీలను వీక్షించవచ్చని, డౌన్‌లోడ్ "
+"చేసుకోవచ్చని మరియు ఉపయోగించవచ్చని నిర్ధారిస్తుంది. ఇది లైబ్రరీలను స్వయంగా నవీకరించడానికి భిన్నంగా ఉంటుంది."
 
 #: admin/views/libraries.php:24
 msgid "Last update"
@@ -682,11 +724,12 @@ msgid "Upload Libraries"
 msgstr "లైబ్రరీలను అప్‌లోడ్ చేయండి"
 
 #: admin/views/libraries.php:55
-msgid "Here you can upload new libraries or upload updates to existing libraries. Files uploaded here must be in the .h5p file format."
+msgid ""
+"Here you can upload new libraries or upload updates to existing libraries. "
+"Files uploaded here must be in the .h5p file format."
 msgstr ""
-"ఇక్కడ మీరు కొత్త లైబ్రరీలను అప్‌లోడ్ చేయవచ్చు లేదా ఇప్పటికే ఉన్న లైబ్రరీలకు "
-"నవీకరణలను అప్‌లోడ్ చేయవచ్చు. ఇక్కడ అప్‌లోడ్ చేయబడిన ఫైల్‌లు తప్పనిసరిగా .h5p "
-"ఫైల్ ఫార్మాట్‌లో ఉండాలి."
+"ఇక్కడ మీరు కొత్త లైబ్రరీలను అప్‌లోడ్ చేయవచ్చు లేదా ఇప్పటికే ఉన్న లైబ్రరీలకు నవీకరణలను అప్‌లోడ్ చేయవచ్చు. "
+"ఇక్కడ అప్‌లోడ్ చేయబడిన ఫైల్‌లు తప్పనిసరిగా .h5p ఫైల్ ఫార్మాట్‌లో ఉండాలి."
 
 #: admin/views/libraries.php:58
 msgid "Only update existing libraries"
@@ -697,12 +740,15 @@ msgid "Disable file extension check"
 msgstr "ఫైల్ ఎక్స్టెంషన్ తనిఖీని నిలిపివేయండి"
 
 #: admin/views/libraries.php:62 admin/views/new-content.php:34
-msgid "Warning! This may have security implications as it allows for uploading php files. That in turn could make it possible for attackers to execute malicious code on your site. Please make sure you know exactly what you're uploading."
+msgid ""
+"Warning! This may have security implications as it allows for uploading php "
+"files. That in turn could make it possible for attackers to execute "
+"malicious code on your site. Please make sure you know exactly what you're "
+"uploading."
 msgstr ""
-"హెచ్చరిక! ఇది php ఫైల్‌లను అప్‌లోడ్ చేయడానికి అనుమతిస్తుంది కాబట్టి ఇది "
-"భద్రతాపరమైన చిక్కులను కలిగి ఉండవచ్చు. దాడి చేసేవారు మీ సైట్‌లో హానికరమైన "
-"కోడ్‌ని అమలు చేయడం సాధ్యమవుతుంది. దయచేసి మీరు ఏమి అప్‌లోడ్ చేస్తున్నారో మీకు "
-"ఖచ్చితంగా తెలుసని నిర్ధారించుకోండి."
+"హెచ్చరిక! ఇది php ఫైల్‌లను అప్‌లోడ్ చేయడానికి అనుమతిస్తుంది కాబట్టి ఇది భద్రతాపరమైన చిక్కులను కలిగి "
+"ఉండవచ్చు. దాడి చేసేవారు మీ సైట్‌లో హానికరమైన కోడ్‌ని అమలు చేయడం సాధ్యమవుతుంది. దయచేసి మీరు ఏమి అప్‌లోడ్ "
+"చేస్తున్నారో మీకు ఖచ్చితంగా తెలుసని నిర్ధారించుకోండి."
 
 #: admin/views/libraries.php:68 admin/views/new-content.php:49
 msgid "Upload"
@@ -733,12 +779,16 @@ msgid "Waiting for javascript..."
 msgstr "జావాస్క్రిప్ట్ కోసం వేచి ఉంది..."
 
 #: admin/views/new-content.php:41
-msgid "It looks like there are no content types installed. You can get the ones you want by using the small 'Download' button in the lower left corner on any example from the <a href=\"%s\" target=\"_blank\">Examples and Downloads</a> page and then you upload the file here."
+msgid ""
+"It looks like there are no content types installed. You can get the ones you "
+"want by using the small 'Download' button in the lower left corner on any "
+"example from the <a href=\"%s\" target=\"_blank\">Examples and Downloads</a> "
+"page and then you upload the file here."
 msgstr ""
-"ఇన్‌స్టాల్ చేయబడిన కంటెంట్ రకాలు ఏవీ లేనట్లు కనిపిస్తోంది. మీరు <a href=\"%"
-"s\" target=\"_blank\">ఉదాహరణలు మరియు డౌన్‌లోడ్‌లు</a> పేజీ నుండి ఏదైనా "
-"ఉదాహరణలో దిగువ ఎడమ మూలలో ఉన్న చిన్న &#39;డౌన్‌లోడ్&#39; బటన్‌ను ఉపయోగించడం "
-"ద్వారా మీకు కావలసిన వాటిని పొందవచ్చు, ఆపై మీరు ఫైల్‌ను ఇక్కడ అప్‌లోడ్ చేయండి."
+"ఇన్‌స్టాల్ చేయబడిన కంటెంట్ రకాలు ఏవీ లేనట్లు కనిపిస్తోంది. మీరు <a href=\"%s\" "
+"target=\"_blank\">ఉదాహరణలు మరియు డౌన్‌లోడ్‌లు</a> పేజీ నుండి ఏదైనా ఉదాహరణలో దిగువ ఎడమ మూలలో "
+"ఉన్న చిన్న &#39;డౌన్‌లోడ్&#39; బటన్‌ను ఉపయోగించడం ద్వారా మీకు కావలసిన వాటిని పొందవచ్చు, ఆపై మీరు ఫైల్‌ను "
+"ఇక్కడ అప్‌లోడ్ చేయండి."
 
 #: admin/views/new-content.php:50 admin/views/new-content.php:59
 msgid "Create"
@@ -757,11 +807,12 @@ msgid "Display toolbar below content"
 msgstr "కంటెంట్ క్రింద టూల్‌బార్‌ని డిస్ప్లే చేయండి"
 
 #: admin/views/new-content.php:74
-msgid "If checked a reuse button will always be displayed for this content and allow users to download the content as an .h5p file"
+msgid ""
+"If checked a reuse button will always be displayed for this content and "
+"allow users to download the content as an .h5p file"
 msgstr ""
-"తనిఖీ చేసినట్లయితే, ఈ కంటెంట్ కోసం పునర్వినియోగ బటన్ ఎల్లప్పుడూ "
-"ప్రదర్శించబడుతుంది మరియు కంటెంట్‌ను .h5p ఫైల్‌గా డౌన్‌లోడ్ చేసుకోవడానికి "
-"యూజర్స్ కు అనుమతిస్తుంది."
+"తనిఖీ చేసినట్లయితే, ఈ కంటెంట్ కోసం పునర్వినియోగ బటన్ ఎల్లప్పుడూ ప్రదర్శించబడుతుంది మరియు "
+"కంటెంట్‌ను .h5p ఫైల్‌గా డౌన్‌లోడ్ చేసుకోవడానికి యూజర్స్ కు అనుమతిస్తుంది."
 
 #: admin/views/new-content.php:76
 msgid "Allow users to download the content"
@@ -793,10 +844,10 @@ msgid "Controlled by author - on by default"
 msgstr "రచయితచే నియంత్రించబడుతుంది - డిఫాల్ట్‌గా ఆన్ చేయబడింది"
 
 #: admin/views/settings.php:31
-msgid "By default, a toolbar with 4 buttons is displayed below each interactive content."
-msgstr ""
-"డిఫాల్ట్‌గా, ప్రతి ఇంటరాక్టివ్ కంటెంట్ క్రింద 4 బటన్‌లతో కూడిన టూల్‌బార్ "
-"ప్రదర్శించబడుతుంది."
+msgid ""
+"By default, a toolbar with 4 buttons is displayed below each interactive "
+"content."
+msgstr "డిఫాల్ట్‌గా, ప్రతి ఇంటరాక్టివ్ కంటెంట్ క్రింద 4 బటన్‌లతో కూడిన టూల్‌బార్ ప్రదర్శించబడుతుంది."
 
 #: admin/views/settings.php:36
 msgid "Allow download"
@@ -820,16 +871,15 @@ msgid "Controlled by author - off by default"
 msgstr "రచయితచే నియంత్రించబడుతుంది - డిఫాల్ట్‌గా ఆఫ్ చేయబడింది"
 
 #: admin/views/settings.php:56
-msgid "Setting this to 'Never' will reduce the amount of disk space required for interactive content."
+msgid ""
+"Setting this to 'Never' will reduce the amount of disk space required for "
+"interactive content."
 msgstr ""
-"దీన్ని 'ఎప్పుడూవద్దుకి' సెట్ చేయడం వలన ఇంటరాక్టివ్ కంటెంట్‌కు అవసరమైన డిస్క్ "
-"స్థలం తగ్గుతుంది."
+"దీన్ని 'ఎప్పుడూవద్దుకి' సెట్ చేయడం వలన ఇంటరాక్టివ్ కంటెంట్‌కు అవసరమైన డిస్క్ స్థలం తగ్గుతుంది."
 
 #: admin/views/settings.php:81
 msgid "Setting this to 'Never' will disable already existing embed codes."
-msgstr ""
-"దీన్ని 'ఎప్పుడూవద్దుకి' సెట్ చేయడం వలన ఇప్పటికే ఉన్న ఎంబెడ్ కోడ్‌లు డిసేబుల్ "
-"చేయబడతాయి."
+msgstr "దీన్ని 'ఎప్పుడూవద్దుకి' సెట్ చేయడం వలన ఇప్పటికే ఉన్న ఎంబెడ్ కోడ్‌లు డిసేబుల్ చేయబడతాయి."
 
 #: admin/views/settings.php:95
 msgid "Display About H5P button"
@@ -868,21 +918,23 @@ msgid "Yes, show only current user's contents by default"
 msgstr "అవును, డిఫాల్ట్‌గా ప్రస్తుత యూజరు కంటెంట్‌లను మాత్రమే చూపండి"
 
 #: admin/views/settings.php:141
-msgid "Allow to restrict the view of H5P contents to the current user's content. The setting has no effect if the user is not allowed to see other users' content."
+msgid ""
+"Allow to restrict the view of H5P contents to the current user's content. "
+"The setting has no effect if the user is not allowed to see other users' "
+"content."
 msgstr ""
-"H5P కంటెంట్‌ల వీక్షణను ప్రస్తుత యూజరు కంటెంట్‌కు పరిమితం చేయడానికి "
-"అనుమతించండి. యూజరు ఇతరుల కంటెంట్‌ను చూడటానికి అనుమతించకపోతే ఈ సెట్టింగ్ "
-"ప్రభావం చూపదు."
+"H5P కంటెంట్‌ల వీక్షణను ప్రస్తుత యూజరు కంటెంట్‌కు పరిమితం చేయడానికి అనుమతించండి. యూజరు ఇతరుల "
+"కంటెంట్‌ను చూడటానికి అనుమతించకపోతే ఈ సెట్టింగ్ ప్రభావం చూపదు."
 
 #: admin/views/settings.php:145
 msgid "Add Content Method"
 msgstr "కంటెంట్ పద్ధతిని జోడించండి"
 
 #: admin/views/settings.php:148
-msgid "When adding H5P content to posts and pages using the \"Add H5P\" button:"
+msgid ""
+"When adding H5P content to posts and pages using the \"Add H5P\" button:"
 msgstr ""
-"\"H5Pకంటెంట్ ని జోడించు\"బటన్‌ని ఉపయోగించి : పోస్ట్‌లు మరియు పేజీలకు H5P "
-"కంటెంట్‌ని జోడించేటప్పుడు"
+"\"H5Pకంటెంట్ ని జోడించు\"బటన్‌ని ఉపయోగించి : పోస్ట్‌లు మరియు పేజీలకు H5P కంటెంట్‌ని జోడించేటప్పుడు"
 
 #: admin/views/settings.php:155
 msgid "Reference content by id"
@@ -901,24 +953,29 @@ msgid "Enable LRS dependent content types"
 msgstr "LRS ఆధారిత కంటెంట్ రకాలను ఎనేబుల్ చేయండి"
 
 #: admin/views/settings.php:176
-msgid "Makes it possible to use content types that rely upon a Learning Record Store to function properly, like the Questionnaire content type."
+msgid ""
+"Makes it possible to use content types that rely upon a Learning Record "
+"Store to function properly, like the Questionnaire content type."
 msgstr ""
-"క్వశ్చనీర్ కంటెంట్ రకం వంటి సరిగ్గా పని చేయడానికి లెర్నింగ్ రికార్డ్ "
-"స్టోర్‌పై ఆధారపడే కంటెంట్ రకాలను ఉపయోగించడం సాధ్యం చేస్తుంది."
+"క్వశ్చనీర్ కంటెంట్ రకం వంటి సరిగ్గా పని చేయడానికి లెర్నింగ్ రికార్డ్ స్టోర్‌పై ఆధారపడే కంటెంట్ రకాలను "
+"ఉపయోగించడం సాధ్యం చేస్తుంది."
 
 #: admin/views/settings.php:185
 msgid "Use H5P Hub"
 msgstr "H5P హబ్‌ని ఉపయోగించండి"
 
 #: admin/views/settings.php:188
-msgid "It's strongly encouraged to keep this option <strong>enabled</strong>. The H5P Hub provides an easy interface for getting new content types and keeping existing content types up to date. In the future, it will also make it easier to share and reuse content. If this option is disabled you'll have to install and update content types through file upload forms."
+msgid ""
+"It's strongly encouraged to keep this option <strong>enabled</strong>. The "
+"H5P Hub provides an easy interface for getting new content types and keeping "
+"existing content types up to date. In the future, it will also make it "
+"easier to share and reuse content. If this option is disabled you'll have to "
+"install and update content types through file upload forms."
 msgstr ""
-"ఈ ఎంపికను <strong>ప్రారంభించబడి</strong> ఉంచాలని గట్టిగా ప్రోత్సహించబడింది. "
-"H5P హబ్ కొత్త కంటెంట్ రకాలను పొందడానికి మరియు ఇప్పటికే ఉన్న కంటెంట్ రకాలను "
-"తాజాగా ఉంచడానికి సులభమైన ఇంటర్‌ఫేస్‌ను అందిస్తుంది. భవిష్యత్తులో, ఇది "
-"కంటెంట్‌ను భాగస్వామ్యం చేయడం మరియు మళ్లీ ఉపయోగించడం సులభతరం చేస్తుంది. ఈ ఎంపి"
-"క నిలిపివేయబడితే, మీరు ఫైల్ అప్‌లోడ్ ఫారమ్‌ల ద్వారా కంటెంట్ రకాలను ఇన్‌స్టాల్"
-" చేసి, అప్‌డేట్ చేయాలి."
+"ఈ ఎంపికను <strong>ప్రారంభించబడి</strong> ఉంచాలని గట్టిగా ప్రోత్సహించబడింది. H5P హబ్ కొత్త కంటెంట్ "
+"రకాలను పొందడానికి మరియు ఇప్పటికే ఉన్న కంటెంట్ రకాలను తాజాగా ఉంచడానికి సులభమైన ఇంటర్‌ఫేస్‌ను అందిస్తుంది. "
+"భవిష్యత్తులో, ఇది కంటెంట్‌ను భాగస్వామ్యం చేయడం మరియు మళ్లీ ఉపయోగించడం సులభతరం చేస్తుంది. ఈ ఎంపిక "
+"నిలిపివేయబడితే, మీరు ఫైల్ అప్‌లోడ్ ఫారమ్‌ల ద్వారా కంటెంట్ రకాలను ఇన్‌స్టాల్ చేసి, అప్‌డేట్ చేయాలి."
 
 #: admin/views/settings.php:203
 msgid "Usage Statistics"
@@ -929,12 +986,15 @@ msgid "Automatically contribute usage statistics"
 msgstr "వినియోగ గణాంకాలను స్వయంచాలకంగా అందించండి"
 
 #: admin/views/settings.php:210
-msgid "Usage statistics numbers will automatically be reported to help the developers better understand how H5P is used and to determine potential areas of improvement. Read more about which <a href=\"%s\" target=\"_blank\">data is collected on h5p.org</a>."
+msgid ""
+"Usage statistics numbers will automatically be reported to help the "
+"developers better understand how H5P is used and to determine potential "
+"areas of improvement. Read more about which <a href=\"%s\" "
+"target=\"_blank\">data is collected on h5p.org</a>."
 msgstr ""
-"H5P ఎలా ఉపయోగించబడుతుందో డెవలపర్‌లు మెరుగ్గా అర్థం చేసుకోవడంలో మరియు "
-"అభివృద్ధి చెందగల సంభావ్య ప్రాంతాలను గుర్తించడంలో సహాయపడేందుకు వినియోగ గణాంకా"
-"ల సంఖ్యలు స్వయంచాలకంగా నివేదించబడతాయి. h5p.org</a>లో ఏ <a href=\"%s\" target="
-"\"_blank\">డేటా సేకరించబడుతుందనే దాని గురించి మరింత చదవండి."
+"H5P ఎలా ఉపయోగించబడుతుందో డెవలపర్‌లు మెరుగ్గా అర్థం చేసుకోవడంలో మరియు అభివృద్ధి చెందగల సంభావ్య "
+"ప్రాంతాలను గుర్తించడంలో సహాయపడేందుకు వినియోగ గణాంకాల సంఖ్యలు స్వయంచాలకంగా నివేదించబడతాయి. h5p.org</"
+"a>లో ఏ <a href=\"%s\" target=\"_blank\">డేటా సేకరించబడుతుందనే దాని గురించి మరింత చదవండి."
 
 #: admin/views/show-content.php:30
 msgid "Shortcode"
@@ -945,10 +1005,12 @@ msgid "What's next?"
 msgstr "తరవాత ఏంటి?"
 
 #: admin/views/show-content.php:33
-msgid "You can use the following shortcode to insert this interactive content into posts, pages, widgets, templates etc."
+msgid ""
+"You can use the following shortcode to insert this interactive content into "
+"posts, pages, widgets, templates etc."
 msgstr ""
-"మీరు ఈ ఇంటరాక్టివ్ కంటెంట్‌ని పోస్ట్‌లు, పేజీలు, విడ్జెట్‌లు, టెంప్లేట్‌లు "
-"మొదలైన వాటిలోకి చొప్పించడానికి క్రింది షార్ట్‌కోడ్‌ని ఉపయోగించవచ్చు."
+"మీరు ఈ ఇంటరాక్టివ్ కంటెంట్‌ని పోస్ట్‌లు, పేజీలు, విడ్జెట్‌లు, టెంప్లేట్‌లు మొదలైన వాటిలోకి చొప్పించడానికి క్రింది "
+"షార్ట్‌కోడ్‌ని ఉపయోగించవచ్చు."
 
 #: admin/views/show-content.php:42
 msgid "No tags"
@@ -959,28 +1021,33 @@ msgid "Before you start"
 msgstr "మీరు ప్రారంభించ బోయే ముందు"
 
 #: admin/views/user-consent.php:19
-msgid "To be able to start creating interactive content you must first install at least one content type."
+msgid ""
+"To be able to start creating interactive content you must first install at "
+"least one content type."
 msgstr ""
-"ఇంటరాక్టివ్ కంటెంట్‌ని సృష్టించడం ప్రారంభించడానికి మీరు ముందుగా కనీసం ఒక "
-"కంటెంట్ రకాన్ని ఇన్‌స్టాల్ చేయాలి."
+"ఇంటరాక్టివ్ కంటెంట్‌ని సృష్టించడం ప్రారంభించడానికి మీరు ముందుగా కనీసం ఒక కంటెంట్ రకాన్ని ఇన్‌స్టాల్ చేయాలి."
 
 #: admin/views/user-consent.php:20
-msgid "The H5P Hub is here to simplify this process by automatically installing the content types you choose and providing updates for those already installed."
+msgid ""
+"The H5P Hub is here to simplify this process by automatically installing the "
+"content types you choose and providing updates for those already installed."
 msgstr ""
-"మీరు ఎంచుకున్న కంటెంట్ రకాలను స్వయంచాలకంగా ఇన్‌స్టాల్ చేయడం ద్వారా మరియు "
-"ఇప్పటికే ఇన్‌స్టాల్ చేసిన వాటికి అప్‌డేట్‌లను అందించడం ద్వారా ఈ ప్రక్రియను "
-"సులభతరం చేయడానికి H5P హబ్ ఇక్కడ ఉంది."
+"మీరు ఎంచుకున్న కంటెంట్ రకాలను స్వయంచాలకంగా ఇన్‌స్టాల్ చేయడం ద్వారా మరియు ఇప్పటికే ఇన్‌స్టాల్ చేసిన వాటికి "
+"అప్‌డేట్‌లను అందించడం ద్వారా ఈ ప్రక్రియను సులభతరం చేయడానికి H5P హబ్ ఇక్కడ ఉంది."
 
 #: admin/views/user-consent.php:22
 msgid ""
-"In order for the H5P Hub to be able to do this, communication with H5P.org is required.<br/>\n"
-"        As this will provide H5P.org with anonymous data on how H5P is used we kindly ask for your consent before proceeding.<br/>\n"
-"        You can read more on <a href=\"%s\" target=\"_blank\">the plugin communication page</a>."
+"In order for the H5P Hub to be able to do this, communication with H5P.org "
+"is required.<br/>\n"
+"        As this will provide H5P.org with anonymous data on how H5P is used "
+"we kindly ask for your consent before proceeding.<br/>\n"
+"        You can read more on <a href=\"%s\" target=\"_blank\">the plugin "
+"communication page</a>."
 msgstr ""
 "H5P హబ్ దీన్ని చేయగలిగేలా చేయడానికి, H5P.orgతో కమ్యూనికేషన్ అవసరం.<br/>\n"
-"ఇది H5P.orgకి H5P ఎలా ఉపయోగించబడుతుందనే దానిపై అనామక డేటాను అందిస్తుంది "
-"కాబట్టి మేము కొనసాగించే ముందు మీ సమ్మతిని కోరుతున్నాము.<br/>[X218X ] మీరు <a "
-"href=\"%s\" target=\"_blank\">ప్లగ్ఇన్ కమ్యూనికేషన్ పేజీ</a>లో మరింత చదవగలరు."
+"ఇది H5P.orgకి H5P ఎలా ఉపయోగించబడుతుందనే దానిపై అనామక డేటాను అందిస్తుంది కాబట్టి మేము కొనసాగించే "
+"ముందు మీ సమ్మతిని కోరుతున్నాము.<br/>[X218X ] మీరు <a href=\"%s\" "
+"target=\"_blank\">ప్లగ్ఇన్ కమ్యూనికేషన్ పేజీ</a>లో మరింత చదవగలరు."
 
 #: admin/views/user-consent.php:26
 msgid "I consent, give me the Hub!"
@@ -1014,12 +1081,41 @@ msgstr "H5P"
 msgid "http://h5p.org/wordpress"
 msgstr "http://h5p.org/wordpress"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "H5P నెట్‌వర్క్"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "H5P లైబ్రరీలు"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "H5P నిర్వహణ"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "H5P కంటెంట్ రకాలను నిర్వహించడానికి మీకు అనుమతి లేదు."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "కంటెంట్ రకాన్ని నిర్వహించండి"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "అనుమతి నిరాకరించబడింది."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "లైబ్రరీలు నెట్‌వర్క్ స్థాయికి మార్చబడ్డాయి."
+
 #. Description of the plugin/theme
-msgid "Allows you to upload, create, share and use rich interactive content on your WordPress site."
+msgid ""
+"Allows you to upload, create, share and use rich interactive content on your "
+"WordPress site."
 msgstr ""
-"మీ WordPress సైట్‌లో రిచ్ ఇంటరాక్టివ్ కంటెంట్‌ను అప్‌లోడ్ చేయడానికి, "
-"సృష్టించడానికి, భాగస్వామ్యం చేయడానికి మరియు ఉపయోగించడానికి మీకు "
-"అనుమతిస్తుంది."
+"మీ WordPress సైట్‌లో రిచ్ ఇంటరాక్టివ్ కంటెంట్‌ను అప్‌లోడ్ చేయడానికి, సృష్టించడానికి, భాగస్వామ్యం చేయడానికి మరియు "
+"ఉపయోగించడానికి మీకు అనుమతిస్తుంది."
 
 #. Author of the plugin/theme
 msgid "Joubel"
@@ -1028,3 +1124,103 @@ msgstr "జూబెల్"
 #. Author URI of the plugin/theme
 msgid "http://joubel.com"
 msgstr "http://joubel.com"
+
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr ""
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr ""
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
+msgstr ""

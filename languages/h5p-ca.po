@@ -16,11 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Poedit 1.8.7.1\n"
-"X-Poedit-KeywordsList: _:1;gettext:1;dgettext:2;ngettext:1,2;dngettext:2,3;"
-"__:1;_e:1;_c:1;_n:1,2;_n_noop:1,2;_nc:1,2;__ngettext:1,2;__ngettext_noop:1,2;"
-"_x:1,2c;_ex:1,2c;_nx:1,2,4c;_nx_noop:1,2,3c;_n_js:1,2;_nx_js:1,2,3c;"
-"esc_attr__:1;esc_html__:1;esc_attr_e:1;esc_html_e:1;esc_attr_x:1,2c;"
-"esc_html_x:1,2c;comments_number_link:2,3;t:1;st:1;trans:1;transChoice:1,2\n"
+"X-Poedit-KeywordsList: "
+"_:1;gettext:1;dgettext:2;ngettext:1,2;dngettext:2,3;__:1;_e:1;_c:1;_n:1,2;_n_noop:1,2;_nc:1,2;__ngettext:1,2;__ngettext_noop:1,2;_x:1,2c;_ex:1,2c;_nx:1,2,4c;_nx_noop:1,2,3c;_n_js:1,2;_nx_js:1,2,3c;esc_attr__:1;esc_html__:1;esc_attr_e:1;esc_html_e:1;esc_attr_x:1,2c;esc_html_x:1,2c;comments_number_link:2,3;t:1;st:1;trans:1;transChoice:1,2\n"
 "X-Poedit-Basepath: ..\n"
 "X-Loco-Target-Locale: ca\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -392,8 +389,8 @@ msgid ""
 msgstr ""
 "Heu d'<strong>actualitzar els tipus de contingut H5P!</strong> Els tipus de "
 "contingut antics seguiran funcionant, però l'aparença de l'eina d'autor ha "
-"millorat molt en la nova versió. Aquí teniu més informació sobre l'<a href="
-"\"%s\" target=\"_blank\">actualització dels tipus de contingut</a>."
+"millorat molt en la nova versió. Aquí teniu més informació sobre l'<a "
+"href=\"%s\" target=\"_blank\">actualització dels tipus de contingut</a>."
 
 #: admin/class-h5p-plugin-admin.php:325
 msgid ""
@@ -412,15 +409,15 @@ msgstr ""
 
 #: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
 msgid ""
-"If you need any help you can always file a <a href=\"%s\" target=\"_blank"
-"\">Support Request</a>, check out our <a href=\"%s\" target=\"_blank"
-"\">Forum</a> or join the conversation in the <a href=\"%s\" target=\"_blank"
-"\">H5P Community Chat</a>."
+"If you need any help you can always file a <a href=\"%s\" "
+"target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
+"target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" "
+"target=\"_blank\">H5P Community Chat</a>."
 msgstr ""
-"Si necessiteu ajuda podeu omplir una <a href=\"%s\" target=\"_blank"
-"\">sol·licitud de suport</a>, consultar el nostre <a href=\"%s\" target="
-"\"_blank\">fòrum</a> o participar al <a href=\"%s\" target=\"_blank\">xat de "
-"la comunitat H5P</a> (preferiblement en anglès)."
+"Si necessiteu ajuda podeu omplir una <a href=\"%s\" "
+"target=\"_blank\">sol·licitud de suport</a>, consultar el nostre <a "
+"href=\"%s\" target=\"_blank\">fòrum</a> o participar al <a href=\"%s\" "
+"target=\"_blank\">xat de la comunitat H5P</a> (preferiblement en anglès)."
 
 #: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
 msgid "H5P Content"
@@ -931,8 +928,8 @@ msgstr "Referencia el contingut  mitjançant un identificador numèric"
 #: admin/views/settings.php:163
 msgid "Reference content by <a href=\"%s\" target=\"_blank\">slug</a>"
 msgstr ""
-"Referencia el contingut mitjançant una <a href=\"%s\" target=\"_blank"
-"\">expressió resumida</a>"
+"Referencia el contingut mitjançant una <a href=\"%s\" "
+"target=\"_blank\">expressió resumida</a>"
 
 #: admin/views/settings.php:169
 msgid "Content Types"
@@ -984,13 +981,13 @@ msgstr "Notifica les estadístiques d'ús de manera automàtica"
 msgid ""
 "Usage statistics numbers will automatically be reported to help the "
 "developers better understand how H5P is used and to determine potential "
-"areas of improvement. Read more about which <a href=\"%s\" target=\"_blank"
-"\">data is collected on h5p.org</a>."
+"areas of improvement. Read more about which <a href=\"%s\" "
+"target=\"_blank\">data is collected on h5p.org</a>."
 msgstr ""
 "Les estadístiques d'ús es notificaran de manera automàtica per ajudar els "
 "desenvolupadors a entendre millor com s'està utilitzant l'H5P i determinar "
-"les possibles àrees de millora. Llegiu més sobre <a href=\"%s\" target="
-"\"_blank\">com recull les dades h5p.org</a>."
+"les possibles àrees de millora. Llegiu més sobre <a href=\"%s\" "
+"target=\"_blank\">com recull les dades h5p.org</a>."
 
 #: admin/views/show-content.php:30
 msgid "Shortcode"
@@ -1070,6 +1067,34 @@ msgstr "H5P"
 msgid "http://h5p.org/wordpress"
 msgstr "http://h5p.org/wordpress"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "Xarxa H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "Biblioteques H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "Gestió H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "No teniu autorització per gestionar els tipus de contingut H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Gestiona el tipus de contingut"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Permís denegat."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "S'han migrat les biblioteques al nivell de xarxa."
+
 #. Description of the plugin/theme
 msgid ""
 "Allows you to upload, create, share and use rich interactive content on your "
@@ -1085,6 +1110,106 @@ msgstr "Joubel"
 #. Author URI of the plugin/theme
 msgid "http://joubel.com"
 msgstr "http://joubel.com"
+
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr "Confirmació de l'acció"
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr "Anul·la"
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr "Confirma"
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
+msgstr "Segur que voleu habilitar el Hub?"
 
 #~ msgid "Error, could not library semantics!"
 #~ msgstr "Error de semàntica en la biblioteca!"
@@ -1102,8 +1227,8 @@ msgstr "http://joubel.com"
 #~ "H5P fetches content types directly from the H5P Hub. In order to do this, "
 #~ "the H5P plugin will communicate with the Hub once a day to fetch "
 #~ "information about new and updated content types. It will send in "
-#~ "anonymous data to the Hub about H5P usage. Read more at <a href=\"%s"
-#~ "\">the plugin communication page at H5P.org</a>."
+#~ "anonymous data to the Hub about H5P usage. Read more at <a "
+#~ "href=\"%s\">the plugin communication page at H5P.org</a>."
 #~ msgstr ""
 #~ "L'H5P agafa els tipus de contingut directament del servei \"H5P Hub\". El "
 #~ "complement H5P es comunica un cop al dia amb H5P.org per obtenir "
@@ -1111,18 +1236,6 @@ msgstr "http://joubel.com"
 #~ "Això fa que s'enviïn dades anònimes sobre l'ús de l'H5P. Per a més "
 #~ "informació vegeu <a href=\"%s\">la pàgina de comunicacions del complement "
 #~ "a H5P.org</a>."
-
-#~ msgid "Confirmation action"
-#~ msgstr "Confirmació de l'acció"
-
-#~ msgid "Do you still want to enable the hub ?"
-#~ msgstr "Segur que voleu habilitar el Hub?"
-
-#~ msgid "Cancel"
-#~ msgstr "Anul·la"
-
-#~ msgid "Confirm"
-#~ msgstr "Confirma"
 
 #~ msgid "Enter title here"
 #~ msgstr "Escriviu aquí el títol"
@@ -1199,8 +1312,8 @@ msgstr "http://joubel.com"
 #~ msgstr "La vostra versió de PHP no suporta ZipArchive."
 
 #~ msgid ""
-#~ "The file you uploaded is not a valid HTML5 Package (It does not have the ."
-#~ "h5p file extension)"
+#~ "The file you uploaded is not a valid HTML5 Package (It does not have "
+#~ "the .h5p file extension)"
 #~ msgstr ""
 #~ "El fitxer que heu pujat no és un paquet HTML5 vàlid (té un nom sense "
 #~ "l'extensió .h5p)"
@@ -1225,14 +1338,14 @@ msgstr "http://joubel.com"
 #~ msgstr "No s'ha pogut trobar o analitzar el fitxer \"content.json\""
 
 #~ msgid ""
-#~ "Library directory name must match machineName or machineName-majorVersion."
-#~ "minorVersion (from library.json). (Directory: %directoryName , "
-#~ "machineName: %machineName, majorVersion: %majorVersion, minorVersion: "
-#~ "%minorVersion)"
+#~ "Library directory name must match machineName or machineName-"
+#~ "majorVersion.minorVersion (from library.json). (Directory: "
+#~ "%directoryName , machineName: %machineName, majorVersion: %majorVersion, "
+#~ "minorVersion: %minorVersion)"
 #~ msgstr ""
 #~ "El nom del directori de la biblioteca ha de tenir un format de tipus "
-#~ "\"machineName\" o bé \"machineName-majorVersion.minorVersion\" (a library."
-#~ "json). (Directori: %directoryName , machineName: %machineName, "
+#~ "\"machineName\" o bé \"machineName-majorVersion.minorVersion\" (a "
+#~ "library.json). (Directori: %directoryName , machineName: %machineName, "
 #~ "majorVersion: %majorVersion, minorVersion: %minorVersion)"
 
 #~ msgid "A valid content folder is missing"
@@ -1272,8 +1385,8 @@ msgstr "http://joubel.com"
 #~ msgid ""
 #~ "Invalid language file %languageFile has been included in the library %name"
 #~ msgstr ""
-#~ "La biblioteca \"%name\" conté un fitxer d'idioma anomenat \"%languageFile"
-#~ "\" que no és vàlid"
+#~ "La biblioteca \"%name\" conté un fitxer d'idioma anomenat "
+#~ "\"%languageFile\" que no és vàlid"
 
 #~ msgid "The file \"%file\" is missing from library: \"%name\""
 #~ msgstr "Falta el fitxer \"%file\" a la biblioteca: \"%name\""
@@ -1742,11 +1855,11 @@ msgstr "http://joubel.com"
 
 #~ msgid ""
 #~ "Unfortunately, we were unable to update your installed content types. You "
-#~ "must manually download the update from <a href=\"%s\" target=\"_blank"
-#~ "\">H5P.org</a>, and then upload it through the <em>Upload Libraries</em> "
-#~ "section. If you need futher assistance, please file a <a href=\"%s\" "
-#~ "target=\"_blank\">support request</a> or check out our <a href=\"%s\" "
-#~ "target=\"_blank\">forum</a>."
+#~ "must manually download the update from <a href=\"%s\" "
+#~ "target=\"_blank\">H5P.org</a>, and then upload it through the <em>Upload "
+#~ "Libraries</em> section. If you need futher assistance, please file a <a "
+#~ "href=\"%s\" target=\"_blank\">support request</a> or check out our <a "
+#~ "href=\"%s\" target=\"_blank\">forum</a>."
 #~ msgstr ""
 #~ "Malauradament no ha estat possible actualitzar els tipus de contingut que "
 #~ "teniu instal·lats. Haureu de descarregar manualment les actualitzacions "
