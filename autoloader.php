@@ -40,6 +40,9 @@ function h5p_autoloader($class) {
 
       // Admin
       'H5P_Plugin_Admin' => 'admin/class-h5p-plugin-admin.php',
+      'H5P_Network_Admin_Base' => 'admin/h5p-network-admin/h5p-network-admin-base.php',
+      'H5P_Network_Migrate_To_Network' => 'admin/h5p-network-admin/h5p-network-migrate-to-network.php',
+      'H5P_Network_Migrate_To_Local' => 'admin/h5p-network-admin/h5p-network-migrate-to-local.php',
       'H5PContentAdmin' => 'admin/class-h5p-content-admin.php',
       'H5PContentQuery' => 'admin/class-h5p-content-query.php',
       'H5PLibraryAdmin' => 'admin/class-h5p-library-admin.php',
