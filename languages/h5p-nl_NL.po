@@ -14,9 +14,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.14.1\n"
-"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noo"
-"p:1,2;_c;_nc:4c,1,2;_x:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;esc_attr__;es"
-"c_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;t\n"
+"X-Poedit-KeywordsList: "
+"__;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c;_nc:4c,1,2;_x:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;t\n"
 "X-Poedit-Basepath: ..\n"
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: *.js\n"
@@ -410,15 +409,15 @@ msgstr ""
 
 #: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
 msgid ""
-"If you need any help you can always file a <a href=\"%s\" target=\"_blank"
-"\">Support Request</a>, check out our <a href=\"%s\" target=\"_blank"
-"\">Forum</a> or join the conversation in the <a href=\"%s\" target=\"_blank"
-"\">H5P Community Chat</a>."
+"If you need any help you can always file a <a href=\"%s\" "
+"target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
+"target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" "
+"target=\"_blank\">H5P Community Chat</a>."
 msgstr ""
-"Als je hulp nodig hebt, dan kun je altijd een <a href=\"%s\" target=\"_blank"
-"\"> sturen naar de Helpdesk</a>, check ons <a href=\"%s\" target=\"_blank\""
-">forum</a> of neem deel aan het gesprek in de <a href=\"%s\" target=\"_blank"
-"\">H5P Community Chat</a>."
+"Als je hulp nodig hebt, dan kun je altijd een <a href=\"%s\" "
+"target=\"_blank\"> sturen naar de Helpdesk</a>, check ons <a href=\"%s\" "
+"target=\"_blank\">forum</a> of neem deel aan het gesprek in de <a "
+"href=\"%s\" target=\"_blank\">H5P Community Chat</a>."
 
 #: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
 msgid "H5P Content"
@@ -832,8 +831,8 @@ msgid ""
 "allow users to download the content as an .h5p file"
 msgstr ""
 "Indien aangevinkt zal voor deze inhoud altijd een knop voor hergebruik "
-"worden weergegeven, waarmee gebruikers de inhoud kunnen downloaden als een ."
-"h5p-bestand"
+"worden weergegeven, waarmee gebruikers de inhoud kunnen downloaden als "
+"een .h5p-bestand"
 
 #: admin/views/new-content.php:76
 msgid "Allow users to download the content"
@@ -1020,13 +1019,13 @@ msgstr "Draag automatisch bij aan gebruiksstatistieken"
 msgid ""
 "Usage statistics numbers will automatically be reported to help the "
 "developers better understand how H5P is used and to determine potential "
-"areas of improvement. Read more about which <a href=\"%s\" target=\"_blank"
-"\">data is collected on h5p.org</a>."
+"areas of improvement. Read more about which <a href=\"%s\" "
+"target=\"_blank\">data is collected on h5p.org</a>."
 msgstr ""
 "Gebruiksstatistieken worden automatisch gerapporteerd om de ontwikkelaars te "
 "helpen beter te begrijpen hoe H5P wordt gebruikt en om mogelijke "
-"verbeterpunten te bepalen. Lees meer over welke<a href=\"%s\" target=\"_blank"
-"\">gegevens worden verzameld op hh5p.org</a>."
+"verbeterpunten te bepalen. Lees meer over welke<a href=\"%s\" "
+"target=\"_blank\">gegevens worden verzameld op hh5p.org</a>."
 
 #: admin/views/show-content.php:30
 msgid "Shortcode"
@@ -1118,22 +1117,6 @@ msgstr "H5P"
 msgid "http://h5p.org/wordpress"
 msgstr "http://h5p.org/wordpress"
 
-#. Description of the plugin/theme
-msgid ""
-"Allows you to upload, create, share and use rich interactive content on your "
-"WordPress site."
-msgstr ""
-"Hiermee kun je op je WordPress website rijke interactive inhoud uploaden, "
-"maken en delen."
-
-#. Author of the plugin/theme
-msgid "Joubel"
-msgstr "H5P Groep AS"
-
-#. Author URI of the plugin/theme
-msgid "http://joubel.com"
-msgstr "https://h5p.group/"
-
 #: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
 msgid "H5P Network"
 msgstr "H5P-netwerk"
@@ -1162,6 +1145,122 @@ msgstr "Geen toestemming."
 msgid "Migrated libraries to network level."
 msgstr "Bibliotheken gemigreerd naar netwerkniveau."
 
+#. Description of the plugin/theme
+msgid ""
+"Allows you to upload, create, share and use rich interactive content on your "
+"WordPress site."
+msgstr ""
+"Hiermee kun je op je WordPress website rijke interactive inhoud uploaden, "
+"maken en delen."
+
+#. Author of the plugin/theme
+msgid "Joubel"
+msgstr "H5P Groep AS"
+
+#. Author URI of the plugin/theme
+msgid "http://joubel.com"
+msgstr "https://h5p.group/"
+
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr ""
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr "Annuleer"
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr "Bevestig"
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
+msgstr ""
+
 #~ msgid "Insert H5P Content"
 #~ msgstr "Voeg H5P inhoud toe"
 
@@ -1176,18 +1275,18 @@ msgstr "Bibliotheken gemigreerd naar netwerkniveau."
 #, php-format
 #~ msgid ""
 #~ "Unfortunately, we were unable to update your installed content types. You "
-#~ "must manually download the update from <a href=\"%s\" target=\"_blank"
-#~ "\">H5P.org</a>, and then upload it through the <em>Upload Libraries</em> "
-#~ "section. If you need futher assistance, please file a <a href=\"%s\" "
-#~ "target=\"_blank\">support request</a> or check out our <a href=\"%s\" "
-#~ "target=\"_blank\">forum</a>."
+#~ "must manually download the update from <a href=\"%s\" "
+#~ "target=\"_blank\">H5P.org</a>, and then upload it through the <em>Upload "
+#~ "Libraries</em> section. If you need futher assistance, please file a <a "
+#~ "href=\"%s\" target=\"_blank\">support request</a> or check out our <a "
+#~ "href=\"%s\" target=\"_blank\">forum</a>."
 #~ msgstr ""
 #~ "Helaas, we zijn niet in staat de geïnstalleeerde inhoud bij te werken. Je "
-#~ "moet de update handmatig downloaden van <a href=\"%s\" target=\"_blank"
-#~ "\">H5P.org</a>, and deze dan bijwerken via de <em>Bijwerken biliotheken</"
-#~ "em> sectie.  Als je meer hulp nodig hebt, stuur dan een bestand naar <a "
-#~ "href=\"%s\" target=\"_blank\">support aanvraag</a> of bekijk het <a href="
-#~ "\"%s\" target=\"_blank\">forum</a>."
+#~ "moet de update handmatig downloaden van <a href=\"%s\" "
+#~ "target=\"_blank\">H5P.org</a>, and deze dan bijwerken via de "
+#~ "<em>Bijwerken biliotheken</em> sectie.  Als je meer hulp nodig hebt, "
+#~ "stuur dan een bestand naar <a href=\"%s\" target=\"_blank\">support "
+#~ "aanvraag</a> of bekijk het <a href=\"%s\" target=\"_blank\">forum</a>."
 
 #~ msgid "Error, could not library semantics!"
 #~ msgstr "Fout, de semantiek is niet te archiveren"
@@ -1360,8 +1459,8 @@ msgstr "Bibliotheken gemigreerd naar netwerkniveau."
 #~ msgstr "Jouw PHP versie ondersteunt geen Ziparchief."
 
 #~ msgid ""
-#~ "The file you uploaded is not a valid HTML5 Package (It does not have the ."
-#~ "h5p file extension)"
+#~ "The file you uploaded is not a valid HTML5 Package (It does not have "
+#~ "the .h5p file extension)"
 #~ msgstr ""
 #~ "Het door jou geüploade bestand geen geldig HTML5 pakket (het bestand "
 #~ "heeft geen .h5p extensie)"
@@ -1386,10 +1485,10 @@ msgstr "Bibliotheken gemigreerd naar netwerkniveau."
 #~ msgstr "Wij konden het inhoud.json bestand niet vinden noch coderen"
 
 #~ msgid ""
-#~ "Library directory name must match machineName or machineName-majorVersion."
-#~ "minorVersion (from library.json). (Directory: %directoryName , "
-#~ "machineName: %machineName, majorVersion: %majorVersion, minorVersion: "
-#~ "%minorVersion)"
+#~ "Library directory name must match machineName or machineName-"
+#~ "majorVersion.minorVersion (from library.json). (Directory: "
+#~ "%directoryName , machineName: %machineName, majorVersion: %majorVersion, "
+#~ "minorVersion: %minorVersion)"
 #~ msgstr ""
 #~ "De naam van het bibliotheekhoofdstuk moet overeenkomen met de machineName "
 #~ "of machineName-majorVersion.minorVersion (van bibliotheek.json) . (Map: "
@@ -1639,12 +1738,6 @@ msgstr "Bibliotheken gemigreerd naar netwerkniveau."
 #~ msgid ""
 #~ "Please confirm that you wish to proceed. This action is not reversible."
 #~ msgstr "Bevestig dat je door wilt gaan. Deze actie is onomkeerbaar."
-
-#~ msgid "Cancel"
-#~ msgstr "Annuleer"
-
-#~ msgid "Confirm"
-#~ msgstr "Bevestig"
 
 #~ msgid "Invalid json in semantics for %library"
 #~ msgstr "Ongeldige json in semantiek voor %library"

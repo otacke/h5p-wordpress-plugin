@@ -12,10 +12,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 1.8.6\n"
-"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;"
-"_n_noop:1,2;_c;_nc:4c,1,2;_x:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;"
-"esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;"
-"t\n"
+"X-Poedit-KeywordsList: "
+"__;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c;_nc:4c,1,2;_x:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_ex:1,2c;esc_attr__;esc_attr_e;esc_attr_x:1,2c;esc_html__;esc_html_e;esc_html_x:1,2c;t\n"
 "X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -389,10 +387,10 @@ msgstr ""
 
 #: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
 msgid ""
-"If you need any help you can always file a <a href=\"%s\" target=\"_blank"
-"\">Support Request</a>, check out our <a href=\"%s\" target=\"_blank"
-"\">Forum</a> or join the conversation in the <a href=\"%s\" target=\"_blank"
-"\">H5P Community Chat</a>."
+"If you need any help you can always file a <a href=\"%s\" "
+"target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
+"target=\"_blank\">Forum</a> or join the conversation in the <a href=\"%s\" "
+"target=\"_blank\">H5P Community Chat</a>."
 msgstr ""
 
 #: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
@@ -924,8 +922,8 @@ msgstr ""
 msgid ""
 "Usage statistics numbers will automatically be reported to help the "
 "developers better understand how H5P is used and to determine potential "
-"areas of improvement. Read more about which <a href=\"%s\" target=\"_blank"
-"\">data is collected on h5p.org</a>."
+"areas of improvement. Read more about which <a href=\"%s\" "
+"target=\"_blank\">data is collected on h5p.org</a>."
 msgstr ""
 
 #: admin/views/show-content.php:30
@@ -1004,21 +1002,6 @@ msgstr ""
 msgid "http://h5p.org/wordpress"
 msgstr ""
 
-#. Description of the plugin/theme
-msgid ""
-"Allows you to upload, create, share and use rich interactive content on your "
-"WordPress site."
-msgstr ""
-"允许您上传、 创建、 共享和使用你的 WordPress 站点上的丰富的交互式内容。"
-
-#. Author of the plugin/theme
-msgid "Joubel"
-msgstr ""
-
-#. Author URI of the plugin/theme
-msgid "http://joubel.com"
-msgstr ""
-
 #: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
 msgid "H5P Network"
 msgstr "H5P 网络"
@@ -1046,6 +1029,121 @@ msgstr "无权限。"
 #: admin/class-h5p-network-admin.php:176
 msgid "Migrated libraries to network level."
 msgstr "已将库迁移至网络级别。"
+
+#. Description of the plugin/theme
+msgid ""
+"Allows you to upload, create, share and use rich interactive content on your "
+"WordPress site."
+msgstr ""
+"允许您上传、 创建、 共享和使用你的 WordPress 站点上的丰富的交互式内容。"
+
+#. Author of the plugin/theme
+msgid "Joubel"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://joubel.com"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr ""
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr ""
+
+#: admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr ""
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:29
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:51
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:57
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:58
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:68
+msgid "Enable"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
+msgstr ""
 
 #~ msgid "Unable to create directory."
 #~ msgstr "无法创建目录。"
@@ -1095,8 +1193,8 @@ msgstr "已将库迁移至网络级别。"
 
 #, php-format
 #~ msgid ""
-#~ "Select and download the desired content types from <a href=\"%s\" target="
-#~ "\"_blank\">H5P.org</a>."
+#~ "Select and download the desired content types from <a href=\"%s\" "
+#~ "target=\"_blank\">H5P.org</a>."
 #~ msgstr ""
 #~ "选择并从<a href=“%s” target=“_blank”>H5P.org</a>下载所需的内容类型。"
 
@@ -1117,9 +1215,9 @@ msgstr "已将库迁移至网络级别。"
 
 #, php-format
 #~ msgid ""
-#~ "If you need help getting started you can file a <a href=\"%s\" target="
-#~ "\"_blank\">support request</a>, check out our <a href=\"%s\" target="
-#~ "\"_blank\">forum</a> or join our IRC channel #H5P on Freenode."
+#~ "If you need help getting started you can file a <a href=\"%s\" "
+#~ "target=\"_blank\">support request</a>, check out our <a href=\"%s\" "
+#~ "target=\"_blank\">forum</a> or join our IRC channel #H5P on Freenode."
 #~ msgstr ""
 #~ "如果您需要获得帮助以开始你可以文件<a href=“%s” target=“_blank”>请求帮助</"
 #~ "a>、 查阅我们的<a href=“%s” target=“_blank”>论坛</a>或加入我们的 IRC 频道 "
@@ -1205,8 +1303,8 @@ msgstr "已将库迁移至网络级别。"
 #~ msgstr "无法写入临时目录。"
 
 #~ msgid ""
-#~ "The file you uploaded is not a valid HTML5 Package (It does not have the ."
-#~ "h5p file extension)"
+#~ "The file you uploaded is not a valid HTML5 Package (It does not have "
+#~ "the .h5p file extension)"
 #~ msgstr "你上传的文件不是有效的 HTML5 程序包 (扩展名不是.h5p)"
 
 #~ msgid ""
@@ -1227,10 +1325,10 @@ msgstr "已将库迁移至网络级别。"
 #~ msgstr "未能找到或解析 content.json 文件"
 
 #~ msgid ""
-#~ "Library directory name must match machineName or machineName-majorVersion."
-#~ "minorVersion (from library.json). (Directory: %directoryName , "
-#~ "machineName: %machineName, majorVersion: %majorVersion, minorVersion: "
-#~ "%minorVersion)"
+#~ "Library directory name must match machineName or machineName-"
+#~ "majorVersion.minorVersion (from library.json). (Directory: "
+#~ "%directoryName , machineName: %machineName, majorVersion: %majorVersion, "
+#~ "minorVersion: %minorVersion)"
 #~ msgstr ""
 #~ "库目录名称必须匹配机器名或计算机名版本号 majorVersion.minorVersion (从 "
 #~ "library.json)。(目录: %directoryname、 机器名: %machinename，"
