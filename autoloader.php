@@ -9,6 +9,9 @@ function h5p_autoloader($class) {
   static $classmap;
   if (!isset($classmap)) {
     $classmap = array(
+      // Plugin
+      'H5PCommons' => 'h5p-common.php',
+
       // Core
       'H5PCore' => 'h5p-php-library/h5p.classes.php',
       'H5PFrameworkInterface' => 'h5p-php-library/h5p.classes.php',
