@@ -899,6 +899,27 @@ class H5P_Plugin {
   }
 
   /**
+   * Get the file storage for H5P core to use.
+   *
+   * In network mode libraries and cached assets are shared by all blogs, which
+   * needs a storage with two roots. Otherwise the plain h5p folder will do, and
+   * H5PCore builds the default storage from it itself.
+   *
+   * @since 1.19.0
+   * @return string|\H5PFileStorage
+   */
+  public function get_h5p_storage() {
+    if (!H5PCommons::is_network_enabled()) {
+      return $this->get_h5p_path();
+    }
+
+    return new H5P_Network_File_Storage(
+      $this->get_h5p_path(),
+      H5PCommons::get_h5p_network_path()
+    );
+  }
+
+  /**
    * Get the URL for the H5P files folder.
    *
    * @since 1.0.0
@@ -966,7 +987,7 @@ class H5P_Plugin {
     if (empty(self::$interface[$id])) {
       self::$interface[$id] = new H5PWordPress();
       $language = $this->get_language();
-      self::$core[$id] = new H5PCore(self::$interface[$id], $this->get_h5p_path(), $this->get_h5p_url(), $language, get_option('h5p_export', TRUE));
+      self::$core[$id] = new H5PCore(self::$interface[$id], $this->get_h5p_storage(), $this->get_h5p_url(), $language, get_option('h5p_export', TRUE));
       self::$core[$id]->aggregateAssets = !(defined('H5P_DISABLE_AGGREGATION') && H5P_DISABLE_AGGREGATION === true);
     }
 
@@ -1225,6 +1246,8 @@ class H5P_Plugin {
    * @param string $embed type
    */
   public function alter_assets(&$files, &$dependencies, $embed) {
+    $this->network_asset_paths($files);
+
     if (!has_action('h5p_alter_library_scripts') && !has_action('h5p_alter_library_styles')) {
       return;
     }
@@ -1261,6 +1284,39 @@ class H5P_Plugin {
      * @param string $embed_type Possible values are: div, iframe, external, editor.
      */
     do_action_ref_array('h5p_alter_library_styles', array(&$files['styles'], $libraries, $embed));
+  }
+
+  /**
+   * Point library and cached asset paths at the network level folder.
+   *
+   * H5P core builds these paths relative to the storage root, which for
+   * libraries and cached assets is the shared network folder rather than this
+   * blog's h5p folder. Rewriting them to absolute URLs is what makes the three
+   * consumers leave them alone: H5PCore::getAssetsUrls(),
+   * H5peditor::getLibraryData() and self::enqueue_assets() all pass a path
+   * through unchanged once it carries a scheme.
+   *
+   * @since 1.19.0
+   * @param array $files scripts & styles
+   */
+  private function network_asset_paths(&$files) {
+    if (!H5PCommons::is_network_enabled()) {
+      return;
+    }
+
+    $network_url = H5PCommons::get_h5p_network_url();
+
+    foreach (array('scripts', 'styles') as $type) {
+      if (empty($files[$type])) {
+        continue;
+      }
+
+      foreach ($files[$type] as $asset) {
+        if (preg_match('#^/(libraries|cachedassets)/#', $asset->path) === 1) {
+          $asset->path = $network_url . $asset->path;
+        }
+      }
+    }
   }
 
   /**
@@ -1355,6 +1411,12 @@ class H5P_Plugin {
       'pluginCacheBuster' => '?v=' . self::VERSION,
       'libraryUrl' => plugins_url('h5p/h5p-php-library/js')
     );
+
+    // Core JS builds library URLs as url + '/libraries/', which in network mode
+    // is not where the libraries are. H5P.getLibraryPath() honours this override.
+    if (H5PCommons::is_network_enabled()) {
+      $settings['urlLibraries'] = H5PCommons::get_h5p_network_url() . '/libraries';
+    }
 
     if ($current_user->ID) {
       $settings['user'] = array(
