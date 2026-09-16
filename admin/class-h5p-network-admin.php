@@ -141,20 +141,43 @@ class H5P_Network_Admin {
       $migrate->migrateToNetwork();
     }
     catch (Exception $exception) {
-      // TODO: It will depend on where we exited!!!
-      //$demigrate = new H5P_Network_Migrate_To_Local();
-      //$demigrate->migrateToLocal();
+      $rolled_back = false;
 
-      set_transient(
-        'h5p_network_migration_error',
-        $exception->getMessage(),
-        HOUR_IN_SECONDS
+      // Only steps 1 and 2 can be undone. They just add the network libraries
+      // directory and the network tables, so discarding both restores the
+      // pre-migration state. Note that migrateToLocal() must NOT be used here:
+      // it would copy the half-migrated network state back into every blog.
+      if ($migrate->isRollbackPossible()) {
+        try {
+          $demigrate = new H5P_Network_Migrate_To_Local();
+          $demigrate->deleteNetworkFilesDirectory();
+          $demigrate->dropNetworkTables();
+          $rolled_back = true;
+        }
+        catch (Exception $rollback_exception) {
+          error_log('H5P network migration rollback: ' . $rollback_exception->getMessage());
+        }
+      }
+
+      error_log(
+        sprintf(
+          'H5P network migration failed in step %s: %s',
+          $migrate->getFailedStep(),
+          $exception->getMessage()
+        )
       );
 
       wp_send_json_error(
-        array('message' => $exception->getMessage()),
+        array(
+          'message'    => $exception->getMessage(),
+          'step'       => $migrate->getFailedStep(),
+          'rolledBack' => $rolled_back,
+        ),
         H5PCommons::HTTP_OK
       );
+
+      // wp_send_json_error() exits, but never enable network mode on failure
+      // should that ever not hold.
       return;
     }
 

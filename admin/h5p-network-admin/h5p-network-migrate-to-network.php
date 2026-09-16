@@ -10,15 +10,57 @@
 class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
   /**
+   * Step that was being run when the migration failed, null if no step failed.
+   *
+   * Steps 1 and 2 only add network-level files and tables, so they can be
+   * rolled back. Steps 3 and 4 delete blog-level data and cannot.
+   *
+   * @var int|null
+   */
+  protected $failed_step = null;
+
+  /**
    * Migrate all libraries (files and database) to network level.
    *
    * @throws Exception If something fails.
    */
   public function migrateToNetwork() {
+    $this->failed_step = 1;
     $network_libraries_installed = $this->migrateLibrariesToNetwork();
+
+    $this->failed_step = 2;
     $network_libraries_installed = $this->migrateDatabaseTablesToNetwork($network_libraries_installed);
+
+    $this->failed_step = 3;
     $this->updateBlogsDatabase($network_libraries_installed);
+
+    $this->failed_step = 4;
     $this->clearBlogsLibrariesAndCachedassets();
+
+    $this->failed_step = null;
+  }
+
+  /**
+   * Get the step that was being run when the migration failed.
+   *
+   * @return int|null Step number 1-4, or null if no step failed.
+   */
+  public function getFailedStep() {
+    return $this->failed_step;
+  }
+
+  /**
+   * Whether the failed step can be rolled back.
+   *
+   * Only steps 1 and 2 are non-destructive: they add the network libraries
+   * directory and the network database tables without touching blog-level
+   * data, so discarding both restores the pre-migration state. Step 3 drops
+   * the blog tables and step 4 deletes the blog library files.
+   *
+   * @return bool True if a rollback of the failed step is safe.
+   */
+  public function isRollbackPossible() {
+    return $this->failed_step !== null && $this->failed_step <= 2;
   }
 
   /**
@@ -239,7 +281,9 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       );
     }
 
-    H5PCommons::for_each_blog(function ($blog_id) use ($network_libraries_installed) {
+    $skipped = array();
+
+    H5PCommons::for_each_blog(function ($blog_id) use ($network_libraries_installed, &$skipped) {
       // Filter for libraries installed from blog
       $blog_libraries = array();
       foreach ($network_libraries_installed as $versioned_machine_name => $info) {
@@ -252,12 +296,22 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         $network_library_id = $this->insertBlogLibraryToNetwork($info['machine_name'], $info['version']);
 
         if (!$network_library_id) {
+          // No matching row in this blog's libraries table; legitimate, but
+          // worth recording so a missing library can be traced afterwards.
+          $skipped[] = "{$versioned_machine_name} (blog {$blog_id})";
           continue;
         }
 
         $this->insertBlogLibraryToNetworkLanguages($info['machine_name'], $info['version'], $network_library_id);
       }
     });
+
+    if (!empty($skipped)) {
+      error_log(
+        'H5P network migration: no database entry found for ' . count($skipped)
+        . ' library/libraries, skipped: ' . implode(', ', $skipped)
+      );
+    }
 
     $this->copyLibraryDependenciesToNetwork();
 
@@ -302,6 +356,8 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
   /**
    * Copy dependency entries (h5p_libraries_libraries) from each blog to the network-level table.
+   *
+   * @throws Exception If a dependency entry cannot be inserted.
    */
   protected function copyLibraryDependenciesToNetwork() {
     $network_table_libraries_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries_libraries');
@@ -339,7 +395,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
           continue;
         }
 
-        $wpdb->insert(
+        $result = $wpdb->insert(
           $network_table_libraries_libraries,
           array(
             'library_id'          => $new_library_id,
@@ -347,6 +403,18 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
             'dependency_type'     => $dependency->dependency_type,
           )
         );
+
+        if ($result === false) {
+          throw new Exception(
+            sprintf(
+              /* translators: 1: library id, 2: required library id, 3: network table name */
+              __('Failed to insert dependency of library %1$d on library %2$d into "%3$s".', 'h5p'),
+              $new_library_id,
+              $new_required_id,
+              $network_table_libraries_libraries
+            )
+          );
+        }
       }
     });
   }
@@ -537,6 +605,8 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    * @param string $machine_name       Machine name of library.
    * @param string $version            Semantic version major.minor.patch
    * @param int    $network_library_id Network library ID.
+   *
+   * @throws Exception If a translation cannot be inserted.
    */
   protected function insertBlogLibraryToNetworkLanguages($machine_name, $version, $network_library_id) {
     global $wpdb;
@@ -550,7 +620,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         $machine_name,
         (int) $version_splits[0],
         (int) $version_splits[1],
-        (int) $version_splits[2],
+        (int) $version_splits[2]
       )
     );
 
@@ -565,15 +635,29 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         $blog_library->id
       )
     );
+    $network_table_libraries_languages = H5PCommons::build_full_db_table_name_multisite('h5p_libraries_languages');
+
     foreach ($languages as $language) {
-      $wpdb->insert(
-        H5PCommons::build_full_db_table_name_multisite('h5p_libraries_languages'),
+      $result = $wpdb->insert(
+        $network_table_libraries_languages,
         array(
           'library_id'    => $network_library_id,
           'language_code' => $language->language_code,
           'translation'   => $language->translation,
         )
       );
+
+      if ($result === false) {
+        throw new Exception(
+          sprintf(
+            /* translators: 1: language code, 2: machine name, 3: network table name */
+            __('Failed to insert translation "%1$s" for library "%2$s" into "%3$s".', 'h5p'),
+            $language->language_code,
+            $machine_name,
+            $network_table_libraries_languages
+          )
+        );
+      }
     }
   }
 }

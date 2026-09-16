@@ -16,10 +16,14 @@
 
     $networkSettingsProperties = array(
       'networkToggleConfirmationDialogHeader' => $core->h5pF->t('Confirmation action'),
-      'networkToggleConfirmationDialogMessageEnable' => $core->h5pF->t('This will migrate all local libraries (files + database) to the network level and revoke h5p library handling capabilities from blog admins. Do you want to enable the network settings?'),
-      'networkToggleConfirmationDialogMessageDisable' => $core->h5pF->t('This will migrate all network libraries (files + database) back to the local level and grant h5p library handling capabilities to blog admins. Do you want to disable the network settings?'),
+      'networkToggleConfirmationDialogMessageEnable' => $core->h5pF->t('This will migrate all local libraries (files + database) to the network level and revoke h5p library handling capabilities from blog admins. DO YOU HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?'),
+      'networkToggleConfirmationDialogMessageDisable' => $core->h5pF->t('This will migrate all network libraries (files + database) back to the local level and grant h5p library handling capabilities to blog admins. DO YOU HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?'),
       'networkToggleConfirmationDialogCancelLabel' => $core->h5pF->t('Cancel'),
       'networkToggleConfirmationDialogConfirmLabel' => $core->h5pF->t('Confirm'),
+      'migrationFailedRolledBack' => $core->h5pF->t('Migration failed and was rolled back. No changes were made.'),
+      'migrationFailedNotRolledBack' => $core->h5pF->t('Migration failed and could not be rolled back automatically. Please restore from a backup.'),
+      'migrationRequestFailed' => $core->h5pF->t('The migration request failed. Please check the server error log.'),
+      'migrationInProgress' => $core->h5pF->t('Migrating...'),
       'nonce' => wp_create_nonce('h5p_network_ajax'),
       'ajaxPath' => admin_url('admin-ajax.php')
     );
