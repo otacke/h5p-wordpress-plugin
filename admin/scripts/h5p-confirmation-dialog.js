@@ -1,28 +1,5 @@
 (() => {
   /**
-   * Create UUID string using Web Crypto API if available.
-   * @returns {string} UUID string.
-   */
-  const createUUID = () => {
-    if (typeof window.crypto?.randomUUID === 'function') {
-      return window.crypto.randomUUID();
-    }
-
-    const UUID_TEMPLATE = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-    const RANDOM_PLACEHOLDER = 'x';
-    const UUID_REPLACE_PATTERN = /[xy]/g;
-    const HEX_RADIX = 16;
-    const VARIANT_MASK = 0x3;
-    const VARIANT_FLAG = 0x8;
-
-    return UUID_TEMPLATE.replace(UUID_REPLACE_PATTERN, (char) => {
-      const random = (Math.random() * HEX_RADIX) | 0;
-      const newChar = char === RANDOM_PLACEHOLDER ? random : (random & VARIANT_MASK) | VARIANT_FLAG;
-      return newChar.toString(HEX_RADIX);
-    });
-  };
-
-  /**
    * Set inner text of HTML element. Will hide the element if no text is set.
    * @param {HTMLElement} element HTML element to set inner text of.
    * @param {string|undefined} text Inner text to set.

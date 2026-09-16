@@ -10,77 +10,65 @@
 class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
   /**
-   * Maximum number of rows per multi-row INSERT.
-   *
-   * Keeps a generated statement well below max_allowed_packet, which defaults
-   * to 1 MB on many servers.
+   * Maximum rows per multi-row INSERT, keeping statements below 1 MB max_allowed_packet.
    */
   const INSERT_CHUNK_SIZE = 500;
 
   /**
-   * Offset of the temporary ID range used while remapping library IDs.
+   * Offset of temporary id range used while remapping library ids.
    *
-   * Must be higher than any real library ID, and the offset plus the highest
-   * new ID must still fit in library_id (INT UNSIGNED, max 4294967295).
+   * Must exceed every real library id, and offset plus highest new id must fit in
+   * library_id (INT UNSIGNED, max 4294967295).
    */
   const REMAP_TEMP_OFFSET = 1000000000;
 
   /**
-   * Seconds of file work to do per request before handing back to the client.
-   *
-   * Copying and deleting library files can take longer than a request may run,
-   * so the work is spread over several requests. The budget is checked between
-   * blogs, never within one, so a blog is always finished once it is started.
+   * Seconds of file work per request. Checked between blogs, so no blog is left half done.
    */
   const BATCH_TIMEOUT = 5;
 
   /**
-   * Number of blogs to ask for per batch.
-   *
-   * Only an upper bound: the time budget usually ends a batch earlier.
+   * Upper bound of blogs per batch; time budget usually ends batches earlier.
    */
   const BATCH_BLOG_LIMIT = 200;
 
   /**
-   * Name of the site option holding the state of a running migration.
+   * Name of site option holding state of running migration.
    */
   const STATE_OPTION = 'h5p_network_migration_state';
 
   /**
-   * Phase copying library files from the blogs to the network. Non-destructive.
+   * Phase copying library files from blogs to network. Non-destructive.
    */
   const PHASE_COPY = 'copy';
 
   /**
-   * Phase moving the database to the network. Destructive from here on.
+   * Phase moving database to network. Destructive from here on.
    */
   const PHASE_DATABASE = 'database';
 
   /**
-   * Phase deleting the library files left on the blogs. Destructive.
+   * Phase deleting library files left on blogs. Destructive.
    */
   const PHASE_CLEAR = 'clear';
 
   /**
-   * Phase marking a finished migration.
+   * Phase marking finished migration.
    */
   const PHASE_DONE = 'done';
 
   /**
-   * Step that was being run when the migration failed, null if no step failed.
+   * Step running when migration failed, null if no step failed.
    *
-   * Steps 1 and 2 only add network-level files and tables, so they can be
-   * rolled back. Steps 3 and 4 delete blog-level data and cannot.
+   * Steps 1 and 2 only add network files and tables, so they roll back. Steps 3 and 4 delete
+   * blog data and cannot.
    *
    * @var int|null
    */
   protected $failed_step = null;
 
   /**
-   * Column names of the network-level libraries table.
-   *
-   * The table is the same for every blog and its columns do not change during a
-   * migration, so the lookup is cached instead of repeated per library.
+   * Column names of network-level libraries table, cached since they never change mid-migration.
    *
    * @var string[]|null
    */
@@ -115,7 +103,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Get the step that was being run when the migration failed.
+   * Get step that was running when migration failed.
    *
    * @return int|null Step number 1-4, or null if no step failed.
    */
@@ -124,21 +112,16 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Whether the failed step can be rolled back.
+   * Whether failed step can be rolled back: only steps 1 and 2 leave blog data untouched.
    *
-   * Only steps 1 and 2 are non-destructive: they add the network libraries
-   * directory and the network database tables without touching blog-level
-   * data, so discarding both restores the pre-migration state. Step 3 drops
-   * the blog tables and step 4 deletes the blog library files.
-   *
-   * @return bool True if a rollback of the failed step is safe.
+   * @return bool True if rollback of failed step is safe.
    */
   public function isRollbackPossible() {
     return $this->failed_step !== null && $this->failed_step <= 2;
   }
 
   /**
-   * Get the state of the running migration.
+   * Get state of running migration, or fresh state if none is stored.
    *
    * @return array State with 'phase', 'offset' and 'libraries'.
    */
@@ -158,7 +141,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Store the state of the running migration.
+   * Store state of running migration.
    *
    * @param array $state State to store.
    */
@@ -167,39 +150,30 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Forget the state of the running migration.
-   *
-   * Called once a migration is finished or rolled back, so the next one starts
-   * from the beginning instead of resuming.
+   * Forget stored state, so next migration starts over instead of resuming.
    */
   public static function clearState() {
     delete_site_option(self::STATE_OPTION);
   }
 
   /**
-   * Whether the migration can still be rolled back in the given phase.
+   * Whether migration can still be rolled back in given phase.
    *
-   * The copy and database phases only add network-level files and tables, so
-   * discarding both restores the pre-migration state. The clear phase deletes
-   * the blog-level files and cannot be undone. Mirrors isRollbackPossible(),
-   * but reads the persisted phase instead of per-request instance state.
+   * Copy and database phases only add network files and tables; clear phase deletes blog files and
+   * cannot be undone. Mirrors isRollbackPossible() but reads persisted phase, not instance state.
    *
-   * @param string $phase Phase the migration was in.
-   * @return bool True if a rollback is safe.
+   * @param string $phase Phase migration was in.
+   * @return bool True if rollback is safe.
    */
   public static function isPhaseRollbackPossible($phase) {
     return $phase === self::PHASE_COPY || $phase === self::PHASE_DATABASE;
   }
 
   /**
-   * Run one batch of the migration and report the progress.
-   *
-   * Each call continues where the previous one stopped, so a migration that
-   * does not fit in a single request can be finished by calling this until the
-   * returned state reports the done phase.
+   * Run one batch of migration and report progress. Call until returned progress reports done.
    *
    * @return array Progress with 'phase', 'percentage' and 'done'.
-   * @throws Exception If a step fails.
+   * @throws Exception If step fails.
    */
   public function migrateNextBatch() {
     $state = self::getState();
@@ -211,8 +185,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         break;
 
       case self::PHASE_DATABASE:
-        // Not batched: both steps need to see every blog, and the library id
-        // lookup of step 3 reads the blog tables that step 3 then drops.
+        // Not batched: step 3 builds its id lookup from blog tables it then drops.
         $this->failed_step = 2;
         $this->migrateDatabaseTablesToNetwork($state['libraries']);
 
@@ -241,11 +214,9 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Describe how far the migration has got.
+   * Describe how far migration has got, as percentage so progress only moves forwards.
    *
-   * Reported as a percentage of the whole migration, so it only ever moves
-   * forwards. The blogs are walked through twice, once while copying and once
-   * more while clearing, which is why the number of blogs is not the total.
+   * Blogs are walked twice, once copying and once clearing, so blog count is not total.
    *
    * @param array $state Current migration state.
    * @return array Progress with 'phase', 'percentage' and 'done'.
@@ -279,11 +250,11 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Copy library files of the next blogs to the network.
+   * Copy library files of next blogs to network.
    *
    * @param array $state Current migration state.
    * @return array Updated migration state.
-   * @throws Exception If a file system operation fails.
+   * @throws Exception If file system operation fails.
    */
   protected function runCopyBatch($state) {
     $this->ensureNetworkLibrariesDir();
@@ -299,8 +270,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       function ($blog_id) use ($network_libraries_path, &$libraries, $start) {
         $this->copyBlogLibrariesToNetwork($blog_id, $network_libraries_path, $libraries);
 
-        // Stop once the budget is spent, so the blog just finished is the last
-        // one of this batch and nothing is left half copied.
+        // Stop once budget is spent, leaving nothing half copied.
         return (microtime(true) - $start) <= self::BATCH_TIMEOUT;
       }
     );
@@ -317,11 +287,11 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Delete migrated library files of the next blogs.
+   * Delete migrated library files of next blogs.
    *
    * @param array $state Current migration state.
    * @return array Updated migration state.
-   * @throws Exception If a file cannot be deleted.
+   * @throws Exception If file cannot be deleted.
    */
   protected function runClearBatch($state) {
     WP_Filesystem();
@@ -351,7 +321,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Migrate library directories from all blog upload folders to network level.
    *
-   * @return array Associative array keyed by machineName, each value containing 'version' and 'blog_id'.
+   * @return array Keyed by versioned machine name, each value holding version and blog_id.
    * @throws Exception If file system operation fails.
    */
   public function migrateLibrariesToNetwork() {
@@ -370,19 +340,16 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Copy the library directories of one blog to network level.
+   * Copy library directories of one blog to network level.
    *
-   * Records what was copied in $network_libraries_installed, keeping only the
-   * highest patch version of each major.minor across all blogs. The record is
-   * passed in and out so it can be carried over several requests while the
-   * blogs are worked through in batches.
+   * Records copies in $network_libraries_installed, keeping only highest patch of each major.minor
+   * across all blogs. Passed in and out so batches can carry it over several requests.
    *
    * @param int    $blog_id                     Blog to copy from.
    * @param string $network_libraries_path      Network-level libraries path.
-   * @param array  $network_libraries_installed Record of libraries copied so
-   *                                            far, updated in place.
+   * @param array  $network_libraries_installed Record of copies so far, updated in place.
    *
-   * @throws Exception If a file system operation fails.
+   * @throws Exception If file system operation fails.
    */
   protected function copyBlogLibrariesToNetwork($blog_id, $network_libraries_path, &$network_libraries_installed) {
     $upload_directory = wp_upload_dir();
@@ -421,14 +388,12 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Clear blog-level H5P content (libraries and cachedassets) that was migrated
-   * to network level.
+   * Clear blog-level libraries and cachedassets that were migrated to network level.
    *
-   * Empties each site's h5p/libraries and h5p/cachedassets directories, keeping
-   * the directories themselves. The primary site's directories are separate from
-   * the network-level h5p_network directory, so it is included.
+   * Empties every blog's h5p/libraries and h5p/cachedassets, keeping directories themselves. Primary
+   * site is included, since its directories are separate from network h5p_network directory.
    *
-   * @throws Exception If an existing file or directory cannot be deleted.
+   * @throws Exception If existing file or directory cannot be deleted.
    */
   protected function clearBlogsLibrariesAndCachedassets() {
     WP_Filesystem();
@@ -440,15 +405,13 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Clear the migrated H5P files of one blog.
+   * Clear migrated H5P files of one blog, keeping directories themselves.
    *
-   * Empties the blog's h5p/libraries and h5p/cachedassets directories, keeping
-   * the directories themselves. Skips directories that do not exist, so it can
-   * be run again on a blog that was already cleared.
+   * Skips absent directories, so it can run again on blogs already cleared.
    *
    * @param WP_Filesystem_Base $wp_filesystem Filesystem to delete through.
    *
-   * @throws Exception If an existing file or directory cannot be deleted.
+   * @throws Exception If existing file or directory cannot be deleted.
    */
   protected function clearBlogLibrariesAndCachedassets($wp_filesystem) {
     $upload_directory = wp_upload_dir();
@@ -614,7 +577,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
         if ($inserted === false) {
           // No matching row in this blog's libraries table; legitimate, but
-          // worth recording so a missing library can be traced afterwards.
+          // worth recording so missing libraries can be traced afterwards.
           $skipped[] = "{$versioned_machine_name} (blog {$blog_id})";
           continue;
         }
@@ -641,9 +604,8 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Build lookup table mapping blog-level library IDs to network-level library IDs.
    *
-   * The result is cached: the network-level libraries are written once, before
-   * the first call, and nothing afterwards changes the name and version of a
-   * network library, so repeated calls would return the same mapping.
+   * Cached: network libraries are written once before first call, and nothing later changes their
+   * name or version, so repeated calls return same mapping.
    *
    * @return array Keyed by blog_id, each value is associative array mapping blog library_id to network library_id.
    */
@@ -654,7 +616,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
     global $wpdb;
 
-    // The network table is the same for every blog, so read it once and match
+    // Network table is same for every blog, so read it once and match
     // in PHP instead of querying it per blog library.
     $network_table_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries');
     $network_ids = array();
@@ -691,7 +653,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Build the key identifying a library by name and major.minor version.
+   * Build key identifying library by name and major.minor version.
    *
    * @param string $name          Machine name of library.
    * @param int    $major_version Major version.
@@ -703,15 +665,13 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Copy dependency entries (h5p_libraries_libraries) from each blog to the network-level table.
+   * Copy dependency entries (h5p_libraries_libraries) from every blog to network-level table.
    *
-   * The same dependency can come from several blogs. Duplicates are left to the
-   * primary key instead of being looked up first, using the same
-   * ON DUPLICATE KEY UPDATE that H5PWordPress::saveLibraryDependencies() uses.
-   * Note the primary key is (library_id, required_library_id) and does not
-   * include dependency_type, so a repeated pair updates the type.
+   * Same dependency can come from several blogs, so duplicates are left to primary key via
+   * ON DUPLICATE KEY UPDATE, as H5PWordPress::saveLibraryDependencies() does. That key is
+   * (library_id, required_library_id) without dependency_type, so repeated pairs update type.
    *
-   * @throws Exception If a dependency entry cannot be inserted.
+   * @throws Exception If dependency entry cannot be inserted.
    */
   protected function copyLibraryDependenciesToNetwork() {
     $network_table_libraries_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries_libraries');
@@ -747,7 +707,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         return;
       }
 
-      // Chunked, so the statement cannot grow past max_allowed_packet.
+      // Chunked, so statements cannot grow past max_allowed_packet.
       foreach (array_chunk($placeholders, self::INSERT_CHUNK_SIZE) as $index => $placeholders_chunk) {
         $values_chunk = array_slice(
           $values,
@@ -781,8 +741,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Update library_id references in blog-level h5p_contents tables.
    *
-   * Replaces old blog-level library IDs with the corresponding network-level
-   * library IDs using the lookup table built by buildIdLookupTable.
+   * Replaces blog-level library ids with network-level ids from buildIdLookupTable().
    */
   protected function updateBlogsLibraryIds() {
     $lookup = $this->buildIdLookupTable();
@@ -796,19 +755,15 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Update library_id references in blog-level table.
    *
-   * Two phases, one statement each. A single statement is not enough: the
-   * mapping can move one library onto an ID another row still holds (e.g.
-   * 18 => 4 together with 10 => 18), and h5p_contents_libraries has
-   * PRIMARY KEY (content_id, library_id, dependency_type). Uniqueness is
-   * checked while the statement updates row by row, not at the end, so the
-   * first row moved onto a taken ID collides with the row that has not been
-   * updated yet. Mapping into a temporary range first keeps every intermediate
-   * value clear of the IDs still in use.
+   * Two phases, one statement each. One statement is not enough: mapping can move one library onto
+   * some id another row still holds (e.g. 18 => 4 with 10 => 18), and h5p_contents_libraries has
+   * PRIMARY KEY (content_id, library_id, dependency_type). Uniqueness is checked row by row while
+   * updating, not at end, so moving onto taken ids collides. Temporary range avoids that.
    *
    * @param string $table    Table name (without prefix).
    * @param array  $mappings Mapping of old_id => new_id.
    *
-   * @throws Exception If the update fails.
+   * @throws Exception If update fails.
    */
   protected function updateLibraryIdsInBlogTable($table, $mappings) {
     global $wpdb;
@@ -825,7 +780,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
     $old_ids = array_map('intval', array_keys($mappings));
 
-    // Phase 1: old ID -> new ID in the temporary range.
+    // Phase 1: old id -> new id inside temporary range.
     $result = $wpdb->query(
       $wpdb->prepare(
         "UPDATE {$blog_table} SET library_id = CASE library_id "
@@ -861,8 +816,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Update library_id references in blog-level h5p_contents table.
    *
-   * Replaces old blog-level library IDs with the corresponding network-level
-   * library IDs using the lookup table.
+   * Replaces blog-level library ids with network-level ids from lookup table.
    *
    * @param int   $blog_id Blog ID.
    * @param array $lookup  Lookup table mapping blog_id → (old_id → new_id).
@@ -916,7 +870,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Create network-level table by copying the schema from blog-level table.
+   * Create network-level table by copying schema from blog-level table.
    *
    * @param string $network_table_name Network-level table name.
    * @param string $source_table_name  Existing blog-level table name.
@@ -930,10 +884,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Get the column names of the network-level libraries table.
-   *
-   * Cached, because the table name does not depend on the current blog and its
-   * columns do not change while the migration runs.
+   * Get column names of network-level libraries table, cached since they never change mid-migration.
    *
    * @return string[] Column names.
    */
@@ -957,8 +908,8 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    * @param string $version Semantic version major.minor.patch
    *
    * @return array|false Array with 'blog_library_id' and 'network_library_id',
-   *                     or false if the blog has no such library.
-   * @throws Exception If the insert fails.
+   *                     or false if blog has no such library.
+   * @throws Exception If insert fails.
    */
   protected function insertBlogLibraryToNetwork($machine_name, $version) {
     global $wpdb;
@@ -1014,14 +965,13 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Copy language translations for library to network-level table.
    *
-   * Copied inside the database, so the translations are never pulled into PHP
-   * and sent back. They can be large, and a multi-row insert built in PHP would
-   * risk exceeding max_allowed_packet.
+   * Copied inside database, so large translations are never pulled into PHP and sent back, which
+   * would risk exceeding max_allowed_packet.
    *
    * @param int $blog_library_id    Blog-level library ID.
    * @param int $network_library_id Network-level library ID.
    *
-   * @throws Exception If the translations cannot be copied.
+   * @throws Exception If translations cannot be copied.
    */
   protected function insertBlogLibraryToNetworkLanguages($blog_library_id, $network_library_id) {
     global $wpdb;

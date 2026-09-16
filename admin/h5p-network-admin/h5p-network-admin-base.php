@@ -3,9 +3,7 @@
 /**
  * H5P_Network_Admin_Base
  *
- * Shared base class for network migration operations. Provides common
- * helpers for path resolution, table name resolution, and AJAX nonce
- * verification.
+ * Shared base for network migration operations: path resolution, table creation, nonce verification.
  * @package H5P
  * @since 1.19.0
  */
@@ -13,7 +11,7 @@ abstract class H5P_Network_Admin_Base {
   use H5PUtils;
 
   /**
-   * Get the network-level libraries directory path.
+   * Get network-level H5P base directory path.
    *
    * @return string
    */
@@ -22,7 +20,7 @@ abstract class H5P_Network_Admin_Base {
   }
 
   /**
-   * Get the network-level libraries directory path.
+   * Get network-level libraries directory path.
    *
    * @return string
    */
@@ -31,7 +29,7 @@ abstract class H5P_Network_Admin_Base {
   }
 
   /**
-   * Get the network-level cachedassets directory path.
+   * Get network-level cachedassets directory path.
    *
    * @return string
    */
@@ -42,11 +40,8 @@ abstract class H5P_Network_Admin_Base {
   /**
    * Create cached assets for all H5P content on all blogs.
    *
-   * Storage and table names resolve at call time, so it must run while the
-   * network mode flag matches the target level: network level after migrating
-   * to network, blog level after migrating back to the blogs. Uses the same
-   * code path as viewing content, so it is idempotent: existing cached assets
-   * are left untouched.
+   * Must run after network mode flag matches target level, since storage and table names resolve at call
+   * time. Idempotent: uses same code path as viewing content, so existing cached assets stay untouched.
    */
   public function createCachedAssets() {
     H5PCommons::for_each_blog(function () {
@@ -64,11 +59,11 @@ abstract class H5P_Network_Admin_Base {
   }
 
   /**
-   * Create a table by copying the schema from an existing table.
+   * Create table by copying schema from existing table. Drops destination first.
    *
-   * @param string $source_table_name  Source table name.
-   * @param string $new_table_name  Destination table name.
-   * @param bool   $fail_on_error  Whether to throw on failure (default false).
+   * @param string $source_table_name Source table name.
+   * @param string $new_table_name    Destination table name.
+   * @param bool   $fail_on_error     Whether to throw on failure (default false).
    * @return bool True on success, false on failure (when fail_on_error is false).
    */
   protected function createTableFromExisting($source_table_name, $new_table_name, $fail_on_error = false) {
@@ -105,9 +100,7 @@ abstract class H5P_Network_Admin_Base {
   }
 
   /**
-   * Verify the AJAX request nonce.
-   *
-   * @throws Exception If the nonce is invalid.
+   * Verify AJAX request nonce. Dies on failure, so callers need no check.
    */
   protected function verifyNetworkNonce() {
     check_ajax_referer('h5p_network_ajax', 'nonce', true);

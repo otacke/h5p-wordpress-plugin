@@ -2,7 +2,7 @@
 /**
  * H5PCommons
  *
- * Shared constants and helper functions for the H5P plugin.
+ * Shared constants and helper functions for H5P plugin.
  *
  * @package   H5P
  * @license   MIT
@@ -20,13 +20,11 @@ class H5PCommons {
 	/** Network database table prefix. */
 	const NETWORK_DB_TABLE_PREFIX = 'h5p_network_';
 
-	/**
-	 * Name of the network level H5P files directory, relative to the uploads root.
-	 */
+	/** Name of network level H5P files directory, relative to uploads root. */
 	const NETWORK_DIRECTORY_NAME = 'h5p_network';
 
 	/**
-	 * Database tables that are managed at network level in multisite installation.
+	 * Database tables managed at network level in multisite installation.
 	 *
 	 * @var string[]
 	 */
@@ -53,10 +51,8 @@ class H5PCommons {
 	}
 
 	/**
-	 * Turn network mode on or off.
+	 * Turn network mode on or off, keeping cached flag in step so same request sees new state.
 	 *
-	 * Keeps the cached flag in step with the stored option, so callers that go
-	 * on to act on the new state within the same request see it.
 	 *
 	 * @param bool $enabled Whether network mode should be enabled.
 	 */
@@ -68,7 +64,7 @@ class H5PCommons {
 	}
 
 	/**
-	 * Whether the current user may manage libraries.
+	 * Whether current user may manage libraries.
 	 *
 	 * @return bool
 	 */
@@ -77,7 +73,7 @@ class H5PCommons {
 	}
 
 	/**
-	 * Whether the current user may install recommended libraries.
+	 * Whether current user may install recommended libraries.
 	 *
 	 * @return bool
 	 */
@@ -86,13 +82,11 @@ class H5PCommons {
 	}
 
 	/**
-	 * Whether the current user holds a capability that writes to libraries.
+	 * Whether current user holds capability that writes to libraries.
 	 *
-	 * In network mode the libraries folder is shared by every blog, so writing to
-	 * it is for network admins only. H5P_Plugin::assign_capabilities() already
-	 * revokes these capabilities from blog roles when network mode is on, but
-	 * roles are stored per blog and a capability can also be granted straight to
-	 * a user, so the state of the request is checked here as well.
+	 * In network mode, libraries folder is shared by every blog, so only network admins may write.
+	 * assign_capabilities() revokes this from blog roles, but roles are per blog and capabilities can
+	 * be granted straight to users, so request state is checked here too.
 	 *
 	 * @param string $capability Capability to check.
 	 * @return bool
@@ -106,10 +100,9 @@ class H5PCommons {
 	}
 
 	/**
-	 * Get the path to the network level H5P files folder.
+	 * Get path to network level H5P files folder.
 	 *
-	 * Unlike wp_upload_dir(), this always resolves to the network wide uploads
-	 * root, so it returns the same directory no matter which blog is current.
+	 * Unlike wp_upload_dir(), always resolves to network wide uploads root, whichever blog is current.
 	 *
 	 * @return string
 	 */
@@ -121,12 +114,10 @@ class H5PCommons {
 	}
 
 	/**
-	 * Get the URL for the network level H5P files folder.
+	 * Get URL for network level H5P files folder.
 	 *
-	 * Always absolute, because H5P core and the editor only leave asset paths
-	 * untouched when they contain a scheme. Mirrors the HTTPS fixup done by
-	 * H5P_Plugin::get_h5p_url() so assets are not served over plain HTTP on an
-	 * SSL page.
+	 * Always absolute, since H5P core and editor only leave asset paths untouched when they carry
+	 * scheme. Mirrors HTTPS fixup of H5P_Plugin::get_h5p_url(), so SSL pages never load plain HTTP.
 	 *
 	 * @return string
 	 */
@@ -143,13 +134,12 @@ class H5PCommons {
 	}
 
 	/**
-	 * Strip the per blog segment from an uploads base path or URL.
+	 * Strip per blog segment from uploads base path or URL.
 	 *
-	 * On a subsite wp_upload_dir() points inside "sites/<blog id>". The network
-	 * level directory lives next to that, in the uploads root.
+	 * On subsites wp_upload_dir() points inside "sites/<blog id>"; network directory sits beside it.
 	 *
 	 * @param string $base Uploads base path or URL.
-	 * @return string Base without the trailing per blog segment.
+	 * @return string Base without trailing per blog segment.
 	 */
 	private static function strip_blog_from_uploads_base($base) {
 		return preg_replace('#/sites/\d+$#', '', $base);
@@ -168,7 +158,7 @@ class H5PCommons {
 	}
 
 	/**
-	 * Return full table name using site-local prefix.
+	 * Return full table name using site local prefix.
 	 *
 	 * @param string $table_name Table name without prefix.
 	 * @return string Full table name.
@@ -197,11 +187,10 @@ class H5PCommons {
 	}
 
 	/**
-	 * Get the ids of all blogs in the network.
+	 * Get ids of all blogs in network.
 	 *
-	 * get_sites() defaults to 'number' => 100, so it must be set to 0 to get
-	 * every blog. Without it, networks with more than 100 blogs are silently
-	 * truncated and network wide operations skip the remaining blogs.
+	 * get_sites() defaults to 'number' => 100, so it must be 0 to get every blog. Without that,
+	 * networks above 100 blogs are silently truncated and network wide operations skip rest.
 	 *
 	 * @since 1.19.0
 	 * @return int[] Blog ids, ordered by id.
@@ -218,7 +207,7 @@ class H5PCommons {
 	}
 
 	/**
-	 * Get the number of blogs in the network.
+	 * Get number of blogs in network.
 	 *
 	 * @since 1.19.0
 	 * @return int Number of blogs.
@@ -232,10 +221,9 @@ class H5PCommons {
 	}
 
 	/**
-	 * Get the ids of a page of blogs in the network.
+	 * Get ids of one page of blogs in network.
 	 *
-	 * Ordered by id, so paging with an offset is stable as long as no blog is
-	 * created or deleted while paging.
+	 * Ordered by id, so paging by offset stays stable unless blogs are created or deleted meanwhile.
 	 *
 	 * @since 1.19.0
 	 * @param int $offset Number of blogs to skip.
@@ -258,7 +246,7 @@ class H5PCommons {
 	 * Run callback once per blog.
 	 *
 	 * @since 1.19.0
-	 * @param callable $callback Receives the current blog id.
+	 * @param callable $callback Receives current blog id.
 	 */
 	public static function for_each_blog(callable $callback) {
 		if (!is_multisite()) {
@@ -270,18 +258,16 @@ class H5PCommons {
 	}
 
 	/**
-	 * Run callback once per blog of a page of blogs.
+	 * Run callback once per blog of one page of blogs.
 	 *
-	 * Lets a long running operation work through the network in several
-	 * requests. The callback may stop early, so it receives the position of the
-	 * blog within the whole network as its second argument.
+	 * Lets long running operations work through network in several requests. Callback may stop early,
+	 * so it receives position of blog within whole network as second argument.
 	 *
 	 * @since 1.19.0
 	 * @param int      $offset   Number of blogs to skip.
 	 * @param int      $number   Maximum number of blogs to visit.
-	 * @param callable $callback Receives the current blog id and its offset.
-	 *                           Returning false stops the iteration.
-	 * @return int Offset after the last blog that was visited.
+	 * @param callable $callback Receives current blog id and its offset. Returning false stops.
+	 * @return int Offset after last visited blog.
 	 */
 	public static function for_each_blog_page($offset, $number, callable $callback) {
 		$offset = (int) $offset;
@@ -303,14 +289,13 @@ class H5PCommons {
 	}
 
 	/**
-	 * Run callback for each of the given blogs, in blog context.
+	 * Run callback for each given blog, in blog context.
 	 *
 	 * @since 1.19.0
 	 * @param int[]    $blog_ids Blog ids to visit.
-	 * @param callable $callback Receives the current blog id and its offset.
-	 *                           Returning false stops the iteration.
-	 * @param int      $offset   Offset of the first blog in the list.
-	 * @return int Offset after the last blog that was visited.
+	 * @param callable $callback Receives current blog id and its offset. Returning false stops.
+	 * @param int      $offset   Offset of first blog in list.
+	 * @return int Offset after last visited blog.
 	 */
 	private static function switch_through_blogs($blog_ids, callable $callback, $offset = 0) {
 		foreach ($blog_ids as $blog_id) {

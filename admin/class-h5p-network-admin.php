@@ -19,9 +19,6 @@ class H5P_Network_Admin {
 
   /**
    * Add the "H5P Network" page under the network Settings menu.
-   *
-   * In network mode the library screens are added as well, since libraries are
-   * then managed network wide instead of per blog.
    */
   public function add_network_admin_menu() {
     $this->library = NULL;
@@ -47,8 +44,7 @@ class H5P_Network_Admin {
       );
       add_action('load-' . $libraries_page, array($this->library, 'process_libraries'));
 
-      // Installing and updating content types writes to the network level
-      // libraries, so this is offered to network admins only.
+      // Installing and updating content types writes to network level libraries, so offered to network admins only.
       add_menu_page(
         __('H5P Management', 'h5p'),
         __('H5P Management', 'h5p'),
@@ -61,41 +57,26 @@ class H5P_Network_Admin {
   }
 
   /**
-   * Render the network level H5P management page.
-   *
-   * Shows the H5P Hub client, so content types shared by every blog can be
-   * installed and updated. Creating content is not offered here.
+   * Render the network level H5P management page with H5P Hub client for management.
    */
   public function render_management_page() {
     if (!current_user_can('manage_network')) {
       wp_die(esc_html__('You do not have permission to manage H5P content types.', 'h5p'));
     }
 
-    // Sets up H5PIntegration, including the editor assets list, and enqueues the
-    // H5P core scripts plus the editor scripts that belong on the page itself.
-    // The editor and hub stylesheets are deliberately not enqueued here: they
-    // are listed in H5PIntegration.editor.assets and loaded inside the iframe,
-    // which keeps them from restyling the WordPress admin page.
+    // Set up H5PIntegration and enqueue editor scripts, but not its stylesheets: those load inside the iframe.
     $content = new H5PContentAdmin('h5p');
     $content->add_editor_assets();
 
-    // Loaded inside the iframe, after the editor stylesheets, to hide the parts
-    // of the hub that lead on to creating content.
     $plugin = H5P_Plugin::get_instance();
     $management_settings = array(
       'style' => plugins_url('h5p/admin/styles/h5p-hub-management.css') . '?ver=' . H5P_Plugin::VERSION,
-      // Replaces the hub's own "Select content type" label, since content types
-      // are managed here rather than picked to author with.
       'hubPanelLabel' => __('Manage content type', 'h5p'),
     );
     $plugin->print_settings($management_settings, 'H5PHubManagement');
 
     include 'views/network-management.php';
 
-    // Enqueued after the view, as the other admin pages do. Depends on the
-    // editor glue from add_editor_assets(): its document ready handler puts
-    // H5PEditor.assets and H5PEditor.contentLanguage in place, which the iframe
-    // is built from, and both handlers run on document ready.
     H5P_Plugin_Admin::add_script('h5p-jquery', 'h5p-php-library/js/jquery.js');
     wp_enqueue_script(
       $plugin->asset_handle('hub-management'),
@@ -134,15 +115,13 @@ class H5P_Network_Admin {
       );
     }
 
-    // Migrating copies and deletes every library file of every blog, which can
+    // Migrates copies and deletes every library file of every blog, which can
     // take longer than the configured limit. Not honoured by every host.
     @set_time_limit(0);
     ignore_user_abort(true);
 
     $migrate = new H5P_Network_Migrate_To_Network();
 
-    // The phase the batch started in, so a failure is judged by what had been
-    // done before it, not by how far this batch got.
     $state_before = H5P_Network_Migrate_To_Network::getState();
     $phase = $state_before['phase'];
 
@@ -152,11 +131,6 @@ class H5P_Network_Admin {
     catch (Exception $exception) {
       $rolled_back = false;
 
-      // The copy and database phases only add the network libraries directory
-      // and the network tables, so discarding both restores the pre-migration
-      // state. The clear phase deletes blog files and cannot be undone. Note
-      // that migrateToLocal() must NOT be used here: it would copy the
-      // half-migrated network state back into every blog.
       if (H5P_Network_Migrate_To_Network::isPhaseRollbackPossible($phase)) {
         try {
           $demigrate = new H5P_Network_Migrate_To_Local();
@@ -189,15 +163,11 @@ class H5P_Network_Admin {
         H5PCommons::HTTP_OK
       );
 
-      // wp_send_json_error() exits, but never enable network mode on failure
-      // should that ever not hold.
       return;
     }
 
     if (!$progress['done']) {
-      // More blogs to work through, so the client calls again. Network mode
-      // stays off until everything is migrated, because the table names of
-      // every following request depend on it.
+      // More blogs to work through, so client calls again.
       wp_send_json_success(
         array(
           'phase'      => $progress['phase'],
@@ -267,10 +237,6 @@ class H5P_Network_Admin {
 
   /**
    * Switch network mode on or off.
-   *
-   * Who may manage libraries depends on this, so the capabilities of every blog
-   * are re-assigned to match. Enabling revokes manage_h5p_libraries from blog
-   * roles, disabling grants it back to those with manage_options.
    *
    * @param bool $enabled Whether network mode should be enabled.
    */

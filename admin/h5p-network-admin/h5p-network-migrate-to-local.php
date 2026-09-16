@@ -3,17 +3,14 @@
 /**
  * H5P_Network_Migrate_To_Local
  *
- * Handles migration of H5P libraries from network-level back to
- * blog (local) level. Removes network-level files and database entries.
+ * Migrates H5P libraries from network level back to blog level, then removes network files and tables.
  * @package H5P
  * @since 1.19.0
  */
 class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
 
   /**
-   * Migrate all libraries from the network level back to local (blog) level.
-   *
-   * Convenience method that deletes the network-level files and database tables.
+   * Migrate all libraries from network level back to blog level.
    */
   public function migrateToLocal() {
     $this->copyNetworkLibrariesToBlogs();
@@ -23,7 +20,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Copy network-level database tables to each blog's local tables.
+   * Copy network-level database tables to every blog.
    */
   protected function copyDatabaseTablesToBlogs() {
     H5PCommons::for_each_blog(function () {
@@ -36,7 +33,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
         );
       }
 
-      // cachedassets rows will be rebuilt by createCachedAssets() after the migration
+      // Rebuilt by createCachedAssets() after migration.
       $wpdb->query(
         "TRUNCATE TABLE " . H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_cachedassets')
       );
@@ -44,10 +41,10 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Create a blog-level table from a network-level source and copy its data.
+   * Create blog-level table from network-level source and copy its rows, preserving ids.
    *
-   * @param string $blog_table_name     Destination blog-level table name.
-   * @param string $network_table_name  Source network-level table name.
+   * @param string $blog_table_name    Destination blog-level table name.
+   * @param string $network_table_name Source network-level table name.
    */
   protected function copyTableFromNetwork($blog_table_name, $network_table_name) {
     global $wpdb;
@@ -56,7 +53,6 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
       return;
     }
 
-    // Copy data from network table to blog table, preserving IDs.
     $columns = $wpdb->get_col("DESCRIBE `{$blog_table_name}`", 0);
     $column_list = implode(', ', $columns);
 
@@ -66,7 +62,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Copy network-level library files to each blog's libraries directory.
+   * Copy network-level library files into every blog's libraries directory.
    */
   protected function copyNetworkLibrariesToBlogs() {
     $network_libraries_path = $this->getNetworkLibrariesPath();
@@ -102,7 +98,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Delete the network-level files directory.
+   * Delete network-level files directory.
    */
   public function deleteNetworkFilesDirectory() {
     $network_lib_base = $this->getH5PNetworkPath();
@@ -112,9 +108,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Drop the network-level database tables.
-   *
-   * @return void
+   * Drop network-level database tables.
    */
   public function dropNetworkTables() {
     global $wpdb;

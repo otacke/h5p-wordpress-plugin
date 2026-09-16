@@ -48,16 +48,11 @@ trait H5PUtils {
     }
 
     /**
-     * Check whether version $b is the latest patch for its major.minor version
-     * among all versions seen so far.
-     *
-     * Returns true if $b has a different major or minor version than $a (meaning
-     * it is a different library variant), or if it shares the same major.minor
-     * but has a newer patch version.
+     * Check whether $b supersedes $a: same major.minor, higher patch.
      *
      * @param string $a Existing version string (e.g. "1.4.5").
-     * @param string $b Current version string (e.g. "1.4.3").
-     * @return bool
+     * @param string $b Candidate version string (e.g. "1.4.7").
+     * @return bool True if same major.minor and $b has higher patch, false otherwise.
      */
     public static function isLatestPatchVersion($a, $b) {
         $a_parts = explode('.', $a);
@@ -70,8 +65,7 @@ trait H5PUtils {
      * Parse library.json and return library metadata.
      *
      * @param string $path Path to library.json.
-     * @return array|null  Associative array with machineName, majorVersion,
-     *                     minorVersion, patchVersion; or null on failure.
+     * @return array|null machineName, majorVersion, minorVersion, patchVersion; or null on failure.
      */
     public static function readVersionedInfoFromLibraryJson($path) {
         if (!file_exists($path)) {
@@ -106,10 +100,10 @@ trait H5PUtils {
     }
 
     /**
-     * Filters and sanitizes input, replacing FILTER_SANITIZE_STRING.
+     * Filter and sanitize GET input, replacing FILTER_SANITIZE_STRING.
      *
-     * @param string $var_name Name of the variable to sanitize.
-     * @return string Sanitized value.
+     * @param string $var_name Name of GET variable to sanitize.
+     * @return string Sanitized value, empty string if unset.
      */
     public function sanitize_input($var_name): string
     {

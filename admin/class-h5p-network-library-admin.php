@@ -2,9 +2,8 @@
 /**
  * H5P Network Library Admin class
  *
- * Handles library management in network mode, where libraries are shared across whole
- * network but content lives on each individual blog. Overrides only seams that touch
- * per-blog content tables, fanning out over all blogs via H5PCommons::for_each_blog().
+ * Library management in network mode: libraries are shared network wide, content lives on each blog.
+ * Overrides only the seams that touch per-blog content tables, fanning out via H5PCommons::for_each_blog().
  *
  * @package H5P_Plugin_Admin
  */
@@ -12,9 +11,6 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
 
   /**
    * Content count per library across all blogs.
-   *
-   * Gathered lazily once per request, because the library admin list asks about every
-   * library in turn and switching blogs is not cheap.
    *
    * @var array|null Keyed by library id.
    */
@@ -61,12 +57,8 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Count content that uses given library, across all blogs.
    *
-   * Counts for all libraries are gathered in one query per blog and kept for the
-   * rest of the request, because the library admin list asks about every library
-   * in turn and switching blogs is not cheap.
-   *
-   * Skipped list is accepted for signature compatibility but ignored here.
-   * Network implementation of ajax_upgrade_progress() applies skips per blog instead.
+   * Counted once per request for every library at once, because the library admin list asks about each in
+   * turn and switching blogs is not cheap. $skipped is ignored: ajax_upgrade_progress() skips per blog.
    *
    * @since 1.19.0
    * @param int $library_id Id of library to count content for.
@@ -109,29 +101,24 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * AJAX processing for content upgrade script, across all blogs.
    *
-   * Content ids collide between blogs, so JS<->PHP protocol addresses content with composite
-   * "blogId_contentId" keys. Upgrades are applied per blog, and next batch is filled from every blog until
-   * it reaches UPGRADE_BATCH_SIZE entries.
+   * Content ids collide between blogs, so the JS<->PHP protocol addresses content with composite
+   * "blogId_contentId" keys.
    */
   public function ajax_upgrade_progress() {
     $prepared = $this->prepare_upgrade_progress();
     $library_id = $prepared['library_id'];
     $to_library = $prepared['to_library'];
 
-    // Prepare response
     $out = new stdClass();
     $out->params = array();
     $out->token = wp_create_nonce('h5p_content_upgrade');
 
-    // Apply upgraded params posted by script, per blog.
     $this->apply_upgraded_params_from_request($to_library);
 
-    // Determine if any content has been skipped during process
     $skipped = $this->parse_skipped_from_request();
     $out->skipped = $skipped['keys'];
     $skip_by_blog = $skipped['by_blog'];
 
-    // Fill next batch of remaining content from every blog.
     $left = $this->count_remaining_content($library_id, $skip_by_blog);
     if ($left > 0) {
       $this->fill_next_batch($out, $library_id, $skip_by_blog);
@@ -196,10 +183,8 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
       return array('keys' => array(), 'by_blog' => array());
     }
 
-    // Keep composite keys as-is, so script can echo them back unchanged.
     $keys = json_decode($skipped);
 
-    // Split into per-blog lists of plain content ids for queries.
     $by_blog = array();
     foreach ($keys as $key) {
       $parts = $this->split_content_key($key);
@@ -292,10 +277,8 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
     $plugin = H5P_Plugin::get_instance();
     $core = $plugin->get_h5p_instance('core');
 
-    // Do as many as we can in five seconds.
     $start = microtime(TRUE);
 
-    // Count how much work is left, across all blogs.
     $left = 0;
     H5PCommons::for_each_blog(function ($blog_id) use (&$left) {
       global $wpdb;
@@ -311,12 +294,12 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
       );
     });
 
-    // Rebuild as many caches as fit in time budget.
+    // Rebuild as many caches as fit in the time budget, so a big network takes several requests.
     H5PCommons::for_each_blog(function ($blog_id) use (&$left, $core, $start) {
       global $wpdb;
 
       if ($left <= 0) {
-        return; // Nothing left to do.
+        return;
       }
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
