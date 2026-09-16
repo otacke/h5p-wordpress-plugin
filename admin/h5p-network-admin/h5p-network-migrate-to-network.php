@@ -26,6 +26,47 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   const REMAP_TEMP_OFFSET = 1000000000;
 
   /**
+   * Seconds of file work to do per request before handing back to the client.
+   *
+   * Copying and deleting library files can take longer than a request may run,
+   * so the work is spread over several requests. The budget is checked between
+   * blogs, never within one, so a blog is always finished once it is started.
+   */
+  const BATCH_TIMEOUT = 5;
+
+  /**
+   * Number of blogs to ask for per batch.
+   *
+   * Only an upper bound: the time budget usually ends a batch earlier.
+   */
+  const BATCH_BLOG_LIMIT = 200;
+
+  /**
+   * Name of the site option holding the state of a running migration.
+   */
+  const STATE_OPTION = 'h5p_network_migration_state';
+
+  /**
+   * Phase copying library files from the blogs to the network. Non-destructive.
+   */
+  const PHASE_COPY = 'copy';
+
+  /**
+   * Phase moving the database to the network. Destructive from here on.
+   */
+  const PHASE_DATABASE = 'database';
+
+  /**
+   * Phase deleting the library files left on the blogs. Destructive.
+   */
+  const PHASE_CLEAR = 'clear';
+
+  /**
+   * Phase marking a finished migration.
+   */
+  const PHASE_DONE = 'done';
+
+  /**
    * Step that was being run when the migration failed, null if no step failed.
    *
    * Steps 1 and 2 only add network-level files and tables, so they can be
@@ -97,6 +138,217 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
+   * Get the state of the running migration.
+   *
+   * @return array State with 'phase', 'offset' and 'libraries'.
+   */
+  public static function getState() {
+    $state = get_site_option(self::STATE_OPTION, null);
+
+    if (!is_array($state) || !isset($state['phase'])) {
+      return array(
+        'phase'      => self::PHASE_COPY,
+        'offset'     => 0,
+        'libraries'  => array(),
+        'started_at' => time(),
+      );
+    }
+
+    return $state;
+  }
+
+  /**
+   * Store the state of the running migration.
+   *
+   * @param array $state State to store.
+   */
+  public static function setState($state) {
+    update_site_option(self::STATE_OPTION, $state);
+  }
+
+  /**
+   * Forget the state of the running migration.
+   *
+   * Called once a migration is finished or rolled back, so the next one starts
+   * from the beginning instead of resuming.
+   */
+  public static function clearState() {
+    delete_site_option(self::STATE_OPTION);
+  }
+
+  /**
+   * Whether the migration can still be rolled back in the given phase.
+   *
+   * The copy and database phases only add network-level files and tables, so
+   * discarding both restores the pre-migration state. The clear phase deletes
+   * the blog-level files and cannot be undone. Mirrors isRollbackPossible(),
+   * but reads the persisted phase instead of per-request instance state.
+   *
+   * @param string $phase Phase the migration was in.
+   * @return bool True if a rollback is safe.
+   */
+  public static function isPhaseRollbackPossible($phase) {
+    return $phase === self::PHASE_COPY || $phase === self::PHASE_DATABASE;
+  }
+
+  /**
+   * Run one batch of the migration and report the progress.
+   *
+   * Each call continues where the previous one stopped, so a migration that
+   * does not fit in a single request can be finished by calling this until the
+   * returned state reports the done phase.
+   *
+   * @return array Progress with 'phase', 'percentage' and 'done'.
+   * @throws Exception If a step fails.
+   */
+  public function migrateNextBatch() {
+    $state = self::getState();
+
+    switch ($state['phase']) {
+      case self::PHASE_COPY:
+        $this->failed_step = 1;
+        $state = $this->runCopyBatch($state);
+        break;
+
+      case self::PHASE_DATABASE:
+        // Not batched: both steps need to see every blog, and the library id
+        // lookup of step 3 reads the blog tables that step 3 then drops.
+        $this->failed_step = 2;
+        $this->migrateDatabaseTablesToNetwork($state['libraries']);
+
+        $this->failed_step = 3;
+        $this->updateBlogsDatabase($state['libraries']);
+
+        $state['phase'] = self::PHASE_CLEAR;
+        $state['offset'] = 0;
+        break;
+
+      case self::PHASE_CLEAR:
+        $this->failed_step = 4;
+        $state = $this->runClearBatch($state);
+        break;
+    }
+
+    if ($state['phase'] === self::PHASE_DONE) {
+      $this->failed_step = null;
+      self::clearState();
+    }
+    else {
+      self::setState($state);
+    }
+
+    return $this->buildProgress($state);
+  }
+
+  /**
+   * Describe how far the migration has got.
+   *
+   * Reported as a percentage of the whole migration, so it only ever moves
+   * forwards. The blogs are walked through twice, once while copying and once
+   * more while clearing, which is why the number of blogs is not the total.
+   *
+   * @param array $state Current migration state.
+   * @return array Progress with 'phase', 'percentage' and 'done'.
+   */
+  protected function buildProgress($state) {
+    $blogs = H5PCommons::count_blogs();
+    $done = $state['phase'] === self::PHASE_DONE;
+
+    switch ($state['phase']) {
+      case self::PHASE_COPY:
+        $passed = (int) $state['offset'];
+        break;
+
+      case self::PHASE_DATABASE:
+        // Copying finished, clearing not started.
+        $passed = $blogs;
+        break;
+
+      default:
+        $passed = $blogs + (int) $state['offset'];
+        break;
+    }
+
+    $total = $blogs * 2;
+
+    return array(
+      'phase'      => $state['phase'],
+      'percentage' => ($done || $total <= 0) ? 100 : (int) round($passed / $total * 100),
+      'done'       => $done,
+    );
+  }
+
+  /**
+   * Copy library files of the next blogs to the network.
+   *
+   * @param array $state Current migration state.
+   * @return array Updated migration state.
+   * @throws Exception If a file system operation fails.
+   */
+  protected function runCopyBatch($state) {
+    $this->ensureNetworkLibrariesDir();
+    $this->ensureNetworkCachedassetsDir();
+
+    $network_libraries_path = $this->getNetworkLibrariesPath();
+    $libraries = $state['libraries'];
+    $start = microtime(true);
+
+    $offset = H5PCommons::for_each_blog_page(
+      $state['offset'],
+      self::BATCH_BLOG_LIMIT,
+      function ($blog_id) use ($network_libraries_path, &$libraries, $start) {
+        $this->copyBlogLibrariesToNetwork($blog_id, $network_libraries_path, $libraries);
+
+        // Stop once the budget is spent, so the blog just finished is the last
+        // one of this batch and nothing is left half copied.
+        return (microtime(true) - $start) <= self::BATCH_TIMEOUT;
+      }
+    );
+
+    $state['libraries'] = $libraries;
+    $state['offset'] = $offset;
+
+    if ($offset >= H5PCommons::count_blogs()) {
+      $state['phase'] = self::PHASE_DATABASE;
+      $state['offset'] = 0;
+    }
+
+    return $state;
+  }
+
+  /**
+   * Delete migrated library files of the next blogs.
+   *
+   * @param array $state Current migration state.
+   * @return array Updated migration state.
+   * @throws Exception If a file cannot be deleted.
+   */
+  protected function runClearBatch($state) {
+    WP_Filesystem();
+    global $wp_filesystem;
+
+    $start = microtime(true);
+
+    $offset = H5PCommons::for_each_blog_page(
+      $state['offset'],
+      self::BATCH_BLOG_LIMIT,
+      function () use ($wp_filesystem, $start) {
+        $this->clearBlogLibrariesAndCachedassets($wp_filesystem);
+
+        return (microtime(true) - $start) <= self::BATCH_TIMEOUT;
+      }
+    );
+
+    $state['offset'] = $offset;
+
+    if ($offset >= H5PCommons::count_blogs()) {
+      $state['phase'] = self::PHASE_DONE;
+    }
+
+    return $state;
+  }
+
+  /**
    * Migrate library directories from all blog upload folders to network level.
    *
    * @return array Associative array keyed by machineName, each value containing 'version' and 'blog_id'.
@@ -111,42 +363,61 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     $network_libraries_installed = array();
 
     H5PCommons::for_each_blog(function ($blog_id) use ($network_libraries_path, &$network_libraries_installed) {
-      $upload_directory = wp_upload_dir();
-      $libraries_directory = "{$upload_directory['basedir']}/h5p/libraries";
-
-      if (!is_dir($libraries_directory)) {
-        return; // Blog has no H5P libraries directory yet, so nothing to migrate.
-      }
-
-      $library_directories = scandir($libraries_directory);
-      if ($library_directories === false) {
-        throw new Exception(
-          "Failed to scan libraries directory: {$libraries_directory}"
-        );
-      }
-
-      foreach ($library_directories as $library_directory_name) {
-        $result = $this->processLibraryDirectory(
-          $libraries_directory,
-          $library_directory_name,
-          $network_libraries_path,
-          $blog_id
-        );
-
-        if ($result === null) {
-          continue;
-        }
-
-        $existing_version = $network_libraries_installed[$result['versioned_machine_name']]['version'] ?? '';
-        if ($existing_version !== '' && !$this->isLatestPatchVersion($existing_version, $result['version'])) {
-          continue;
-        }
-
-        $network_libraries_installed[$result['versioned_machine_name']] = $result;
-      }
+      $this->copyBlogLibrariesToNetwork($blog_id, $network_libraries_path, $network_libraries_installed);
     });
 
     return $network_libraries_installed;
+  }
+
+  /**
+   * Copy the library directories of one blog to network level.
+   *
+   * Records what was copied in $network_libraries_installed, keeping only the
+   * highest patch version of each major.minor across all blogs. The record is
+   * passed in and out so it can be carried over several requests while the
+   * blogs are worked through in batches.
+   *
+   * @param int    $blog_id                     Blog to copy from.
+   * @param string $network_libraries_path      Network-level libraries path.
+   * @param array  $network_libraries_installed Record of libraries copied so
+   *                                            far, updated in place.
+   *
+   * @throws Exception If a file system operation fails.
+   */
+  protected function copyBlogLibrariesToNetwork($blog_id, $network_libraries_path, &$network_libraries_installed) {
+    $upload_directory = wp_upload_dir();
+    $libraries_directory = "{$upload_directory['basedir']}/h5p/libraries";
+
+    if (!is_dir($libraries_directory)) {
+      return; // Blog has no H5P libraries directory yet, so nothing to migrate.
+    }
+
+    $library_directories = scandir($libraries_directory);
+    if ($library_directories === false) {
+      throw new Exception(
+        "Failed to scan libraries directory: {$libraries_directory}"
+      );
+    }
+
+    foreach ($library_directories as $library_directory_name) {
+      $result = $this->processLibraryDirectory(
+        $libraries_directory,
+        $library_directory_name,
+        $network_libraries_path,
+        $blog_id
+      );
+
+      if ($result === null) {
+        continue;
+      }
+
+      $existing_version = $network_libraries_installed[$result['versioned_machine_name']]['version'] ?? '';
+      if ($existing_version !== '' && !$this->isLatestPatchVersion($existing_version, $result['version'])) {
+        continue;
+      }
+
+      $network_libraries_installed[$result['versioned_machine_name']] = $result;
+    }
   }
 
   /**
@@ -164,36 +435,51 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     global $wp_filesystem;
 
     H5PCommons::for_each_blog(function () use ($wp_filesystem) {
-      $upload_directory = wp_upload_dir();
-      $directories = array(
-        "{$upload_directory['basedir']}/h5p/libraries",
-        "{$upload_directory['basedir']}/h5p/cachedassets",
-      );
+      $this->clearBlogLibrariesAndCachedassets($wp_filesystem);
+    });
+  }
 
-      foreach ($directories as $directory) {
-        if (!$wp_filesystem->is_dir($directory)) {
+  /**
+   * Clear the migrated H5P files of one blog.
+   *
+   * Empties the blog's h5p/libraries and h5p/cachedassets directories, keeping
+   * the directories themselves. Skips directories that do not exist, so it can
+   * be run again on a blog that was already cleared.
+   *
+   * @param WP_Filesystem_Base $wp_filesystem Filesystem to delete through.
+   *
+   * @throws Exception If an existing file or directory cannot be deleted.
+   */
+  protected function clearBlogLibrariesAndCachedassets($wp_filesystem) {
+    $upload_directory = wp_upload_dir();
+    $directories = array(
+      "{$upload_directory['basedir']}/h5p/libraries",
+      "{$upload_directory['basedir']}/h5p/cachedassets",
+    );
+
+    foreach ($directories as $directory) {
+      if (!$wp_filesystem->is_dir($directory)) {
+        continue;
+      }
+
+      foreach (scandir($directory) as $entry) {
+        if ($entry[0] === '.') {
           continue;
         }
 
-        foreach (scandir($directory) as $entry) {
-          if ($entry[0] === '.') {
-            continue;
-          }
+        $entry_path = "{$directory}/{$entry}";
 
-          $entry_path = "{$directory}/{$entry}";
+        if (is_dir($entry_path)) {
+          $deleted = $wp_filesystem->rmdir($entry_path, true);
+        } else {
+          $deleted = $wp_filesystem->delete($entry_path);
+        }
 
-          if (is_dir($entry_path)) {
-            $deleted = $wp_filesystem->rmdir($entry_path, true);
-          } else {
-            $deleted = $wp_filesystem->delete($entry_path);
-          }
-
-          if (!$deleted) {
-            throw new Exception("Failed to delete: {$entry_path}");
-          }
+        if (!$deleted) {
+          throw new Exception("Failed to delete: {$entry_path}");
         }
       }
-    });
+    }
   }
 
   /**

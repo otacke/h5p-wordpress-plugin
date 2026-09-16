@@ -68,7 +68,9 @@
    */
   const setButtonBusy = (button, busy) => {
     if (busy) {
-      button.dataset.originalLabel = button.textContent;
+      if (button.dataset.originalLabel === undefined) {
+        button.dataset.originalLabel = button.textContent;
+      }
       button.textContent = window.H5PNetworkSettingsProperties.migrationInProgress;
       button.disabled = true;
       button.setAttribute('aria-busy', 'true');
@@ -83,6 +85,22 @@
   };
 
   /**
+   * Show how far the migration has got on the button.
+   * @param {HTMLButtonElement} button Toggle button.
+   * @param {object} progress Progress from the server.
+   */
+  const setButtonProgress = (button, progress) => {
+    const props = window.H5PNetworkSettingsProperties;
+
+    if (typeof progress.percentage !== 'number') {
+      return;
+    }
+
+    button.textContent = props.migrationProgress
+      .replace('%percentage', progress.percentage);
+  };
+
+  /**
    * Call a migration endpoint.
    * @param {string} action The AJAX action name.
    * @param {HTMLButtonElement} button Toggle button to keep in sync.
@@ -90,43 +108,58 @@
   const callMigrationEndpoint = (action, button) => {
     const props = window.H5PNetworkSettingsProperties;
 
-    const nonce = props.nonce;
-    if (!nonce) {
+    if (!props.nonce) {
       console.error('H5P network nonce not available.');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('action', action);
-    formData.append('nonce', nonce);
-
     setButtonBusy(button, true);
 
-    fetch(props.ajaxPath, {
-      method: 'POST',
-      body: formData,
-    })
-      .then(response => response.json())
-      .then(result => {
-        if (result.success) {
-          window.location.reload();
-          return;
-        }
+    // The migration works through the blogs in batches, so keep calling until
+    // the server reports it is done.
+    const runBatch = (nonce) => {
+      const formData = new FormData();
+      formData.append('action', action);
+      formData.append('nonce', nonce);
 
-        const data = result.data || {};
-        const summary = data.rolledBack ?
-          props.migrationFailedRolledBack :
-          props.migrationFailedNotRolledBack;
-
-        setButtonBusy(button, false);
-        showErrorNotice(data.message ? `${summary} ${data.message}` : summary);
+      fetch(props.ajaxPath, {
+        method: 'POST',
+        body: formData,
       })
-      .catch(error => {
-        console.error('Migration request failed:', error);
+        .then(response => response.json())
+        .then(result => {
+          if (result.success) {
+            const progress = result.data || {};
 
-        setButtonBusy(button, false);
-        showErrorNotice(props.migrationRequestFailed);
-      });
+            if (progress.done === false) {
+              setButtonProgress(button, progress);
+              // A fresh nonce comes back with every batch, so a long
+              // migration cannot fail on an expired one.
+              runBatch(progress.nonce || nonce);
+              return;
+            }
+
+            window.location.reload();
+            return;
+          }
+
+          const data = result.data || {};
+          const summary = data.rolledBack ?
+            props.migrationFailedRolledBack :
+            props.migrationFailedNotRolledBack;
+
+          setButtonBusy(button, false);
+          showErrorNotice(data.message ? `${summary} ${data.message}` : summary);
+        })
+        .catch(error => {
+          console.error('Migration request failed:', error);
+
+          setButtonBusy(button, false);
+          showErrorNotice(props.migrationRequestFailed);
+        });
+    };
+
+    runBatch(props.nonce);
   };
 
   /**

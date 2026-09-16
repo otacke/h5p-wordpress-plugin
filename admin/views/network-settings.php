@@ -24,6 +24,9 @@
       'migrationFailedNotRolledBack' => $core->h5pF->t('Migration failed and could not be rolled back automatically. Please restore from a backup.'),
       'migrationRequestFailed' => $core->h5pF->t('The migration request failed. Please check the server error log.'),
       'migrationInProgress' => $core->h5pF->t('Migrating...'),
+      // Not t(), which would substitute the placeholder away: it is filled in
+      // by the client for every batch.
+      'migrationProgress' => __('Migrating... %percentage %', 'h5p'),
       'nonce' => wp_create_nonce('h5p_network_ajax'),
       'ajaxPath' => admin_url('admin-ajax.php')
     );

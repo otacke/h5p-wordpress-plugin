@@ -218,6 +218,43 @@ class H5PCommons {
 	}
 
 	/**
+	 * Get the number of blogs in the network.
+	 *
+	 * @since 1.19.0
+	 * @return int Number of blogs.
+	 */
+	public static function count_blogs() {
+		if (!is_multisite()) {
+			return 1;
+		}
+
+		return count(self::get_all_blog_ids());
+	}
+
+	/**
+	 * Get the ids of a page of blogs in the network.
+	 *
+	 * Ordered by id, so paging with an offset is stable as long as no blog is
+	 * created or deleted while paging.
+	 *
+	 * @since 1.19.0
+	 * @param int $offset Number of blogs to skip.
+	 * @param int $number Maximum number of blogs to return.
+	 * @return int[] Blog ids, ordered by id.
+	 */
+	public static function get_blog_ids_page($offset, $number) {
+		return get_sites(
+			array(
+				'fields'  => 'ids',
+				'number'  => (int) $number,
+				'offset'  => (int) $offset,
+				'orderby' => 'id',
+				'order'   => 'ASC',
+			)
+		);
+	}
+
+	/**
 	 * Run callback once per blog.
 	 *
 	 * @since 1.19.0
@@ -229,15 +266,70 @@ class H5PCommons {
 			return;
 		}
 
-		foreach (self::get_all_blog_ids() as $blog_id) {
+		self::switch_through_blogs(self::get_all_blog_ids(), $callback);
+	}
+
+	/**
+	 * Run callback once per blog of a page of blogs.
+	 *
+	 * Lets a long running operation work through the network in several
+	 * requests. The callback may stop early, so it receives the position of the
+	 * blog within the whole network as its second argument.
+	 *
+	 * @since 1.19.0
+	 * @param int      $offset   Number of blogs to skip.
+	 * @param int      $number   Maximum number of blogs to visit.
+	 * @param callable $callback Receives the current blog id and its offset.
+	 *                           Returning false stops the iteration.
+	 * @return int Offset after the last blog that was visited.
+	 */
+	public static function for_each_blog_page($offset, $number, callable $callback) {
+		$offset = (int) $offset;
+
+		if (!is_multisite()) {
+			if ($offset === 0 && $number > 0) {
+				$callback(get_current_blog_id(), $offset);
+				return 1;
+			}
+
+			return $offset;
+		}
+
+		return self::switch_through_blogs(
+			self::get_blog_ids_page($offset, $number),
+			$callback,
+			$offset
+		);
+	}
+
+	/**
+	 * Run callback for each of the given blogs, in blog context.
+	 *
+	 * @since 1.19.0
+	 * @param int[]    $blog_ids Blog ids to visit.
+	 * @param callable $callback Receives the current blog id and its offset.
+	 *                           Returning false stops the iteration.
+	 * @param int      $offset   Offset of the first blog in the list.
+	 * @return int Offset after the last blog that was visited.
+	 */
+	private static function switch_through_blogs($blog_ids, callable $callback, $offset = 0) {
+		foreach ($blog_ids as $blog_id) {
 			switch_to_blog($blog_id);
 
 			try {
-				$callback((int) $blog_id);
+				$result = $callback((int) $blog_id, $offset);
 			}
 			finally {
 				restore_current_blog();
 			}
+
+			$offset++;
+
+			if ($result === false) {
+				break;
+			}
 		}
+
+		return $offset;
 	}
 }

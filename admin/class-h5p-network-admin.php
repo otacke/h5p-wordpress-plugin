@@ -141,22 +141,28 @@ class H5P_Network_Admin {
 
     $migrate = new H5P_Network_Migrate_To_Network();
 
+    // The phase the batch started in, so a failure is judged by what had been
+    // done before it, not by how far this batch got.
+    $state_before = H5P_Network_Migrate_To_Network::getState();
+    $phase = $state_before['phase'];
+
     try {
-      // TODO: Should run in batches and give progress info
-      $migrate->migrateToNetwork();
+      $progress = $migrate->migrateNextBatch();
     }
     catch (Exception $exception) {
       $rolled_back = false;
 
-      // Only steps 1 and 2 can be undone. They just add the network libraries
-      // directory and the network tables, so discarding both restores the
-      // pre-migration state. Note that migrateToLocal() must NOT be used here:
-      // it would copy the half-migrated network state back into every blog.
-      if ($migrate->isRollbackPossible()) {
+      // The copy and database phases only add the network libraries directory
+      // and the network tables, so discarding both restores the pre-migration
+      // state. The clear phase deletes blog files and cannot be undone. Note
+      // that migrateToLocal() must NOT be used here: it would copy the
+      // half-migrated network state back into every blog.
+      if (H5P_Network_Migrate_To_Network::isPhaseRollbackPossible($phase)) {
         try {
           $demigrate = new H5P_Network_Migrate_To_Local();
           $demigrate->deleteNetworkFilesDirectory();
           $demigrate->dropNetworkTables();
+          H5P_Network_Migrate_To_Network::clearState();
           $rolled_back = true;
         }
         catch (Exception $rollback_exception) {
@@ -166,7 +172,8 @@ class H5P_Network_Admin {
 
       error_log(
         sprintf(
-          'H5P network migration failed in step %s: %s',
+          'H5P network migration failed in phase %s (step %s): %s',
+          $phase,
           $migrate->getFailedStep(),
           $exception->getMessage()
         )
@@ -176,6 +183,7 @@ class H5P_Network_Admin {
         array(
           'message'    => $exception->getMessage(),
           'step'       => $migrate->getFailedStep(),
+          'phase'      => $phase,
           'rolledBack' => $rolled_back,
         ),
         H5PCommons::HTTP_OK
@@ -183,6 +191,21 @@ class H5P_Network_Admin {
 
       // wp_send_json_error() exits, but never enable network mode on failure
       // should that ever not hold.
+      return;
+    }
+
+    if (!$progress['done']) {
+      // More blogs to work through, so the client calls again. Network mode
+      // stays off until everything is migrated, because the table names of
+      // every following request depend on it.
+      wp_send_json_success(
+        array(
+          'phase'      => $progress['phase'],
+          'percentage' => $progress['percentage'],
+          'done'       => false,
+          'nonce'      => wp_create_nonce('h5p_network_ajax'),
+        )
+      );
       return;
     }
 
@@ -200,9 +223,8 @@ class H5P_Network_Admin {
 
     wp_send_json_success(
       array(
-        'message' => sprintf(
-          __('Migrated libraries to network level.', 'h5p')
-        ),
+        'message' => __('Migrated libraries to network level.', 'h5p'),
+        'done'    => true,
       )
     );
   }
