@@ -1040,6 +1040,34 @@ msgstr ""
 msgid "http://joubel.com"
 msgstr ""
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "H5P mreža"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "H5P biblioteke"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "H5P upravljanje"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Nemate ovlaštenja da upravljate H5P tipovima sadržaja."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Upravljanje tipom sadržaja"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Pristup odbijen."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Biblioteke su premještene na nivo mreže."
+
 #~ msgid "Unable to create directory."
 #~ msgstr "Nije moguće kreirati direktorij."
 

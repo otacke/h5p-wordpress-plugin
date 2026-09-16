@@ -1162,6 +1162,34 @@ msgstr "Kann H5P Inhalt mit Slug %s nicht finden."
 msgid "Invalid json in semantics for %library"
 msgstr "Ungültige json in Semantik für %library"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "H5P-Netzwerk"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "H5P Bibliotheken"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "H5P-Verwaltung"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Du hast keine Berechtigung, H5P Inhaltstypen zu verwalten."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Inhaltstyp verwalten"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Zugriff verweigert."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Bibliotheken auf Netzwerkebene übertragen."
+
 #~ msgid ""
 #~ "Allows you to upload, create, share and use rich interactive content on "
 #~ "your WordPress site."

@@ -1019,6 +1019,34 @@ msgstr ""
 msgid "http://joubel.com"
 msgstr ""
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "H5P 网络"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "H5P 库"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "H5P 管理"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "您无权管理 H5P 内容类型。"
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "管理内容类型"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "无权限。"
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "已将库迁移至网络级别。"
+
 #~ msgid "Unable to create directory."
 #~ msgstr "无法创建目录。"
 

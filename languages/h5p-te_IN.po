@@ -1014,6 +1014,34 @@ msgstr "H5P"
 msgid "http://h5p.org/wordpress"
 msgstr "http://h5p.org/wordpress"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "H5P నెట్‌వర్క్"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "H5P లైబ్రరీలు"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "H5P నిర్వహణ"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "H5P కంటెంట్ రకాలను నిర్వహించడానికి మీకు అనుమతి లేదు."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "కంటెంట్ రకాన్ని నిర్వహించండి"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "అనుమతి నిరాకరించబడింది."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "లైబ్రరీలు నెట్‌వర్క్ స్థాయికి మార్చబడ్డాయి."
+
 #. Description of the plugin/theme
 msgid "Allows you to upload, create, share and use rich interactive content on your WordPress site."
 msgstr ""

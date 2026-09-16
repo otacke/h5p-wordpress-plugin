@@ -1023,6 +1023,34 @@ msgstr ""
 msgid "http://joubel.com"
 msgstr ""
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "Rede H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "Bibliotecas H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "Gerenciamento do H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Você não tem permissão para gerenciar os tipos de conteúdo H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Gerenciar tipo de conteúdo"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Permissão negada."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Bibliotecas migradas para o nível de rede."
+
 #~ msgid "Unable to create directory."
 #~ msgstr "Não foi possível criar a pasta."
 

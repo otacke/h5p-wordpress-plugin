@@ -1134,6 +1134,34 @@ msgstr "H5P Groep AS"
 msgid "http://joubel.com"
 msgstr "https://h5p.group/"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "H5P-netwerk"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "H5P-bibliotheken"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "H5P-beheer"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Je hebt geen toestemming om H5P-inhoudstypen te beheren."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Inhoudstype beheren"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Geen toestemming."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Bibliotheken gemigreerd naar netwerkniveau."
+
 #~ msgid "Insert H5P Content"
 #~ msgstr "Voeg H5P inhoud toe"
 

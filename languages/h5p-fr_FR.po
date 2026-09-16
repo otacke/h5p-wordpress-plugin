@@ -1154,6 +1154,34 @@ msgstr "Joubel"
 msgid "http://joubel.com"
 msgstr "http://joubel.com"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "Réseau H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "Bibliothèques H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "Gestion H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Vous n'êtes pas autorisé à gérer les types d'activité H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Gérer le type d'activité"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Autorisation refusée."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Bibliothèques migrées au niveau du réseau."
+
 #~ msgid "Confirmation action"
 #~ msgstr "Confirmer l'action"
 

@@ -1014,6 +1014,34 @@ msgstr "H5P"
 msgid "http://h5p.org/wordpress"
 msgstr "http://h5p.org/wordpress"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "Mtandao wa H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "Maktaba za H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "Usimamizi wa H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Huruhusiwi kusimamia aina za maudhui za H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Simamia aina ya maudhui"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Ruhusa imekataliwa."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Maktaba zimehamishiwa kwenye ngazi ya mtandao."
+
 #. Description of the plugin/theme
 msgid "Allows you to upload, create, share and use rich interactive content on your WordPress site."
 msgstr ""

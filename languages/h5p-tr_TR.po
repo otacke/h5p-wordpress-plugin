@@ -1064,6 +1064,34 @@ msgstr ""
 msgid "http://joubel.com"
 msgstr ""
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "H5P Ağı"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "H5P Kitaplıkları"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "H5P Yönetimi"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "H5P içerik türlerini yönetme yetkiniz yok."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "İçerik türünü yönet"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Yetkiniz yok."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Kitaplıklar ağ düzeyine taşındı."
+
 #~ msgid "Error, could not library semantics!"
 #~ msgstr "Hata; kitaplık semantiği bulunamadı!"
 

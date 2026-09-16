@@ -19,6 +19,9 @@ class H5P_Network_Admin {
 
   /**
    * Add the "H5P Network" page under the network Settings menu.
+   *
+   * In network mode the library screens are added as well, since libraries are
+   * then managed network wide instead of per blog.
    */
   public function add_network_admin_menu() {
     $this->library = NULL;
@@ -43,7 +46,63 @@ class H5P_Network_Admin {
         array($this->library, 'display_libraries_page')
       );
       add_action('load-' . $libraries_page, array($this->library, 'process_libraries'));
+
+      // Installing and updating content types writes to the network level
+      // libraries, so this is offered to network admins only.
+      add_menu_page(
+        __('H5P Management', 'h5p'),
+        __('H5P Management', 'h5p'),
+        'manage_network',
+        'h5p_management',
+        array($this, 'render_management_page'),
+        'none'
+      );
     }
+  }
+
+  /**
+   * Render the network level H5P management page.
+   *
+   * Shows the H5P Hub client, so content types shared by every blog can be
+   * installed and updated. Creating content is not offered here.
+   */
+  public function render_management_page() {
+    if (!current_user_can('manage_network')) {
+      wp_die(esc_html__('You do not have permission to manage H5P content types.', 'h5p'));
+    }
+
+    // Sets up H5PIntegration, including the editor assets list, and enqueues the
+    // H5P core scripts plus the editor scripts that belong on the page itself.
+    // The editor and hub stylesheets are deliberately not enqueued here: they
+    // are listed in H5PIntegration.editor.assets and loaded inside the iframe,
+    // which keeps them from restyling the WordPress admin page.
+    $content = new H5PContentAdmin('h5p');
+    $content->add_editor_assets();
+
+    // Loaded inside the iframe, after the editor stylesheets, to hide the parts
+    // of the hub that lead on to creating content.
+    $plugin = H5P_Plugin::get_instance();
+    $management_settings = array(
+      'style' => plugins_url('h5p/admin/styles/h5p-hub-management.css') . '?ver=' . H5P_Plugin::VERSION,
+      // Replaces the hub's own "Select content type" label, since content types
+      // are managed here rather than picked to author with.
+      'hubPanelLabel' => __('Manage content type', 'h5p'),
+    );
+    $plugin->print_settings($management_settings, 'H5PHubManagement');
+
+    include 'views/network-management.php';
+
+    // Enqueued after the view, as the other admin pages do. Depends on the
+    // editor glue from add_editor_assets(): its document ready handler puts
+    // H5PEditor.assets and H5PEditor.contentLanguage in place, which the iframe
+    // is built from, and both handlers run on document ready.
+    H5P_Plugin_Admin::add_script('h5p-jquery', 'h5p-php-library/js/jquery.js');
+    wp_enqueue_script(
+      $plugin->asset_handle('hub-management'),
+      plugins_url('h5p/admin/scripts/h5p-hub-management.js'),
+      array($plugin->asset_handle('editor')),
+      H5P_Plugin::VERSION
+    );
   }
 
   /**

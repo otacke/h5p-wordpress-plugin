@@ -1086,6 +1086,34 @@ msgstr "Joubel"
 msgid "http://joubel.com"
 msgstr "http://joubel.com"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "Xarxa H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "Biblioteques H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "Gestió H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "No teniu autorització per gestionar els tipus de contingut H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Gestiona el tipus de contingut"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Permís denegat."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "S'han migrat les biblioteques al nivell de xarxa."
+
 #~ msgid "Error, could not library semantics!"
 #~ msgstr "Error de semàntica en la biblioteca!"
 

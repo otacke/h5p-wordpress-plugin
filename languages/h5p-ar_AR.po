@@ -1110,6 +1110,34 @@ msgstr "شركة Joubel"
 msgid "http://joubel.com"
 msgstr "http://joubel.com"
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "شبكة H5P"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "مكتبات H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "إدارة H5P"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "ليس لديك صلاحية لإدارة أنواع محتوى H5P."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "إدارة نوع المحتوى"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "تم رفض الصلاحية."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "تم نقل المكتبات إلى مستوى الشبكة."
+
 #~ msgid "Insert H5P Content"
 #~ msgstr "أدخل محتوى H5P"
 

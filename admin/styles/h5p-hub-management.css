@@ -1,0 +1,21 @@
+/**
+ * Network level H5P management page.
+ *
+ * Loaded inside the hub iframe, on top of the editor stylesheets, to take away
+ * the parts of the hub that belong to content creation. Installing and updating
+ * content types is all this page offers.
+ */
+
+/*
+ * The copy/paste bar above the content type list. A direct child selector, so
+ * the screenshot carousel (nav.scroller) inside the content type details keeps
+ * working.
+ */
+.tab-panel > nav {
+  display: none;
+}
+
+/* "Use" buttons, which would take the author on to creating content. */
+.button.button-primary.button-use {
+  display: none;
+}

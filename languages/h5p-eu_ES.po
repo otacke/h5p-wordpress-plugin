@@ -900,6 +900,34 @@ msgstr ""
 msgid "http://h5p.org/wordpress"
 msgstr ""
 
+#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+msgid "H5P Network"
+msgstr "H5P sarea"
+
+#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+msgid "H5P Libraries"
+msgstr "H5P liburutegiak"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+msgid "H5P Management"
+msgstr "H5P kudeaketa"
+
+#: admin/class-h5p-network-admin.php:71
+msgid "You do not have permission to manage H5P content types."
+msgstr "Ez duzu H5P eduki motak kudeatzeko baimenik."
+
+#: admin/class-h5p-network-admin.php:89
+msgid "Manage content type"
+msgstr "Kudeatu eduki mota"
+
+#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+msgid "Permission denied."
+msgstr "Baimena ukatuta."
+
+#: admin/class-h5p-network-admin.php:176
+msgid "Migrated libraries to network level."
+msgstr "Liburutegiak sare mailara migratu dira."
+
 #. Description of the plugin/theme
 msgid "Allows you to upload, create, share and use rich interactive content on your WordPress site."
 msgstr ""
