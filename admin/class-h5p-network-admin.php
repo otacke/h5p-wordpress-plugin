@@ -134,6 +134,11 @@ class H5P_Network_Admin {
       );
     }
 
+    // Migrating copies and deletes every library file of every blog, which can
+    // take longer than the configured limit. Not honoured by every host.
+    @set_time_limit(0);
+    ignore_user_abort(true);
+
     $migrate = new H5P_Network_Migrate_To_Network();
 
     try {
@@ -214,6 +219,11 @@ class H5P_Network_Admin {
         H5PCommons::HTTP_FORBIDDEN
       );
     }
+
+    // Migrating copies and deletes every library file of every blog, which can
+    // take longer than the configured limit. Not honoured by every host.
+    @set_time_limit(0);
+    ignore_user_abort(true);
 
     $demigrate = new H5P_Network_Migrate_To_Local();
     $demigrate->migrateToLocal();
