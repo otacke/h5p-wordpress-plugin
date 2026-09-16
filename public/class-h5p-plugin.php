@@ -781,6 +781,26 @@ class H5P_Plugin {
   }
 
   /**
+   * Assign H5P capabilities to roles on every blog.
+   *
+   * Roles are stored per blog, so a change that depends on network wide state
+   * has to be applied to each of them. Used when network mode is switched on or
+   * off, which changes who may manage libraries.
+   *
+   * @since 1.19.0
+   */
+  public static function assign_capabilities_all_blogs() {
+    if (!is_multisite()) {
+      self::assign_capabilities();
+      return;
+    }
+
+    H5PCommons::for_each_blog(function () {
+      self::assign_capabilities();
+    });
+  }
+
+  /**
    * Make sure that the givn role has or hasn't the provided capability
    * depending on existing roles.
    *
