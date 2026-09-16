@@ -795,16 +795,9 @@ $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
       return;
     }
 
-    foreach (get_sites(array('fields' => 'ids')) as $blog_id) {
-      switch_to_blog($blog_id);
-
-      try {
-        self::assign_capabilities();
-      }
-      finally {
-        restore_current_blog();
-      }
-    }
+    H5PCommons::for_each_blog(function () {
+      self::assign_capabilities();
+    });
   }
 
   /**

@@ -197,6 +197,27 @@ class H5PCommons {
 	}
 
 	/**
+	 * Get the ids of all blogs in the network.
+	 *
+	 * get_sites() defaults to 'number' => 100, so it must be set to 0 to get
+	 * every blog. Without it, networks with more than 100 blogs are silently
+	 * truncated and network wide operations skip the remaining blogs.
+	 *
+	 * @since 1.19.0
+	 * @return int[] Blog ids, ordered by id.
+	 */
+	public static function get_all_blog_ids() {
+		return get_sites(
+			array(
+				'fields'  => 'ids',
+				'number'  => 0,
+				'orderby' => 'id',
+				'order'   => 'ASC',
+			)
+		);
+	}
+
+	/**
 	 * Run callback once per blog.
 	 *
 	 * @since 1.19.0
@@ -208,7 +229,7 @@ class H5PCommons {
 			return;
 		}
 
-		foreach (get_sites(array('fields' => 'ids')) as $blog_id) {
+		foreach (self::get_all_blog_ids() as $blog_id) {
 			switch_to_blog($blog_id);
 
 			try {

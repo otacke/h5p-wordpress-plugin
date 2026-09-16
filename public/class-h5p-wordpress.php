@@ -285,18 +285,11 @@ class H5PWordPress implements H5PFrameworkInterface {
   private function countContentUsageAllBlogs() {
     $usage = array();
 
-    foreach (get_sites(array('fields' => 'ids')) as $blog_id) {
-      switch_to_blog($blog_id);
-
-      try {
-        foreach ($this->countContentUsage() as $library_id => $count) {
-          $usage[$library_id] = (isset($usage[$library_id]) ? $usage[$library_id] : 0) + $count;
-        }
+    H5PCommons::for_each_blog(function () use (&$usage) {
+      foreach ($this->countContentUsage() as $library_id => $count) {
+        $usage[$library_id] = (isset($usage[$library_id]) ? $usage[$library_id] : 0) + $count;
       }
-      finally {
-        restore_current_blog();
-      }
-    }
+    });
 
     return $usage;
   }
