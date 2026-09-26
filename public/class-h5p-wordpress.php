@@ -375,8 +375,9 @@ class H5PWordPress implements H5PFrameworkInterface {
       $library['hasIcon'] = 0;
     }
 
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+
     if ($new) {
-      $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
       $wpdb->insert(
           $table_libraries,
           array(

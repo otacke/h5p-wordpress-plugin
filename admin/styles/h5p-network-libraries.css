@@ -1,0 +1,130 @@
+/* Library management interface on the network H5P Management page. */
+
+.h5p-network-libraries {
+  margin-top: 2rem;
+
+  h2 {
+    margin-bottom: 0.5rem;
+  }
+
+  .h5p-network-libraries-notices {
+    margin-bottom: 0.5rem;
+  }
+
+  .h5p-network-libraries-installed,
+  .h5p-network-libraries-available {
+    .h5p-network-libraries-grid {
+      display: grid;
+      margin: 0 0 1.5rem;
+      border: 1px solid #dcdcde;
+      border-radius: 4px;
+      overflow: hidden;
+
+      &.h5p-network-libraries-grid--installed {
+        grid-template-columns: minmax(0, 1fr) 6rem max(40px, 2.5rem) max(40px, 2.5rem) max(40px, 2.5rem) max(40px, 2.5rem);
+      }
+
+      &.h5p-network-libraries-grid--available {
+        grid-template-columns: minmax(0, 1fr) 6rem max(40px, 2.5rem) max(40px, 2.5rem);
+      }
+
+      .h5p-network-libraries-row {
+        background: #fff;
+        border-top: 1px solid #dcdcde;
+        column-gap: 0.25rem;
+        display: grid;
+        grid-column: 1 / -1;
+        grid-template-columns: inherit;
+        padding: 0.25rem;
+
+        &:first-child {
+          border-top: none;
+          background: #f6f7f7;
+          font-weight: 600;
+        }
+
+        &:nth-child(even):not(:first-child) {
+          background: #fbfbfc;
+        }
+
+        .h5p-network-libraries-cell {
+          display: flex;
+          align-items: center;
+          min-width: 0;
+
+          &[role='columnheader'] {
+            justify-content: flex-start;
+          }
+
+          &:focus-visible,
+          &:focus {
+            outline: 2px solid transparent;
+            box-shadow: 0 0 0 var(--wp-admin-border-width-focus, 1.5px) var(--wp-admin-theme-color);
+          }
+
+          .h5p-network-libraries-icon {
+            flex: none;
+            height: 2rem;
+            aspect-ratio: 16 / 9;
+            margin-right: 0.5rem;
+            object-fit: contain;
+          }
+
+          .h5p-network-libraries-name {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .h5p-icon-button {
+            position: relative;
+            width: 2.5rem;
+            height: 2.5rem;
+            /* .button sets min-height, which would break the square shape. */
+            min-width: 0;
+            min-height: 0;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            border-radius: 0;
+
+            &:focus-visible {
+              outline: 2px solid transparent;
+              box-shadow: 0 0 0 var(--wp-admin-border-width-focus, 1.5px) var(--wp-admin-theme-color);
+            }
+
+            &.h5p-icon-button-disabled {
+              opacity: 0.4;
+              cursor: default;
+            }
+
+            .dashicons {
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              width: 1.5rem;
+              height: 1.5rem;
+              font-size: 1.5rem;
+              line-height: normal;
+              text-align: center;
+
+              &::before {
+                line-height: normal;
+              }
+            }
+          }
+
+          .spinner {
+            float: none;
+            /* Auto margins center the spinner in the cell the button filled. */
+            margin: auto;
+          }
+        }
+      }
+    }
+  }
+}

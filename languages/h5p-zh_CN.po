@@ -229,7 +229,7 @@ msgstr "筛选内容"
 msgid "Page $x of $y"
 msgstr "$y / $x 页 "
 
-#: admin/class-h5p-library-admin.php:376
+#: admin/class-h5p-library-admin.php:376 admin/class-h5p-network-admin.php:346
 msgid "Version"
 msgstr "版本"
 
@@ -606,7 +606,7 @@ msgstr ""
 msgid "Sub type"
 msgstr ""
 
-#: admin/class-h5p-privacy-policy.php:397
+#: admin/class-h5p-network-admin.php:345 admin/class-h5p-privacy-policy.php:397
 #: admin/class-h5p-privacy-policy.php:447
 msgid "Library"
 msgstr ""
@@ -667,7 +667,8 @@ msgstr ""
 msgid "Last update"
 msgstr ""
 
-#: admin/views/libraries.php:45 admin/views/new-content.php:59
+#: admin/class-h5p-network-admin.php:354 admin/views/libraries.php:45
+#: admin/views/new-content.php:59
 msgid "Update"
 msgstr ""
 
@@ -1002,33 +1003,113 @@ msgstr ""
 msgid "http://h5p.org/wordpress"
 msgstr ""
 
-#: admin/class-h5p-network-admin.php:31 admin/class-h5p-network-admin.php:32
+#: admin/class-h5p-network-admin.php:28 admin/class-h5p-network-admin.php:29
 msgid "H5P Network"
 msgstr "H5P 网络"
 
-#: admin/class-h5p-network-admin.php:42 admin/class-h5p-network-admin.php:43
+#: admin/class-h5p-network-admin.php:39 admin/class-h5p-network-admin.php:40
 msgid "H5P Libraries"
 msgstr "H5P 库"
 
-#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+#: admin/class-h5p-network-admin.php:49 admin/class-h5p-network-admin.php:50
 msgid "H5P Management"
 msgstr "H5P 管理"
 
-#: admin/class-h5p-network-admin.php:71
+#: admin/class-h5p-network-admin.php:64
 msgid "You do not have permission to manage H5P content types."
 msgstr "您无权管理 H5P 内容类型。"
 
-#: admin/class-h5p-network-admin.php:89
-msgid "Manage content type"
-msgstr "管理内容类型"
-
-#: admin/class-h5p-network-admin.php:132 admin/class-h5p-network-admin.php:190
+#: admin/class-h5p-network-admin.php:394 admin/class-h5p-network-admin.php:491
 msgid "Permission denied."
 msgstr "无权限。"
 
-#: admin/class-h5p-network-admin.php:176
+#: admin/class-h5p-network-admin.php:477
 msgid "Migrated libraries to network level."
 msgstr "已将库迁移至网络级别。"
+
+#: admin/class-h5p-network-admin.php:347
+msgid "Information about %1$s"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:348
+msgid "Update %1$s"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:351
+msgid "Update %1$s from %2$s to %3$s?"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:352
+msgid ""
+"Update %1$s from %2$s to %3$s? After the update, upgrade the existing "
+"contents created with this library."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:349
+msgid "Update %1$s to %2$s"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:350
+msgid "Update %1$s to %2$s (new major or minor version)"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:355
+msgid "Upgrade contents using %1$s"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:356
+msgid "Delete %1$s"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:357
+msgid "Install %1$s"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:358
+msgid "Not available yet"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:359
+msgid "No libraries installed."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:360
+msgid "All available content types are installed."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:361
+msgid ""
+"The H5P Hub is disabled. Enable it in the H5P settings to install content "
+"types."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:362
+msgid "%1$s was installed."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:363
+msgid "%1$s was updated."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:364
+msgid "The library could not be installed or updated. Please try again."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:365
+msgid "Working..."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:366
+msgid "Dismiss this notice."
+msgstr ""
+
+#: admin/views/network-management.php:22
+msgid "Installed libraries"
+msgstr ""
+
+#: admin/views/network-management.php:30
+msgid "Available libraries"
+msgstr ""
 
 #. Description of the plugin/theme
 msgid ""
@@ -1095,7 +1176,7 @@ msgid ""
 "HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
 msgstr ""
 
-#: admin/views/network-settings.php:21
+#: admin/class-h5p-network-admin.php:353 admin/views/network-settings.php:21
 msgid "Cancel"
 msgstr ""
 
@@ -1144,359 +1225,3 @@ msgstr ""
 #: admin/class-h5p-plugin-admin.php:527
 msgid "Do you still want to enable the hub ?"
 msgstr ""
-
-#~ msgid "Unable to create directory."
-#~ msgstr "无法创建目录。"
-
-#~ msgid "Unable to get field type."
-#~ msgstr "无法获取字段类型。"
-
-#~ msgid "File type isn't allowed."
-#~ msgstr "文件类型不合法。"
-
-#~ msgid "Invalid field type."
-#~ msgstr "无效的字段类型"
-
-#~ msgid "Invalid image file format. Use jpg, png or gif."
-#~ msgstr "無效的圖片。可接受的格式是: JPG，GIF 和 PNG。"
-
-#~ msgid "File is not an image."
-#~ msgstr "这个文件不是图片！"
-
-#~ msgid "Invalid audio file format. Use mp3 or wav."
-#~ msgstr "音频文件格式无效。使用 mp3 或 wav。"
-
-#~ msgid "Invalid video file format. Use mp4 or webm."
-#~ msgstr "视频文件格式无效。使用 mp4 或 webm。"
-
-#~ msgid "Could not copy file."
-#~ msgstr "无法复制文件"
-
-#~ msgid "Content type upgrades are here!"
-#~ msgstr "内容类型升级在这里!"
-
-#, php-format
-#~ msgid ""
-#~ "If you've just upgraded you plugin, you should install the <a href=\"%s\" "
-#~ "target=\"_blank\">lastest version</a> of your content types."
-#~ msgstr ""
-#~ "如果你只是已经升级你的插件，请安装<a href=“%s” target=“_blank”>最新版本</"
-#~ "a>的内容类型。"
-
-#~ msgid ""
-#~ "In order to take advantage of this plugin you must first select and "
-#~ "download the H5P content types you wish to use."
-#~ msgstr "为了利用这个插件你必须首先选择并下载您想要使用的 H5P 内容类型。"
-
-#~ msgid "Here is a short guide to get you started:"
-#~ msgstr "这里是简单动手指南："
-
-#, php-format
-#~ msgid ""
-#~ "Select and download the desired content types from <a href=\"%s\" "
-#~ "target=\"_blank\">H5P.org</a>."
-#~ msgstr ""
-#~ "选择并从<a href=“%s” target=“_blank”>H5P.org</a>下载所需的内容类型。"
-
-#, php-format
-#~ msgid ""
-#~ "Upload the content types through the <a href=\"%s\" target=\"_blank\">Add "
-#~ "new</a> page on your WordPress installation."
-#~ msgstr ""
-#~ "通过 WordPress <a href=“%s” target=“_blank”>新增</a>页面的内容类型。"
-
-#, php-format
-#~ msgid ""
-#~ "Start creating your own interactive content through the <a href=\"%s\" "
-#~ "target=\"_blank\">Add new</a> page."
-#~ msgstr ""
-#~ "从<a href=\"%s\" target=\"_blank\">新增</a> 页面开始创造专属的交互式内容"
-#~ "吧。"
-
-#, php-format
-#~ msgid ""
-#~ "If you need help getting started you can file a <a href=\"%s\" "
-#~ "target=\"_blank\">support request</a>, check out our <a href=\"%s\" "
-#~ "target=\"_blank\">forum</a> or join our IRC channel #H5P on Freenode."
-#~ msgstr ""
-#~ "如果您需要获得帮助以开始你可以文件<a href=“%s” target=“_blank”>请求帮助</"
-#~ "a>、 查阅我们的<a href=“%s” target=“_blank”>论坛</a>或加入我们的 IRC 频道 "
-#~ "#H5P。"
-
-#~ msgid "The following libraries are outdated and should be upgraded:"
-#~ msgstr "以下库已经过时，请升级:"
-
-#~ msgid "To upgrade all the installed libraries, do the following:"
-#~ msgstr "若要升级所有已安装的库，请执行以下操作:"
-
-#, php-format
-#~ msgid "Download %s."
-#~ msgstr "下载“%s”"
-
-#, php-format
-#~ msgid "Select the downloaded <em> %s</em> file in the form below."
-#~ msgstr "在下面的表格中选择下载的<em>%s</em>文件。"
-
-#~ msgid ""
-#~ "Check off \"Only update existing libraries\" and click the <em>Upload</"
-#~ "em> button."
-#~ msgstr "勾选”只更新现有库”并单击<em>上载</em>按钮。"
-
-#~ msgid "Error, could not library semantics!"
-#~ msgstr "错误，库语义无效!"
-
-#~ msgid "Created"
-#~ msgstr "已创建"
-
-#~ msgid "Unable to create content directory."
-#~ msgstr "无法创建内容目录。"
-
-#~ msgid "Insert H5P Content"
-#~ msgstr "插入 H5P 内容"
-
-#~ msgid "Enter title here"
-#~ msgstr "输入标题"
-
-#~ msgid "Display buttons (download, embed and copyright)"
-#~ msgstr "显示操作栏和边框"
-
-#~ msgid "Download button"
-#~ msgstr "下载按钮"
-
-#~ msgid "Embed button"
-#~ msgstr "嵌入按钮"
-
-#~ msgid "Copyright button"
-#~ msgstr "版权的按钮"
-
-#~ msgid "Action bar"
-#~ msgstr "操作栏"
-
-#~ msgid "About H5P button"
-#~ msgstr "关于 H5P 按钮"
-
-#~ msgid "User Tracking"
-#~ msgstr "用户跟踪"
-
-#~ msgid "Library updates"
-#~ msgstr "库更新"
-
-#~ msgid "Fetch information about updates for your H5P content types"
-#~ msgstr "获取有关您 H5P 内容类型的更新信息"
-
-#~ msgid "Save content state"
-#~ msgstr "保存内容状态"
-
-#~ msgid "Installed"
-#~ msgstr "已安装"
-
-#~ msgid "Unable to write to the content directory."
-#~ msgstr "无法写入到内容目录。"
-
-#~ msgid "Unable to write to the libraries directory."
-#~ msgstr "无法写入到库目录。"
-
-#~ msgid "Your PHP version does not support ZipArchive."
-#~ msgstr "你的PHP版本不支持zip压缩。"
-
-#~ msgid "Unable to write to the temporary directory."
-#~ msgstr "无法写入临时目录。"
-
-#~ msgid ""
-#~ "The file you uploaded is not a valid HTML5 Package (It does not have "
-#~ "the .h5p file extension)"
-#~ msgstr "你上传的文件不是有效的 HTML5 程序包 (扩展名不是.h5p)"
-
-#~ msgid ""
-#~ "The file you uploaded is not a valid HTML5 Package (We are unable to "
-#~ "unzip it)"
-#~ msgstr "你上传的文件不是有效的 HTML5 程序包 (我们无法将其解压缩)"
-
-#~ msgid "Could not parse the main h5p.json file"
-#~ msgstr "无法解析主要 h5p.json 文件"
-
-#~ msgid "The main h5p.json file is not valid"
-#~ msgstr "无效的主 h5p.json 文件"
-
-#~ msgid "Invalid content folder"
-#~ msgstr "无效的内容文件夹"
-
-#~ msgid "Could not find or parse the content.json file"
-#~ msgstr "未能找到或解析 content.json 文件"
-
-#~ msgid ""
-#~ "Library directory name must match machineName or machineName-"
-#~ "majorVersion.minorVersion (from library.json). (Directory: "
-#~ "%directoryName , machineName: %machineName, majorVersion: %majorVersion, "
-#~ "minorVersion: %minorVersion)"
-#~ msgstr ""
-#~ "库目录名称必须匹配机器名或计算机名版本号 majorVersion.minorVersion (从 "
-#~ "library.json)。(目录: %directoryname、 机器名: %machinename，"
-#~ "majorVersion: %majorversion，minorVersion: %minorversion)"
-
-#~ msgid "A valid content folder is missing"
-#~ msgstr "合法内容文件夹未能找到。"
-
-#~ msgid "A valid main h5p.json file is missing"
-#~ msgstr "有效的主 h5p.json 文件缺失"
-
-#~ msgid "Missing required library @library"
-#~ msgstr "缺少所需的库 @library"
-
-#~ msgid ""
-#~ "Note that the libraries may exist in the file you uploaded, but you're "
-#~ "not allowed to upload new libraries. Contact the site administrator about "
-#~ "this."
-#~ msgstr "请注意，你上传的文件可能存在不允许上传新的库。请于网站管理员联系。"
-
-#~ msgid "Invalid library name: %name"
-#~ msgstr "无效的库名称: %name"
-
-#~ msgid ""
-#~ "Could not find library.json file with valid json format for library %name"
-#~ msgstr "库 %name 中找不到 library.json 文件与有效 json 格式的"
-
-#~ msgid "Invalid semantics.json file has been included in the library %name"
-#~ msgstr "库 %name 中的 semantics.json 文件无效。"
-
-#~ msgid "Invalid language file %file in library %library"
-#~ msgstr "库 %library 中的 %file 语言文件无效"
-
-#~ msgid ""
-#~ "Invalid language file %languageFile has been included in the library %name"
-#~ msgstr "库 %name中的 %languageFile语言文件无效"
-
-#~ msgid "The file \"%file\" is missing from library: \"%name\""
-#~ msgstr "“%name”库中的文件”%file”缺失。"
-
-#~ msgid ""
-#~ "The library \"%libraryName\" requires H5P %requiredVersion, but only H5P "
-#~ "%coreApi is installed."
-#~ msgstr ""
-#~ "\"%libraryName\" 库需要的 H5P 版本为%requiredVersion, 而仅仅只安装了 "
-#~ "%coreApi。"
-
-#~ msgid "Invalid data provided for %property in %library. Boolean expected."
-#~ msgstr "%library中为 %property 提供的数据无效。需要Boolean类型。"
-
-#~ msgid "Invalid data provided for %property in %library"
-#~ msgstr "%library中为 %property 提供的数据无效"
-
-#~ msgid "Can't read the property %property in %library"
-#~ msgstr "无法从%library中读取属性 %property。"
-
-#~ msgid "The required property %property is missing from %library"
-#~ msgstr "%library中缺少必需的属性 %property。"
-
-#~ msgid "Illegal option %option in %library"
-#~ msgstr "%library含非法选项 %option "
-
-#~ msgid "Added %new new H5P libraries and updated %old old."
-#~ msgstr "%new 已添加； %old已更新。"
-
-#~ msgid "Added %new new H5P libraries."
-#~ msgstr " %new 库已添加。"
-
-#, php-format
-#~ msgid "Updated %old H5P libraries."
-#~ msgstr "%old H5P 库已经更新。"
-
-#~ msgid "Unable to write to the exports directory."
-#~ msgstr "无法写入到导出目录。"
-
-#~ msgid "Missing dependency @dep required by @lib."
-#~ msgstr "@lib缺少依赖项 @dep。"
-
-#~ msgid "Unable to copy file tree."
-#~ msgstr "无法复制文件树。"
-
-#~ msgid ""
-#~ "Provided string is not valid according to regexp in semantics. (value: "
-#~ "\"%value\", regexp: \"%regexp\")"
-#~ msgstr "正则表达式匹配无效。(值:”%value”，正则表达式:”%regexp”)"
-
-#, php-format
-#~ msgid ""
-#~ "File \"%filename\" not allowed. Only files with the following extensions "
-#~ "are allowed: %files-allowed."
-#~ msgstr "文件”%filename”无效。仅支持具有下列扩展名的文件:  %files。"
-
-#~ msgid "Invalid selected option in multiselect."
-#~ msgstr "在多选项中选定的选项无效。"
-
-#~ msgid "Invalid selected option in select."
-#~ msgstr "无效的选项。"
-
-#~ msgid ""
-#~ "H5P internal error: unknown content type \"@type\" in semantics. Removing "
-#~ "content!"
-#~ msgstr "H5P 内部错误: 类型为 “@type”的内容语义无法识别。建议删除!"
-
-#~ msgid ""
-#~ "Library used in content is not a valid library according to semantics"
-#~ msgstr "内容中使用的库不是一个有效的库语义"
-
-#~ msgid "Disable fullscreen"
-#~ msgstr "禁止全屏"
-
-#~ msgid "Download"
-#~ msgstr "下载"
-
-#~ msgid "Rights of use"
-#~ msgstr "使用权"
-
-#~ msgid "Embed"
-#~ msgstr "嵌入"
-
-#~ msgid "Size"
-#~ msgstr "大小"
-
-#~ msgid "Show advanced"
-#~ msgstr "显示高级功能"
-
-#~ msgid "Hide advanced"
-#~ msgstr "隐藏高级部分"
-
-#~ msgid ""
-#~ "Include this script on your website if you want dynamic sizing of the "
-#~ "embedded content:"
-#~ msgstr "如果要动态调整大小的嵌入的内容，包含此脚本在您的网站:"
-
-#~ msgid "Close"
-#~ msgstr "关闭"
-
-#~ msgid "Year"
-#~ msgstr "年"
-
-#~ msgid "Source"
-#~ msgstr "源"
-
-#~ msgid "License"
-#~ msgstr "授权"
-
-#~ msgid "Thumbnail"
-#~ msgstr "缩略图"
-
-#~ msgid "No copyright information available for this content."
-#~ msgstr "没有可用的此内容的版权信息。"
-
-#~ msgid "Download this content as a H5P file."
-#~ msgstr "下载H5P文件"
-
-#~ msgid "View copyright information for this content."
-#~ msgstr "查看此内容的版权信息。"
-
-#~ msgid "View the embed code for this content."
-#~ msgstr "查看此内容的嵌入代码。"
-
-#~ msgid "Visit H5P.org to check out more cool content."
-#~ msgstr "访问H5P.org查看更多炫酷内容。"
-
-#~ msgid "This content has changed since you last used it."
-#~ msgstr "内容已更改。"
-
-#~ msgid "You'll be starting over."
-#~ msgstr "即将重新开始。"
-
-#~ msgid "Invalid json in semantics for %library"
-#~ msgstr "json 不符合 %library 库中的语义"

@@ -57,32 +57,318 @@ class H5P_Network_Admin {
   }
 
   /**
-   * Render the network level H5P management page with H5P Hub client for management.
+   * Render the network level H5P management page.
    */
   public function render_management_page() {
     if (!current_user_can('manage_network')) {
       wp_die(esc_html__('You do not have permission to manage H5P content types.', 'h5p'));
     }
 
-    // Set up H5PIntegration and enqueue editor scripts, but not its stylesheets: those load inside the iframe.
+    // Set up H5PIntegration and enqueue the editor scripts, so H5PEditor.getAjaxUrl() is available.
     $content = new H5PContentAdmin('h5p');
     $content->add_editor_assets();
 
     $plugin = H5P_Plugin::get_instance();
-    $management_settings = array(
-      'style' => plugins_url('h5p/admin/styles/h5p-hub-management.css') . '?ver=' . H5P_Plugin::VERSION,
-      'hubPanelLabel' => __('Manage content type', 'h5p'),
-    );
-    $plugin->print_settings($management_settings, 'H5PHubManagement');
+    $library_settings = array('l10n' => $this->get_library_l10n());
+    $plugin->print_settings($library_settings, 'H5PNetworkLibraries');
 
+    $overview = $this->get_library_overview();
     include 'views/network-management.php';
 
     H5P_Plugin_Admin::add_script('h5p-jquery', 'h5p-php-library/js/jquery.js');
     wp_enqueue_script(
-      $plugin->asset_handle('hub-management'),
-      plugins_url('h5p/admin/scripts/h5p-hub-management.js'),
+      $plugin->asset_handle('plugin-confirmation-dialog'),
+      plugins_url('h5p/admin/scripts/h5p-confirmation-dialog.js'),
+      array(),
+      H5P_Plugin::VERSION
+    );
+    wp_enqueue_style(
+      $plugin->asset_handle('plugin-confirmation-dialog'),
+      plugins_url('h5p/admin/styles/h5p-confirmation-dialog.css'),
+      array(),
+      H5P_Plugin::VERSION
+    );
+    wp_enqueue_script(
+      $plugin->asset_handle('network-libraries'),
+      plugins_url('h5p/admin/scripts/h5p-network-libraries.js'),
       array($plugin->asset_handle('editor')),
       H5P_Plugin::VERSION
+    );
+    wp_enqueue_style(
+      $plugin->asset_handle('network-libraries'),
+      plugins_url('h5p/admin/styles/h5p-network-libraries.css'),
+      array(),
+      H5P_Plugin::VERSION
+    );
+  }
+
+  /**
+   * Collect the installed and available libraries for the network management page.
+   *
+   * @return array
+   */
+  private function get_library_overview() {
+    $plugin = H5P_Plugin::get_instance();
+    $core = $plugin->get_h5p_instance('core');
+    $interface = $plugin->get_h5p_instance('interface');
+
+    $hub_is_enabled = get_option('h5p_hub_is_enabled', TRUE) == TRUE;
+
+    // Keep the hub cache fresh, like H5PEditorAjax::isContentTypeCacheUpdated() does.
+    if ($hub_is_enabled && $interface->getOption('content_type_cache_updated_at', 0) + 60 * 60 * 24 * 7 < time()) {
+      try {
+        $core->updateContentTypeCache();
+      }
+      catch (Exception $exception) {
+        // Not fatal: the existing cache is used instead.
+        error_log('H5P network management: ' . $exception->getMessage());
+      }
+    }
+
+    $hub = array();
+    foreach ((array) $this->get_hub_cache() as $cached) {
+      if (!isset($hub[$cached->machine_name])
+          || $this->compare_library_versions($cached, $hub[$cached->machine_name]) > 0) {
+        $hub[$cached->machine_name] = $cached;
+      }
+    }
+
+    $has_icons = $this->load_library_icons();
+    $installed = array();
+    $installed_names = array();
+    foreach ($interface->loadLibraries() as $name => $versions) {
+      $installed_names[$name] = TRUE;
+
+      // loadLibraries() does not sort, so find the newest installed version explicitly.
+      $newest = $versions[0];
+      foreach ($versions as $version) {
+        if ($this->compare_library_versions($version, $newest) > 0) {
+          $newest = $version;
+        }
+      }
+
+      foreach ($versions as $version) {
+        $installed[] = array(
+          'id' => (int) $version->id,
+          'machineName' => $version->name,
+          'title' => $version->title,
+          'majorVersion' => (int) $version->major_version,
+          'minorVersion' => (int) $version->minor_version,
+          'patchVersion' => (int) $version->patch_version,
+          'runnable' => (bool) $version->runnable,
+          'icon' => $this->get_library_icon($version, $has_icons, $hub, $interface),
+          // Only the newest installed version of a library can offer an update.
+          'update' => ($version === $newest) ? $this->get_available_update($version, $hub) : NULL,
+        );
+      }
+    }
+
+    $available = array();
+    foreach ($hub as $machine_name => $cached) {
+      if (isset($installed_names[$machine_name])) {
+        continue;
+      }
+      $available[] = array(
+        'machineName' => $cached->machine_name,
+        'title' => $cached->title,
+        'icon' => !empty($cached->icon) ? $cached->icon : null,
+        'majorVersion' => (int) $cached->major_version,
+        'minorVersion' => (int) $cached->minor_version,
+        'patchVersion' => (int) $cached->patch_version,
+        'canInstall' => $this->is_hub_library_compatible($cached)
+          && $this->can_install_hub_library($cached),
+      );
+    }
+
+    usort($installed, array($this, 'sort_libraries'));
+    usort($available, array($this, 'sort_libraries'));
+
+    return array(
+      'installed' => $installed,
+      'available' => $available,
+      'hubIsEnabled' => $hub_is_enabled,
+    );
+  }
+
+  /**
+   * @return array
+   */
+  private function get_hub_cache() {
+    return (array) (new H5PEditorWordPressAjax())->getContentTypeCache();
+  }
+
+  /**
+   * loadLibraries() does not return has_icon, so the values are loaded separately.
+   *
+   * @return array
+   */
+  private function load_library_icons() {
+    global $wpdb;
+
+    $table = H5PCommons::build_full_db_table_name('h5p_libraries');
+    $has_icons = array();
+    foreach ((array) $wpdb->get_results("SELECT id, has_icon FROM {$table}") as $row) {
+      $has_icons[(int) $row->id] = (bool) $row->has_icon;
+    }
+    return $has_icons;
+  }
+
+  /**
+   * Get the icon of an installed library: local icon, hub icon or none.
+   *
+   * @param object $library
+   * @param array $has_icons
+   * @param array $hub
+   * @param object $interface
+   *
+   * @return string|null
+   */
+  private function get_library_icon($library, $has_icons, $hub, $interface) {
+    if (!empty($has_icons[(int) $library->id])) {
+      $folder = H5PCore::libraryToFolderName(array(
+        'machineName' => $library->name,
+        'majorVersion' => (int) $library->major_version,
+        'minorVersion' => (int) $library->minor_version,
+        'patchVersion' => (int) $library->patch_version,
+        'patchVersionInFolderName' => FALSE,
+      ));
+      return $interface->getLibraryFileUrl($folder, 'icon.svg');
+    }
+
+    if (isset($hub[$library->name]) && !empty($hub[$library->name]->icon)) {
+      return $hub[$library->name]->icon;
+    }
+
+    return null;
+  }
+
+  /**
+   * Find a newer, compatible and installable hub version of an installed library.
+   *
+   * @param object $library
+   * @param array $hub
+   *
+   * @return array|null
+   */
+  private function get_available_update($library, $hub) {
+    if (!isset($hub[$library->name])) {
+      return NULL;
+    }
+
+    $cached = $hub[$library->name];
+    if ($this->compare_library_versions($cached, $library) <= 0
+        || !$this->is_hub_library_compatible($cached)
+        || !$this->can_install_hub_library($cached)) {
+      return NULL;
+    }
+
+    return array(
+      'majorVersion' => (int) $cached->major_version,
+      'minorVersion' => (int) $cached->minor_version,
+      'patchVersion' => (int) $cached->patch_version,
+      'isMinorOrMajor' => (int) $cached->major_version !== (int) $library->major_version
+        || (int) $cached->minor_version !== (int) $library->minor_version,
+    );
+  }
+
+  /**
+   * Check that a hub library is compatible with the installed H5P core API version.
+   *
+   * @param object $cached
+   *
+   * @return bool
+   */
+  private function is_hub_library_compatible($cached) {
+    $required_major = (int) $cached->h5p_major_version;
+    $required_minor = (int) $cached->h5p_minor_version;
+    return $required_major < H5PCore::$coreApi['majorVersion']
+      || ($required_major === H5PCore::$coreApi['majorVersion']
+          && $required_minor <= H5PCore::$coreApi['minorVersion']);
+  }
+
+  /**
+   * Check that the current user may install a hub library, like H5peditor::canInstallContentType().
+   *
+   * @param object $cached
+   *
+   * @return bool
+   */
+  private function can_install_hub_library($cached) {
+    return H5PCommons::current_user_can_manage_libraries()
+      || ((bool) $cached->is_recommended && H5PCommons::current_user_can_install_recommended_libraries());
+  }
+
+  /**
+   * Compare two library versions.
+   *
+   * @param object $a
+   * @param object $b
+   *
+   * @return int
+   */
+  private function compare_library_versions($a, $b) {
+    foreach (array('major_version', 'minor_version', 'patch_version') as $component) {
+      $a_value = (int) $a->{$component};
+      $b_value = (int) $b->{$component};
+      if ($a_value !== $b_value) {
+        return $a_value < $b_value ? -1 : 1;
+      }
+    }
+    return 0;
+  }
+
+  /**
+   * Sort library rows by title, then by version.
+   *
+   * @param array $a
+   * @param array $b
+   *
+   * @return int
+   */
+  private static function sort_libraries($a, $b) {
+    $title = strcasecmp($a['title'], $b['title']);
+    if ($title !== 0) {
+      return $title;
+    }
+    $a_version = $a['majorVersion'] . '.' . $a['minorVersion'] . '.' . $a['patchVersion'];
+    $b_version = $b['majorVersion'] . '.' . $b['minorVersion'] . '.' . $b['patchVersion'];
+    return version_compare($a_version, $b_version);
+  }
+
+  /**
+   * Format the version of a library row as major.minor.patch.
+   *
+   * @param array $library
+   *
+   * @return string
+   */
+  private function format_library_version($library) {
+    return $library['majorVersion'] . '.' . $library['minorVersion'] . '.' . $library['patchVersion'];
+  }
+
+  /**
+   * Format the name of a library row as title (machine name).
+   *
+   * @param array $library
+   *
+   * @return string
+   */
+  private function format_library_name($library) {
+    return sprintf('%s (%s)', $library['title'], $library['machineName']);
+  }
+
+  /**
+   * Get the strings the library grid script needs; the grids themselves are rendered server-side.
+   *
+   * @return array
+   */
+  private function get_library_l10n() {
+    return array(
+      'cancel' => __('Cancel', 'h5p'),
+      'confirm' => __('Update', 'h5p'),
+      'requestFailed' => __('The library could not be installed or updated. Please try again.', 'h5p'),
+      'working' => __('Working...', 'h5p'),
+      'dismiss' => __('Dismiss this notice.', 'h5p'),
     );
   }
 
