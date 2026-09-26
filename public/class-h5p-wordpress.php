@@ -988,8 +988,36 @@ class H5PWordPress implements H5PFrameworkInterface {
 
   /**
    * Implements clearFilteredParameters().
+   *
+   * In network mode libraries are shared, so content using them on every blog
+   * needs to be filtered again.
    */
   public function clearFilteredParameters($library_ids) {
+    if (!H5PCommons::is_network_enabled()) {
+      $this->clearFilteredParametersOnBlog($library_ids);
+      return;
+    }
+
+    H5PCommons::for_each_blog(function () use ($library_ids) {
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+      $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
+
+      // A blog where H5P has never been loaded has no content tables, and no content either.
+      if (!$this->tableExists($table_contents) || !$this->tableExists($table_contents_libraries)) {
+        return;
+      }
+
+      $this->clearFilteredParametersOnBlog($library_ids);
+    });
+  }
+
+  /**
+   * Clear filtered parameters of content using given libraries on the current blog.
+   *
+   * @since 1.19.0
+   * @param int[] $library_ids
+   */
+  private function clearFilteredParametersOnBlog($library_ids) {
     global $wpdb;
 
     $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');

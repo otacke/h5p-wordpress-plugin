@@ -69,7 +69,10 @@ class H5P_Network_Admin {
     $content->add_editor_assets();
 
     $plugin = H5P_Plugin::get_instance();
-    $library_settings = array('l10n' => $this->get_library_l10n());
+    $library_settings = array(
+      'upgrade' => $this->get_upgrade_settings(),
+      'l10n' => $this->get_library_l10n(),
+    );
     $plugin->print_settings($library_settings, 'H5PNetworkLibraries');
 
     $overview = $this->get_library_overview();
@@ -133,6 +136,9 @@ class H5P_Network_Admin {
       }
     }
 
+    // Content counts per library version across all blogs, for the upgrade and delete actions.
+    $content_counts = $this->get_content_counts();
+
     $has_icons = $this->load_library_icons();
     $installed = array();
     $installed_names = array();
@@ -159,6 +165,12 @@ class H5P_Network_Admin {
           'icon' => $this->get_library_icon($version, $has_icons, $hub, $interface),
           // Only the newest installed version of a library can offer an update.
           'update' => ($version === $newest) ? $this->get_available_update($version, $hub) : NULL,
+          // Contents that use this version as their main library, across all blogs.
+          'contentCount' => isset($content_counts[(int) $version->id])
+            ? (int) $content_counts[(int) $version->id]
+            : 0,
+          // The newest installed version of the same major.minor line, if newer than this row.
+          'upgradeTarget' => $this->get_upgrade_target($version, $newest),
         );
       }
     }
@@ -195,6 +207,90 @@ class H5P_Network_Admin {
    */
   private function get_hub_cache() {
     return (array) (new H5PEditorWordPressAjax())->getContentTypeCache();
+  }
+
+  /**
+   * Count the contents that use each library version as their main library, across all blogs.
+   *
+   * @return array Map of library id to content count.
+   */
+  private function get_content_counts() {
+    $counts = array();
+
+    H5PCommons::for_each_blog(function () use (&$counts) {
+      global $wpdb;
+
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+
+      if (!$this->table_exists($table_contents)) {
+        return; // Blog has no H5P content tables yet.
+      }
+
+      $rows = $wpdb->get_results(
+        "SELECT library_id, COUNT(id) AS content_count
+          FROM {$table_contents}
+          GROUP BY library_id"
+      );
+
+      foreach ($rows as $row) {
+        $id = (int) $row->library_id;
+        $counts[$id] = (isset($counts[$id]) ? $counts[$id] : 0) + (int) $row->content_count;
+      }
+    });
+
+    return $counts;
+  }
+
+  /**
+   * Determine whether given database table exists on the current blog.
+   *
+   * @param string $table Full table name.
+   *
+   * @return bool
+   */
+  private function table_exists($table) {
+    global $wpdb;
+
+    return $wpdb->get_var(
+      $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))
+    ) === $table;
+  }
+
+  /**
+   * Find the newest installed version of a library that has a newer major.minor than the given row.
+   *
+   * @param object $library A row of the installed libraries.
+   * @param object $newest The newest installed version of the same machine name.
+   *
+   * @return array|null
+   */
+  private function get_upgrade_target($library, $newest) {
+    if ((int) $newest->major_version === (int) $library->major_version
+        && (int) $newest->minor_version === (int) $library->minor_version) {
+      return NULL;
+    }
+
+    return array(
+      'id' => (int) $newest->id,
+      'majorVersion' => (int) $newest->major_version,
+      'minorVersion' => (int) $newest->minor_version,
+      'patchVersion' => (int) $newest->patch_version,
+    );
+  }
+
+  /**
+   * Settings for the content upgrade, following H5PLibraryAdmin::display_content_upgrades().
+   *
+   * @return array
+   */
+  private function get_upgrade_settings() {
+    return array(
+      'libraryBaseUrl' => admin_url('admin-ajax.php?action=h5p_content_upgrade_library&library='),
+      'progressUrl' => admin_url('admin-ajax.php?action=h5p_content_upgrade_progress&id='),
+      'scriptBaseUrl' => plugins_url('h5p/h5p-php-library/js'),
+      'buster' => '?ver=' . H5P_Plugin::VERSION,
+      'token' => wp_create_nonce('h5p_content_upgrade'),
+    );
   }
 
   /**
@@ -369,6 +465,22 @@ class H5P_Network_Admin {
       'requestFailed' => __('The library could not be installed or updated. Please try again.', 'h5p'),
       'working' => __('Working...', 'h5p'),
       'dismiss' => __('Dismiss this notice.', 'h5p'),
+      // The msgids of the upgrade error messages are the same as in H5PLibraryAdmin::display_content_upgrades(),
+      // so the translations of the two pages stay in sync.
+      'inProgress' => __('Upgrading to %ver...', 'h5p'),
+      'error' => __('An error occurred while processing parameters:', 'h5p'),
+      'errorData' => __('Could not load data for library %lib.', 'h5p'),
+      'errorContent' => __('Could not upgrade content %id:', 'h5p'),
+      'errorScript' => __('Could not load upgrades script for %lib.', 'h5p'),
+      'errorParamsBroken' => __('Parameters are broken.', 'h5p'),
+      'errorLibrary' => __('Missing required library %lib.', 'h5p'),
+      'errorTooHighVersion' => __('Parameters contain %used while only %supported or earlier are supported.', 'h5p'),
+      'errorNotSupported' => __('Parameters contain %used which is not supported.', 'h5p'),
+      // The singular templates contain no %d; the JS picks the template by count.
+      'upgradedSingular' => _n('1 content upgraded', '%d contents upgraded', 1, 'h5p'),
+      'upgradedPlural' => _n('1 content upgraded', '%d contents upgraded', 2, 'h5p'),
+      'failedSingular' => _n('1 content could not be upgraded', '%d contents could not be upgraded', 1, 'h5p'),
+      'failedPlural' => _n('1 content could not be upgraded', '%d contents could not be upgraded', 2, 'h5p'),
     );
   }
 

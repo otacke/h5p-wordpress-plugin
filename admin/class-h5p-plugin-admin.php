@@ -1257,16 +1257,16 @@ class H5P_Plugin_Admin {
     $data = filter_input(INPUT_POST, 'data');
     $preload = filter_input(INPUT_POST, 'preload');
     $invalidate = filter_input(INPUT_POST, 'invalidate');
+    $table_contents_user_data = H5PCommons::build_full_db_table_name('h5p_contents_user_data');
     if ($data !== NULL && $preload !== NULL && $invalidate !== NULL) {
       if (!wp_verify_nonce(filter_input(INPUT_GET, 'token'), 'h5p_contentuserdata')) {
         H5PCore::ajaxError(__('Invalid security token', $this->plugin_slug));
         exit;
       }
 
-      $table_contents_user_data = H5PCommons::build_full_db_table_name('h5p_contents_user_data');
       if ($data === '0') {
         // Remove data
-        $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_contents_user_data'),
+        $wpdb->delete($table_contents_user_data,
           array(
             'content_id' => $content_id,
             'data_id' => $data_id,

@@ -92,11 +92,36 @@
         <div class="h5p-network-libraries-cell" role="gridcell">
           <?php
           if ($runnable) {
+            $upgrade_target = $library['upgradeTarget'];
+            $content_count = $library['contentCount'];
+            $can_upgrade = $content_count > 0 && !empty($upgrade_target);
+
             $button = array(
               'icon' => 'controls-skipforward',
               'label' => sprintf(__('Upgrade contents using %1$s', 'h5p'), $name),
-              'disabled' => TRUE,
+              'disabled' => !$can_upgrade,
             );
+            if ($can_upgrade) {
+              $old_version = $library['majorVersion'] . '.' . $library['minorVersion'];
+              $new_version = $upgrade_target['majorVersion'] . '.' . $upgrade_target['minorVersion'];
+              $contents = sprintf(_n('1 content', '%d contents', $content_count, 'h5p'), $content_count);
+              $button['data'] = array(
+                'h5p-library-action' => 'upgrade',
+                'library-id' => $library['id'],
+                'target-id' => $upgrade_target['id'],
+                'machine-name' => $library['machineName'],
+                'old-version' => $old_version,
+                'new-version' => $new_version,
+                'total' => $content_count,
+                'confirm-message' => sprintf(
+                  __('Upgrade %1$s using %2$s from %3$s to %4$s?', 'h5p'),
+                  $contents,
+                  $name,
+                  $old_version,
+                  $new_version
+                ),
+              );
+            }
             include __DIR__ . '/network-libraries-icon-button.php';
           }
           ?>

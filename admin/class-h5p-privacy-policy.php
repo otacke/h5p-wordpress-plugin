@@ -554,13 +554,15 @@ class H5PPrivacyPolicy {
 
     $erase_items = array();
 
+    // Without a WordPress user there is nothing to erase, and max() needs at least one value.
+    $length = array(0);
+
     $wp_user = get_user_by('email', $email);
     if ($wp_user) {
       $table_results = H5PCommons::build_full_db_table_name('h5p_results');
       $table_contents_user_data = H5PCommons::build_full_db_table_name('h5p_contents_user_data');
       $table_events = H5PCommons::build_full_db_table_name('h5p_events');
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-      $length = array();
       $length[] = $wpdb->query($wpdb->prepare(
         "DELETE FROM {$table_results} WHERE user_id = %d LIMIT %d",
         $wp_user->ID,
