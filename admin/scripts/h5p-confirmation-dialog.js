@@ -19,6 +19,29 @@
   };
 
   /**
+   * Set the HTML content of an element. Will hide the element if no HTML is set.
+   *
+   * The dialog performs no sanitization. The caller MUST pass HTML that has already
+   * been purified server-side (wp_kses with a restricted tag/attribute whitelist),
+   * because the HTML is assigned to innerHTML.
+   * @param {HTMLElement} element HTML element to set HTML of.
+   * @param {string|undefined} html HTML to set, purified by the caller.
+   */
+  setHTMLDangerously = (element, html) => {
+    if (!(element instanceof HTMLElement)) {
+      return;
+    }
+
+    if (html) {
+      element.innerHTML = html;
+      element.classList.remove('display-none');
+    }
+    else {
+      element.classList.add('display-none');
+    }
+  };
+
+  /**
    * Build DOM eleemnts.
    * @param {object} params Parameters.
    * @returns {object} Dom elements.
@@ -37,7 +60,7 @@
     body.classList.add('h5p-plugin-confirmation-dialog-body');
     content.append(body);
 
-    const message = document.createElement('span');
+    const message = document.createElement('div');
     message.classList.add('h5p-plugin-confirmation-dialog-message');
     body.append(message);
 
@@ -62,6 +85,7 @@
    * @param {HTMLElement} [params.parentDOM] DOM element to attach dialog to. Falls back to document.body.
    * @param {object} [params.l10n] Localization.
    * @param {string} [params.l10n.message] Message to show.
+   * @param {string} [params.l10n.messageHtml] HTML message, in place of l10n.message. Must be purified server-side.
    * @param {string} [params.l10n.cancel] Label of cancel button. If empty, not cancel button.
    * @param {string} [params.l10n.confirm] Label of confirm button. Falls back to 'OK'.
    * @param {object} [callbacks] Callbacks.
@@ -106,6 +130,7 @@
      * @param {HTMLElement} [params.parentDOM] DOM element to attach dialog to. Falls back to document.body.
      * @param {object} [params.l10n] Localization.
      * @param {string} [params.l10n.message] Message to show.
+     * @param {string} [params.l10n.messageHtml] HTML message, in place of l10n.message. Must be purified server-side.
      * @param {string} [params.l10n.cancel] Label of cancel button. If empty, not cancel button.
      * @param {string} [params.l10n.confirm] Label of confirm button. Falls back to 'OK'.
      * @param {object} [callbacks] Callbacks.
@@ -137,7 +162,12 @@
       this.buttonCancel.addEventListener('click', this.handleCancel);
       this.buttonConfirm.addEventListener('click', this.handleConfirm);
 
-      setInnerText(this.message, this.l10n.message);
+      if (typeof this.l10n.messageHtml === 'string') {
+        setHTMLDangerously(this.message, this.l10n.messageHtml);
+      }
+      else {
+        setInnerText(this.message, this.l10n.message);
+      }
       setInnerText(this.buttonCancel, this.l10n.cancel);
       setInnerText(this.buttonConfirm, this.l10n.confirm);
     };

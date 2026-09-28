@@ -200,6 +200,13 @@ class H5P_Network_Admin {
       );
       $installed[$index]['deletable'] = $deletion['deletable'];
       $installed[$index]['alsoDelete'] = $deletion['alsoDelete'];
+      $installed[$index]['infoMessageHtml'] = $this->build_library_info_html(
+        $row,
+        isset($hub[$row['machineName']]) ? $hub[$row['machineName']] : null,
+        $row['contentCount'],
+        $this->count_preloaded_or_editor_dependents($row['id'], $deletion_model['dependencies']),
+        $this->get_library_json_info($row)
+      );
     }
 
     $available = array();
@@ -207,7 +214,7 @@ class H5P_Network_Admin {
       if (isset($installed_names[$machine_name])) {
         continue;
       }
-      $available[] = array(
+      $row = array(
         'machineName' => $cached->machine_name,
         'title' => $cached->title,
         'icon' => !empty($cached->icon) ? $cached->icon : null,
@@ -217,6 +224,9 @@ class H5P_Network_Admin {
         'canInstall' => $this->is_hub_library_compatible($cached)
           && $this->can_install_hub_library($cached),
       );
+      // Not installed: hub data only, no usage statistics.
+      $row['infoMessageHtml'] = $this->build_library_info_html($row, $cached, null, null);
+      $available[] = $row;
     }
 
     usort($installed, array($this, 'sort_libraries'));
@@ -388,6 +398,33 @@ class H5P_Network_Admin {
   }
 
   /**
+   * Count the library versions that require $id as a preloaded or editor
+   * dependency, for the Info message.
+   *
+   * The dependency table has one row per pair, so each dependent is counted
+   * once. Self-referential rows are already filtered out of $indexes.
+   *
+   * @param int $id
+   * @param array $indexes From get_dependency_indexes().
+   *
+   * @return int
+   */
+  private function count_preloaded_or_editor_dependents($id, $indexes) {
+    $count = 0;
+
+    if (isset($indexes['dependents'][$id])) {
+      foreach ($indexes['dependents'][$id] as $dependent) {
+        $type = isset($indexes['types'][$dependent . ':' . $id]) ? $indexes['types'][$dependent . ':' . $id] : '';
+        if ($type === 'preloaded' || $type === 'editor') {
+          $count++;
+        }
+      }
+    }
+
+    return $count;
+  }
+
+  /**
    * @return array
    */
   private function deletion_blocked() {
@@ -482,12 +519,33 @@ class H5P_Network_Admin {
   }
 
   /**
-   * Whether any blog's content embeds a library version as sub content.
+   * Build the REGEXP pattern that matches a library version as a sub content
+   * reference in the parameters of a content.
    *
    * Sub content entries in the parameters look like {"library": "Name-1.1"}. The
    * pattern tolerates a space before the version, as found in uploaded content.json
    * files, and matches that exact version only: content embedding 1.2 is not
    * affected by deleting 1.1.
+   *
+   * Whitespace around the colon is matched with an explicit tab/space class
+   * instead of [[:space:]] because the REGEXP engine of older MariaDB versions
+   * does not support POSIX character classes and would silently fail to match
+   * the whole pattern.
+   *
+   * @param string $name Machine name.
+   * @param int $major
+   * @param int $minor
+   *
+   * @return string The pattern, without delimiters.
+   */
+  private function subcontent_reference_pattern($name, $major, $minor) {
+    $escaped = preg_quote($name, '/');
+    $whitespace = '[ \t]*';
+    return '"library"' . $whitespace . ':' . $whitespace . '"' . $escaped . '[ -]' . $major . '\.' . $minor . '"';
+  }
+
+  /**
+   * Whether any blog's content embeds a library version as sub content.
    *
    * @param string $name Machine name.
    * @param int $major
@@ -496,8 +554,7 @@ class H5P_Network_Admin {
    * @return bool
    */
   private function has_subcontent_references($name, $major, $minor) {
-    $escaped = preg_quote($name, '/');
-    $pattern = '"library"[[:space]]*:[[:space]]*"' . $escaped . '[ -]' . $major . '\.' . $minor . '"';
+    $pattern = $this->subcontent_reference_pattern($name, $major, $minor);
 
     $found = false;
     H5PCommons::for_each_blog(function () use ($pattern, &$found) {
@@ -728,6 +785,141 @@ class H5P_Network_Admin {
   }
 
   /**
+   * Read the author, description and license from the library.json of an
+   * installed library, used as a fallback when the H5P Hub has no data for it.
+   *
+   * @param array $row Installed library row.
+   *
+   * @return array|null The fields that are set, each a non-empty string, keyed
+   *               by author, description and license; null when there is no
+   *               readable library.json.
+   */
+  private function get_library_json_info($row) {
+    $path = H5PCommons::get_h5p_network_path() . '/libraries/'
+      . $row['machineName'] . '-' . $row['majorVersion'] . '.' . $row['minorVersion']
+      . '/library.json';
+
+    $data = is_readable($path) ? json_decode((string) file_get_contents($path), true) : null;
+    if (!is_array($data)) {
+      return null;
+    }
+
+    $info = array();
+    foreach (array('author', 'description', 'license') as $field) {
+      if (isset($data[$field]) && is_string($data[$field]) && $data[$field] !== '') {
+        $info[$field] = $data[$field];
+      }
+    }
+    return $info;
+  }
+
+  /**
+   * Build the HTML message the Info action of a library row shows.
+   *
+   * The dialog renders it with innerHTML. Every field value is escaped and the
+   * whole document is reduced to a restricted wp_kses whitelist, so it holds
+   * no markup beyond the structural tags used here: a highlighted title, a
+   * qualifier/value table and an unordered list of usage statistics. Rows and
+   * list items with missing data are left out.
+   *
+   * The H5P Hub is the preferred source of metadata; for installed libraries
+   * the values from their library.json fill in whatever the Hub has no data for.
+   *
+   * @param array $row Library row of either grid.
+   * @param object|null $hub_row Newest hub cache row of the library, if any;
+   *               null for installed libraries without a hub entry, e.g.
+   *               non-runnable dependencies.
+   * @param int|null $content_count Contents using this installed version as main
+   *               library, across all blogs; null when the library is not installed.
+   * @param int|null $dependent_count Installed versions that require it as a
+   *               preloaded or editor dependency; null when the library is not
+   *               installed.
+   * @param array|null $file_info author, description and license of the
+   *               library's library.json for installed libraries; null for
+   *               available ones.
+   *
+   * @return string
+   */
+  private function build_library_info_html($row, $hub_row, $content_count, $dependent_count, $file_info = null) {
+    $file_info = is_array($file_info) ? $file_info : array();
+
+    $hub_owner = $hub_row !== null && !empty($hub_row->owner) ? $hub_row->owner : null;
+
+    $hub_description = null;
+    if ($hub_row !== null) {
+      $hub_description = !empty($hub_row->description)
+        ? $hub_row->description
+        : (!empty($hub_row->summary) ? $hub_row->summary : null);
+    }
+
+    $hub_license = null;
+    if ($hub_row !== null && !empty($hub_row->license)) {
+      $license = json_decode($hub_row->license, true);
+      if (is_array($license) && !empty($license['id'])) {
+        $hub_license = $license['id'];
+      }
+    }
+
+    // Qualifier/value table; rows with no value are left out.
+    $fields = array(
+      array(__('Version', 'h5p'), $this->format_library_version($row)),
+      array(__('Machine name', 'h5p'), $row['machineName']),
+      array(
+        __('Maintainer', 'h5p'),
+        $hub_owner !== null ? $hub_owner : (isset($file_info['author']) ? $file_info['author'] : null)
+      ),
+      array(
+        __('Description', 'h5p'),
+        $hub_description !== null ? $hub_description : (isset($file_info['description']) ? $file_info['description'] : null)
+      ),
+      array(
+        __('License', 'h5p'),
+        $hub_license !== null ? $hub_license : (isset($file_info['license']) ? $file_info['license'] : null)
+      )
+    );
+
+    $table = '<table>';
+    foreach ($fields as $field) {
+      list($label, $value) = $field;
+      if ($value === null || $value === '') {
+        continue;
+      }
+      $table .= '<tr>'
+        . '<th scope="row">' . esc_html($label) . '</th>'
+        . '<td>' . esc_html($value) . '</td>'
+        . '</tr>';
+    }
+    $table .= '</table>';
+
+    $html = '<h2>' . esc_html($row['title']) . '</h2>' . $table;
+
+    if ($content_count !== null) {
+      // Installed rows only; available rows pass null for all counts.
+      $html .= '<ul>'
+        . '<li>' . esc_html(sprintf(
+          _n('Number of contents using this library as main library: %d', 'Number of contents using this library as main library: %d', $content_count, 'h5p'),
+          $content_count
+        )) . '</li>'
+        . '<li>' . esc_html(sprintf(
+          _n('Number of libraries using this library as preloaded or editor dependency: %d', 'Number of libraries using this library as preloaded or editor dependency: %d', $dependent_count, 'h5p'),
+          $dependent_count
+        )) . '</li>'
+        . '</ul>';
+    }
+
+    // Restricted whitelist: only the structural tags used above, nothing else.
+    return wp_kses($html, array(
+      'h2' => array(),
+      'table' => array(),
+      'tr' => array(),
+      'th' => array('scope' => array()),
+      'td' => array(),
+      'ul' => array(),
+      'li' => array()
+    ));
+  }
+
+  /**
    * Get the strings the library grid script needs; the grids themselves are rendered server-side.
    *
    * @return array
@@ -735,6 +927,7 @@ class H5P_Network_Admin {
   private function get_library_l10n() {
     return array(
       'cancel' => __('Cancel', 'h5p'),
+      'close' => __('Close', 'h5p'),
       'confirm' => __('Update', 'h5p'),
       'requestFailed' => __('The library could not be installed or updated. Please try again.', 'h5p'),
       'deleteFailed' => __('The library could not be deleted. Please try again.', 'h5p'),

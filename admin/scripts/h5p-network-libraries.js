@@ -346,6 +346,38 @@
       confirmDialog.show();
     };
 
+    // One dialog instance, since the dialog DOM stays in the document after it
+    // is closed and a fresh instance per click would accumulate closed dialogs.
+    let infoDialog;
+
+    /**
+     * Show the hub information and usage statistics of a library.
+     *
+     * The message is built server-side as HTML (purified with a restricted
+     * wp_kses whitelist) and passed as the dialog's HTML message. The empty
+     * cancel label makes the dialog hide its cancel button, leaving only Close.
+     * No callbacks are needed: confirming or cancelling just closes the dialog.
+     *
+     * @param {HTMLButtonElement} button
+     */
+    const showInfo = (button) => {
+      const params = {
+        l10n: {
+          messageHtml: button.dataset.infoMessageHtml,
+          cancel: '',
+          confirm: l10n.close
+        }
+      };
+
+      if (!infoDialog) {
+        infoDialog = new H5PPluginConfirmationDialog(params);
+      }
+      else {
+        infoDialog.update(params);
+      }
+      infoDialog.show();
+    };
+
     const loadedScripts = Object.create(null);
 
     /**
@@ -812,11 +844,14 @@
     // Only available actions carry data-h5p-library-action; placeholders stay inert.
     container.querySelectorAll('[data-h5p-library-action]').forEach(button => {
       button.addEventListener('click', () => {
-        if (busy) {
+        const action = button.dataset.h5pLibraryAction;
+
+        // Info does not change state, so it stays usable while something runs.
+        if (busy && action !== 'info') {
           return;
         }
 
-        switch (button.dataset.h5pLibraryAction) {
+        switch (action) {
           case 'update':
             confirmAction(button, () => install(button));
             break;
@@ -828,6 +863,9 @@
             break;
           case 'delete':
             confirmAction(button, () => deleteLibrary(button));
+            break;
+          case 'info':
+            showInfo(button);
             break;
         }
       });

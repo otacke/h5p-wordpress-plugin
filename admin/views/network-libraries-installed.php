@@ -59,7 +59,10 @@
           $button = array(
             'icon' => 'info-outline',
             'label' => sprintf(__('Information about %1$s', 'h5p'), $name),
-            'disabled' => TRUE,
+            'data' => array(
+              'h5p-library-action' => 'info',
+              'info-message-html' => $library['infoMessageHtml'],
+            ),
           );
           include __DIR__ . '/network-libraries-icon-button.php';
           ?>
