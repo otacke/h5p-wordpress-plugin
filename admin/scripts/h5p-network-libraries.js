@@ -4,9 +4,10 @@
  *
  * The two grids (WAI-ARIA APG data grid pattern) are rendered server-side from
  * the network library table and the hub cache. This adds keyboard navigation,
- * and install, update, and content upgrades through the core library-install
- * and content-upgrade endpoints; the page reloads afterwards, so the grids
- * rebuild from one server-side state.
+ * and install, update, deletion, and content upgrades through the core
+ * library-install and content-upgrade endpoints and the network delete
+ * endpoint; the page reloads afterwards, so the grids rebuild from one
+ * server-side state.
  */
 ((ns) => {
   const STORAGE_KEY = 'h5p-network-libraries-notice';
@@ -273,6 +274,47 @@
       });
     };
 
+    const deleteLibrary = async (button) => {
+      const {restore} = startAction(button.parentElement, button);
+
+      try {
+        const body = new FormData();
+        body.append('action', 'h5p_network_library_delete');
+        body.append('nonce', settings.nonce);
+        body.append('id', button.dataset.libraryId);
+
+        const response = await fetch(settings.ajaxUrl, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          body
+        });
+
+        let result;
+        try {
+          result = await response.json();
+        }
+        catch {
+          throw fail(`Unexpected status ${response.status}`);
+        }
+
+        if (!response.ok || result.success === false) {
+          throw fail(result.message
+            ? `${result.message} (${result.errorCode || 'UNKNOWN'})`
+            : l10n.deleteFailed);
+        }
+      }
+      catch (error) {
+        console.error('H5P network libraries:', error);
+        restore();
+        showNotice('error', error.requestError ? error.message : l10n.deleteFailed);
+        return;
+      }
+
+      // The row is gone after the reload, so there is no machineName to focus on.
+      finishWithReload({message: button.dataset.successMessage});
+    };
+
     // One dialog instance, since the dialog DOM stays in the document after it
     // is closed and a fresh instance per click would accumulate closed dialogs.
     let confirmDialog;
@@ -288,7 +330,7 @@
         l10n: {
           message: button.dataset.confirmMessage,
           cancel: l10n.cancel,
-          confirm: l10n.confirm
+          confirm: button.dataset.confirmLabel || l10n.confirm
         }
       };
       const callbacks = {
@@ -784,6 +826,9 @@
           case 'upgrade':
             confirmAction(button, () => upgradeContents(button));
             break;
+          case 'delete':
+            confirmAction(button, () => deleteLibrary(button));
+            break;
         }
       });
     });
@@ -796,9 +841,11 @@
     // A successful install or update reloaded the page; the stored notice and
     // target row are consumed once.
     let pendingFocus = null;
+    let hadStoredNotice = false;
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
       if (stored) {
+        hadStoredNotice = true;
         const storedNotice = JSON.parse(stored);
         const lines = (Array.isArray(storedNotice.message) ? storedNotice.message : [storedNotice.message])
           .filter(Boolean);
@@ -817,13 +864,22 @@
       // Nothing to do; the entry, if any, stays harmlessly stored.
     }
 
-    // After the reload that follows an install or upgrade, return focus to the library's row.
-    if (pendingFocus && focusInstalled) {
-      const rows = [...installedGrid.querySelectorAll('[role="row"]')]
-        .filter(row => row.dataset.library === pendingFocus);
-      // Versions sort ascending, so the just installed or upgraded one is the newest, i.e. last.
-      if (rows.length) {
-        focusInstalled(rows[rows.length - 1].firstElementChild);
+    if (focusInstalled) {
+      if (pendingFocus) {
+        // After the reload that follows an install or upgrade, return focus to the library's row.
+        const rows = [...installedGrid.querySelectorAll('[role="row"]')]
+          .filter(row => row.dataset.library === pendingFocus);
+        // Versions sort ascending, so the just installed or upgraded one is the newest, i.e. last.
+        if (rows.length) {
+          focusInstalled(rows[rows.length - 1].firstElementChild);
+        }
+      }
+      else if (hadStoredNotice) {
+        // After a deletion the row is gone, so return focus to the first data row.
+        const rows = installedGrid.querySelectorAll('[role="row"]');
+        if (rows.length > 1) {
+          focusInstalled(rows[1].firstElementChild);
+        }
       }
     }
   };

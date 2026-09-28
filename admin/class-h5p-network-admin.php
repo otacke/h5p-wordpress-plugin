@@ -15,6 +15,7 @@ class H5P_Network_Admin {
     add_action('network_admin_menu', array($this, 'add_network_admin_menu'));
     add_action('wp_ajax_h5p_migrate_to_network', array($this, 'handle_migrate_to_network'));
     add_action('wp_ajax_h5p_migrate_to_local', array($this, 'handle_migrate_to_local'));
+    add_action('wp_ajax_h5p_network_library_delete', array($this, 'handle_delete_library'));
   }
 
   /**
@@ -70,6 +71,8 @@ class H5P_Network_Admin {
 
     $plugin = H5P_Plugin::get_instance();
     $library_settings = array(
+      'ajaxUrl' => admin_url('admin-ajax.php'),
+      'nonce' => wp_create_nonce('h5p_network_ajax'),
       'upgrade' => $this->get_upgrade_settings(),
       'l10n' => $this->get_library_l10n(),
     );
@@ -139,7 +142,7 @@ class H5P_Network_Admin {
     // Content counts per library version across all blogs, for the upgrade and delete actions.
     $content_counts = $this->get_content_counts();
 
-    $has_icons = $this->load_library_icons();
+    $metadata = $this->load_library_metadata();
     $installed = array();
     $installed_names = array();
     foreach ($interface->loadLibraries() as $name => $versions) {
@@ -162,7 +165,7 @@ class H5P_Network_Admin {
           'minorVersion' => (int) $version->minor_version,
           'patchVersion' => (int) $version->patch_version,
           'runnable' => (bool) $version->runnable,
-          'icon' => $this->get_library_icon($version, $has_icons, $hub, $interface),
+          'icon' => $this->get_library_icon($version, $metadata, $hub, $interface),
           // Only the newest installed version of a library can offer an update.
           'update' => ($version === $newest) ? $this->get_available_update($version, $hub) : NULL,
           // Contents that use this version as their main library, across all blogs.
@@ -173,6 +176,30 @@ class H5P_Network_Admin {
           'upgradeTarget' => $this->get_upgrade_target($version, $newest),
         );
       }
+    }
+
+    // Deletability of a row depends on every other row, so decide it in a second pass.
+    $deletion_model = array(
+      'libraries' => array(),
+      'contentCounts' => $content_counts,
+      'dependencies' => $this->get_dependency_indexes(),
+    );
+    foreach ($installed as $row) {
+      $deletion_model['libraries'][$row['id']] = array(
+        'id' => $row['id'],
+        'name' => $row['machineName'],
+        'majorVersion' => $row['majorVersion'],
+        'minorVersion' => $row['minorVersion'],
+        'addTo' => isset($metadata[$row['id']]) ? $metadata[$row['id']]['addTo'] : '',
+      );
+    }
+    foreach ($installed as $index => $row) {
+      $deletion = $this->is_library_deletable(
+        $deletion_model['libraries'][$row['id']],
+        $deletion_model
+      );
+      $installed[$index]['deletable'] = $deletion['deletable'];
+      $installed[$index]['alsoDelete'] = $deletion['alsoDelete'];
     }
 
     $available = array();
@@ -257,6 +284,250 @@ class H5P_Network_Admin {
   }
 
   /**
+   * Index the network library dependency table by both ends of each edge.
+   *
+   * Self-referential rows (a library that lists itself) are ignored completely: they
+   * do not count as a dependency and do not block deletion.
+   *
+   * @return array With 'dependents', a map of required library id to the library ids
+   *               that require it, and 'types', a map of "library_id:required_library_id"
+   *               to the dependency type.
+   */
+  private function get_dependency_indexes() {
+    global $wpdb;
+
+    $table = H5PCommons::build_full_db_table_name('h5p_libraries_libraries');
+
+    $indexes = array(
+      'dependents' => array(),
+      'types' => array(),
+    );
+    foreach ((array) $wpdb->get_results(
+      "SELECT library_id, required_library_id, dependency_type FROM {$table}"
+    ) as $row) {
+      if ((int) $row->library_id === (int) $row->required_library_id) {
+        continue; // Self-referential dependencies do not count at all.
+      }
+
+      $indexes['dependents'][(int) $row->required_library_id][] = (int) $row->library_id;
+      $indexes['types'][(int) $row->library_id . ':' . (int) $row->required_library_id] = $row->dependency_type;
+    }
+
+    return $indexes;
+  }
+
+  /**
+   * Collect what the delete action needs to decide with: every installed version,
+   * the content counts across all blogs, and the indexed dependencies.
+   *
+   * @param array|null $content_counts From get_content_counts(); reloaded when null.
+   *
+   * @return array
+   */
+  private function get_deletion_model($content_counts = null) {
+    global $wpdb;
+
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+
+    $libraries = array();
+    foreach ((array) $wpdb->get_results(
+      "SELECT id, name, major_version, minor_version, add_to FROM {$table_libraries}"
+    ) as $row) {
+      $libraries[(int) $row->id] = array(
+        'id' => (int) $row->id,
+        'name' => $row->name,
+        'majorVersion' => (int) $row->major_version,
+        'minorVersion' => (int) $row->minor_version,
+        'addTo' => (string) $row->add_to,
+      );
+    }
+
+    return array(
+      'libraries' => $libraries,
+      'contentCounts' => $content_counts === null ? $this->get_content_counts() : $content_counts,
+      'dependencies' => $this->get_dependency_indexes(),
+    );
+  }
+
+  /**
+   * The dependency type from one library version to another, if there is one.
+   *
+   * @param int $library_id
+   * @param int $required_library_id
+   * @param array $model
+   *
+   * @return string|null
+   */
+  private function dependency_type($library_id, $required_library_id, $model) {
+    $key = (int) $library_id . ':' . (int) $required_library_id;
+
+    return isset($model['dependencies']['types'][$key]) ? $model['dependencies']['types'][$key] : null;
+  }
+
+  /**
+   * Whether a library version has dependents other than one allowed one.
+   *
+   * @param int $library_id
+   * @param int $allowed_dependent
+   * @param array $model
+   *
+   * @return bool
+   */
+  private function has_dependents_beyond($library_id, $allowed_dependent, $model) {
+    if (!isset($model['dependencies']['dependents'][$library_id])) {
+      return false;
+    }
+
+    foreach ($model['dependencies']['dependents'][$library_id] as $dependent) {
+      if ((int) $dependent !== (int) $allowed_dependent) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * @return array
+   */
+  private function deletion_blocked() {
+    return array('deletable' => false, 'alsoDelete' => null);
+  }
+
+  /**
+   * Decide whether a library version can be deleted, and whether the circular editor
+   * dependency must go with it.
+   *
+   * A version is deletable when no content on any blog uses it as its main library,
+   * no content embeds it as sub content, and no other library depends on it (a
+   * library that lists itself does not count). Addons
+   * (non-empty add_to) are exempt from all of this: their only reference is their
+   * add_to target, which keeps working without the addon.
+   *
+   * The one exception to the dependency rule is a circular pair: when the library
+   * lists another library in its editorDependencies and that library lists this one
+   * in its preloadedDependencies, both are deleted together — but only when nothing
+   * else needs either of them, so deleting the pair leaves no broken dependency rows.
+   *
+   * @param array $library Version to check (id, name, majorVersion, minorVersion, addTo).
+   * @param array $model From get_deletion_model().
+   *
+   * @return array With 'deletable' and 'alsoDelete' (id of the circular partner, or null).
+   */
+  private function is_library_deletable($library, $model) {
+    if (!empty($library['addTo'])) {
+      // Addons can always be deleted.
+      return array('deletable' => true, 'alsoDelete' => null);
+    }
+
+    $id = (int) $library['id'];
+    $dependents = isset($model['dependencies']['dependents'][$id])
+      ? $model['dependencies']['dependents'][$id]
+      : array();
+
+    if (empty($dependents)) {
+      if (!empty($model['contentCounts'][$id])) {
+        return $this->deletion_blocked();
+      }
+      if ($this->has_subcontent_references(
+          $library['name'],
+          (int) $library['majorVersion'],
+          (int) $library['minorVersion']
+        )
+      ) {
+        return $this->deletion_blocked();
+      }
+
+      return array('deletable' => true, 'alsoDelete' => null);
+    }
+
+    foreach ($dependents as $partner_id) {
+      $partner_id = (int) $partner_id;
+
+      // The exception only applies to the library whose editorDependencies list the partner.
+      if ($this->dependency_type($id, $partner_id, $model) !== 'editor'
+          || $this->dependency_type($partner_id, $id, $model) !== 'preloaded') {
+        continue;
+      }
+
+      $partner = isset($model['libraries'][$partner_id]) ? $model['libraries'][$partner_id] : null;
+      if ($partner === null) {
+        continue;
+      }
+
+      // Nothing else may need either of the two, and no content may use the partner.
+      // The checked version is deleted as well, so content embedding it as sub
+      // content would break, too.
+      if ($this->has_dependents_beyond($id, $partner_id, $model)
+          || $this->has_dependents_beyond($partner_id, $id, $model)
+          || !empty($model['contentCounts'][$partner_id])
+          || $this->has_subcontent_references(
+            $library['name'],
+            (int) $library['majorVersion'],
+            (int) $library['minorVersion']
+          )
+          || $this->has_subcontent_references(
+            $partner['name'],
+            (int) $partner['majorVersion'],
+            (int) $partner['minorVersion']
+          )
+      ) {
+        continue;
+      }
+
+      return array('deletable' => true, 'alsoDelete' => $partner_id);
+    }
+
+    return $this->deletion_blocked();
+  }
+
+  /**
+   * Whether any blog's content embeds a library version as sub content.
+   *
+   * Sub content entries in the parameters look like {"library": "Name-1.1"}. The
+   * pattern tolerates a space before the version, as found in uploaded content.json
+   * files, and matches that exact version only: content embedding 1.2 is not
+   * affected by deleting 1.1.
+   *
+   * @param string $name Machine name.
+   * @param int $major
+   * @param int $minor
+   *
+   * @return bool
+   */
+  private function has_subcontent_references($name, $major, $minor) {
+    $escaped = preg_quote($name, '/');
+    $pattern = '"library"[[:space]]*:[[:space]]*"' . $escaped . '[ -]' . $major . '\.' . $minor . '"';
+
+    $found = false;
+    H5PCommons::for_each_blog(function () use ($pattern, &$found) {
+      if ($found) {
+        return; // One hit on any blog is enough.
+      }
+
+      global $wpdb;
+
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+
+      if (!$this->table_exists($table_contents)) {
+        return; // Blog has no H5P content tables yet.
+      }
+
+      $found = null !== $wpdb->get_var(
+        $wpdb->prepare(
+          "SELECT 1
+            FROM {$table_contents}
+            WHERE parameters REGEXP %s
+            LIMIT 1",
+          $pattern
+        )
+      );
+    });
+
+    return $found;
+  }
+
+  /**
    * Find the newest installed version of a library that has a newer major.minor than the given row.
    *
    * @param object $library A row of the installed libraries.
@@ -294,33 +565,36 @@ class H5P_Network_Admin {
   }
 
   /**
-   * loadLibraries() does not return has_icon, so the values are loaded separately.
+   * loadLibraries() does not return has_icon or add_to, so the values are loaded separately.
    *
-   * @return array
+   * @return array Map of library id to an array with 'hasIcon' and 'addTo'.
    */
-  private function load_library_icons() {
+  private function load_library_metadata() {
     global $wpdb;
 
     $table = H5PCommons::build_full_db_table_name('h5p_libraries');
-    $has_icons = array();
-    foreach ((array) $wpdb->get_results("SELECT id, has_icon FROM {$table}") as $row) {
-      $has_icons[(int) $row->id] = (bool) $row->has_icon;
+    $metadata = array();
+    foreach ((array) $wpdb->get_results("SELECT id, has_icon, add_to FROM {$table}") as $row) {
+      $metadata[(int) $row->id] = array(
+        'hasIcon' => (bool) $row->has_icon,
+        'addTo' => (string) $row->add_to,
+      );
     }
-    return $has_icons;
+    return $metadata;
   }
 
   /**
    * Get the icon of an installed library: local icon, hub icon or none.
    *
    * @param object $library
-   * @param array $has_icons
+   * @param array $metadata
    * @param array $hub
    * @param object $interface
    *
    * @return string|null
    */
-  private function get_library_icon($library, $has_icons, $hub, $interface) {
-    if (!empty($has_icons[(int) $library->id])) {
+  private function get_library_icon($library, $metadata, $hub, $interface) {
+    if (!empty($metadata[(int) $library->id]['hasIcon'])) {
       $folder = H5PCore::libraryToFolderName(array(
         'machineName' => $library->name,
         'majorVersion' => (int) $library->major_version,
@@ -463,6 +737,7 @@ class H5P_Network_Admin {
       'cancel' => __('Cancel', 'h5p'),
       'confirm' => __('Update', 'h5p'),
       'requestFailed' => __('The library could not be installed or updated. Please try again.', 'h5p'),
+      'deleteFailed' => __('The library could not be deleted. Please try again.', 'h5p'),
       'working' => __('Working...', 'h5p'),
       'dismiss' => __('Dismiss this notice.', 'h5p'),
       // The msgids of the upgrade error messages are the same as in H5PLibraryAdmin::display_content_upgrades(),
@@ -627,6 +902,74 @@ class H5P_Network_Admin {
       catch (Exception $exception) {
         // Not fatal: cached assets are created lazily when content is viewed.
         error_log('H5P network demigration: ' . $exception->getMessage());
+      }
+    }
+
+    wp_send_json_success();
+  }
+
+  /**
+   * Handle AJAX request to delete an installed library version.
+   */
+  public function handle_delete_library() {
+    global $wpdb;
+
+    $this->verifyNetworkNonce();
+
+    if (!current_user_can('manage_network') || !H5PCommons::current_user_can_manage_libraries()) {
+      wp_send_json_error(
+        array('message' => __('Permission denied.', 'h5p')),
+        H5PCommons::HTTP_FORBIDDEN
+      );
+    }
+
+    $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
+
+    // The grid may be stale, so recheck deletability with fresh data.
+    $model = $this->get_deletion_model();
+    $library = isset($model['libraries'][$id]) ? $model['libraries'][$id] : null;
+    if ($library === null) {
+      wp_send_json_error(
+        array('message' => __('This library is no longer installed.', 'h5p')),
+        404
+      );
+    }
+
+    $deletion = $this->is_library_deletable($library, $model);
+    if (!$deletion['deletable']) {
+      // Same message as the blog level library admin, so the translations stay in sync.
+      wp_send_json_error(
+        array(
+          'message' => __(
+            'This Library is used by content or other libraries and can therefore not be deleted.',
+            'h5p'
+          ),
+        )
+      );
+    }
+
+    $plugin = H5P_Plugin::get_instance();
+    $interface = $plugin->get_h5p_instance('interface');
+    $core = $plugin->get_h5p_instance('core');
+
+    $to_delete = array($id);
+    if ($deletion['alsoDelete'] !== null) {
+      $to_delete[] = $deletion['alsoDelete'];
+    }
+
+    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+    foreach ($to_delete as $library_id) {
+      // deleteLibrary() leaves the cached assets of the version behind,
+      // like H5PCore::saveLibraries() does when replacing a library.
+      if ($core->aggregateAssets && ($hashes = $interface->deleteCachedAssets($library_id))) {
+        $core->fs->deleteCachedAssets($hashes);
+      }
+
+      $to_be_deleted = $wpdb->get_row(
+        $wpdb->prepare("SELECT * FROM {$table_libraries} WHERE id = %d", $library_id)
+      );
+      if ($to_be_deleted !== null) {
+        $interface->deleteLibrary($to_be_deleted);
       }
     }
 
