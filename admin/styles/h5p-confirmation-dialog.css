@@ -12,7 +12,7 @@ html {
   border-radius: 8px;
   font-family: -apple-system, system-ui, Segoe UI, Roboto, Oxygen-Sans, Ubuntu, Cantarell, Helvetica Neue, sans-serif;
   max-height: calc(100% - 128px);
-  max-width: calc(100% - 32px);
+  max-width: calc(100% - 64px);
   min-width: var(--wpds-dimension-surface-width-sm, 320px);
 
   &::backdrop {
@@ -121,9 +121,10 @@ html {
 }
 
 /* Stick to bottom on small screens */
-@media (max-width: 600px) {
+@media (width <= 600px) {
   .h5p-plugin-confirmation-dialog {
     border-radius: 8px 8px 0 0;
     margin-bottom: 0;
+    max-width: none;
   }
 }
