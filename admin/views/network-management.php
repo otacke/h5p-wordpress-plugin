@@ -20,6 +20,9 @@
   <?php H5P_Plugin_Admin::print_messages(); ?>
 
   <div class="h5p-network-libraries">
+    <?php include __DIR__ . '/network-libraries-bulk.php'; ?>
+    <?php include __DIR__ . '/network-libraries-tools.php'; ?>
+
     <h2 id="h5p-network-libraries-installed-heading">
       <?php esc_html_e('Installed libraries', 'h5p'); ?>
     </h2>
@@ -34,5 +37,7 @@
     <div class="h5p-network-libraries-available">
       <?php include __DIR__ . '/network-libraries-available.php'; ?>
     </div>
+
+    <?php include __DIR__ . '/network-libraries-upload.php'; ?>
   </div>
 </div>

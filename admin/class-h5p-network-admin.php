@@ -16,14 +16,16 @@ class H5P_Network_Admin {
     add_action('wp_ajax_h5p_migrate_to_network', array($this, 'handle_migrate_to_network'));
     add_action('wp_ajax_h5p_migrate_to_local', array($this, 'handle_migrate_to_local'));
     add_action('wp_ajax_h5p_network_library_delete', array($this, 'handle_delete_library'));
+    add_action('wp_ajax_h5p_network_library_install', array($this, 'handle_library_install'));
+    add_action('wp_ajax_h5p_network_library_upload', array($this, 'handle_library_upload'));
+    add_action('wp_ajax_h5p_network_update_content_type_cache', array($this, 'handle_update_content_type_cache'));
+    add_action('wp_ajax_h5p_network_rebuild_cache', array($this, 'handle_rebuild_cache'));
   }
 
   /**
    * Add the "H5P Network" page under the network Settings menu.
    */
   public function add_network_admin_menu() {
-    $this->library = NULL;
-
     add_submenu_page(
       'settings.php',
       __('H5P Network', 'h5p'),
@@ -34,27 +36,68 @@ class H5P_Network_Admin {
     );
 
     if (H5PCommons::is_network_enabled()) {
-      $this->library = H5PLibraryAdmin::create('h5p');
-      $libraries_page = add_submenu_page(
-        'settings.php',
-        __('H5P Libraries', 'h5p'),
-        __('H5P Libraries', 'h5p'),
-        H5PCommons::current_user_can_manage_libraries() ? 'manage_network' : 'manage_h5p_libraries',
-        'h5p_libraries',
-        array($this->library, 'display_libraries_page')
-      );
-      add_action('load-' . $libraries_page, array($this->library, 'process_libraries'));
-
       // Installing and updating content types writes to network level libraries, so offered to network admins only.
-      add_menu_page(
+      // Registered without a parent, so it has no menu entry of its own and opens at admin.php?page=h5p_management.
+      $management_page = add_submenu_page(
+        '',
         __('H5P Management', 'h5p'),
         __('H5P Management', 'h5p'),
         'manage_network',
         'h5p_management',
-        array($this, 'render_management_page'),
-        'none'
+        array($this, 'render_management_page')
       );
+      add_action('load-' . $management_page, array($this, 'set_management_page_title'));
+      // The page stays registered and loadable, but without this, get_admin_page_parent() would find it under
+      // the empty parent and reset the parent_file set by highlight_management_menu_entry(), closing Settings.
+      remove_submenu_page('', 'h5p_management');
+
+      // The Settings entry links to the management page; a slug with a query is used as the link as it is.
+      add_submenu_page(
+        'settings.php',
+        __('H5P Network Libraries', 'h5p'),
+        __('H5P Network Libraries', 'h5p'),
+        'manage_network',
+        'admin.php?page=h5p_management'
+      );
+
+      add_filter('parent_file', array($this, 'highlight_management_menu_entry'));
+      add_filter('submenu_file', array($this, 'highlight_management_submenu_entry'));
     }
+  }
+
+  /**
+   * Set the title of the management page, which get_admin_page_title() cannot find for a page without a parent.
+   */
+  public function set_management_page_title() {
+    global $title;
+
+    $title = __('H5P Management', 'h5p');
+  }
+
+  /**
+   * Open the Settings menu on the management page, as the page has no menu entry of its own.
+   *
+   * @param string $parent_file Parent menu file of the current page.
+   *
+   * @return string
+   */
+  public function highlight_management_menu_entry($parent_file) {
+    global $plugin_page;
+
+    return $plugin_page === 'h5p_management' ? 'settings.php' : $parent_file;
+  }
+
+  /**
+   * Mark the Settings > H5P network libraries entry as current on the management page.
+   *
+   * @param string|null $submenu_file Submenu file of the current page.
+   *
+   * @return string|null
+   */
+  public function highlight_management_submenu_entry($submenu_file) {
+    global $plugin_page;
+
+    return $plugin_page === 'h5p_management' ? 'admin.php?page=h5p_management' : $submenu_file;
   }
 
   /**
@@ -79,6 +122,11 @@ class H5P_Network_Admin {
     $plugin->print_settings($library_settings, 'H5PNetworkLibraries');
 
     $overview = $this->get_library_overview();
+    $interface = $plugin->get_h5p_instance('interface');
+    // Read after the overview, which may have refreshed the content type cache.
+    $content_type_cache_updated_at = (int) $interface->getOption('content_type_cache_updated_at', 0);
+    // Contents on all blogs whose cache is missing; the rebuild box is shown only while there are any.
+    $not_cached = (int) $interface->getNumNotFiltered();
     include 'views/network-management.php';
 
     H5P_Plugin_Admin::add_script('h5p-jquery', 'h5p-php-library/js/jquery.js');
@@ -933,6 +981,16 @@ class H5P_Network_Admin {
       'deleteFailed' => __('The library could not be deleted. Please try again.', 'h5p'),
       'working' => __('Working...', 'h5p'),
       'dismiss' => __('Dismiss this notice.', 'h5p'),
+      'uploadFailed' => __('The library package could not be uploaded. Please try again.', 'h5p'),
+      // Same msgid as the upload error in handle_library_upload(), so the two stay in sync.
+      'noFile' => __('No file was uploaded', 'h5p'),
+      'contentTypeCacheFailed' => __('The content type cache could not be updated. Please try again.', 'h5p'),
+      'rebuildFailed' => __('The content cache could not be rebuilt. Please try again.', 'h5p'),
+      'rebuildDone' => __('The content cache was rebuilt.', 'h5p'),
+      // The msgids of the Libraries page (H5PLibraryAdmin::get_not_cached_settings()), so the translations stay
+      // in sync. The singular template contains no %d; the JS picks the template by count.
+      'notCachedSingular' => _n('1 content need to get its cache rebuilt.', '%d contents needs to get their cache rebuilt.', 1, 'h5p'),
+      'notCachedPlural' => _n('1 content need to get its cache rebuilt.', '%d contents needs to get their cache rebuilt.', 2, 'h5p'),
       // The msgids of the upgrade error messages are the same as in H5PLibraryAdmin::display_content_upgrades(),
       // so the translations of the two pages stay in sync.
       'inProgress' => __('Upgrading to %ver...', 'h5p'),
@@ -949,6 +1007,32 @@ class H5P_Network_Admin {
       'upgradedPlural' => _n('1 content upgraded', '%d contents upgraded', 2, 'h5p'),
       'failedSingular' => _n('1 content could not be upgraded', '%d contents could not be upgraded', 1, 'h5p'),
       'failedPlural' => _n('1 content could not be upgraded', '%d contents could not be upgraded', 2, 'h5p'),
+      // The singular templates contain no %d; the JS picks the template by count.
+      'bulkConfirmUpdateSingular' => __('Update 1 library?', 'h5p'),
+      'bulkConfirmUpdatePlural' => __('Update %d libraries?', 'h5p'),
+      'bulkConfirmInstallSingular' => __('Install 1 content type?', 'h5p'),
+      'bulkConfirmInstallPlural' => __('Install %d content types?', 'h5p'),
+      'bulkConfirmDeleteSingular' => __('Delete 1 library, and any that become deletable afterwards?', 'h5p'),
+      'bulkConfirmDeletePlural' => __('Delete %d libraries, and any that become deletable afterwards?', 'h5p'),
+      'bulkConfirmUpgradeSingular' => __('Upgrade the contents of 1 library to a newer version?', 'h5p'),
+      'bulkConfirmUpgradePlural' => __('Upgrade the contents of %d libraries to newer versions?', 'h5p'),
+      'bulkProgressUpdate' => __('Updating %lib (%i of %n)...', 'h5p'),
+      'bulkProgressInstall' => __('Installing %lib (%i of %n)...', 'h5p'),
+      'bulkProgressDelete' => __('Deleting... %d deleted', 'h5p'),
+      'bulkProgressUpgrade' => __('Upgrading %lib %old to %new (%i of %n)...', 'h5p'),
+      'bulkUpdatedSingular' => _n('1 library updated', '%d libraries updated', 1, 'h5p'),
+      'bulkUpdatedPlural' => _n('1 library updated', '%d libraries updated', 2, 'h5p'),
+      'bulkInstalledSingular' => _n('1 content type installed', '%d content types installed', 1, 'h5p'),
+      'bulkInstalledPlural' => _n('1 content type installed', '%d content types installed', 2, 'h5p'),
+      'bulkDeletedSingular' => _n('1 library deleted', '%d libraries deleted', 1, 'h5p'),
+      'bulkDeletedPlural' => _n('1 library deleted', '%d libraries deleted', 2, 'h5p'),
+      'bulkSkippedSingular' => _n('1 skipped (already up to date)', '%d skipped (already up to date)', 1, 'h5p'),
+      'bulkSkippedPlural' => _n('1 skipped (already up to date)', '%d skipped (already up to date)', 2, 'h5p'),
+      'bulkUpdateFailedSingular' => _n('1 library could not be updated', '%d libraries could not be updated', 1, 'h5p'),
+      'bulkUpdateFailedPlural' => _n('1 library could not be updated', '%d libraries could not be updated', 2, 'h5p'),
+      'bulkInstallFailedSingular' => _n('1 content type could not be installed', '%d content types could not be installed', 1, 'h5p'),
+      'bulkInstallFailedPlural' => _n('1 content type could not be installed', '%d content types could not be installed', 2, 'h5p'),
+      'bulkFailed' => __('One of the requests failed, so the bulk action was stopped.', 'h5p'),
     );
   }
 
@@ -1167,6 +1251,318 @@ class H5P_Network_Admin {
     }
 
     wp_send_json_success();
+  }
+
+  /**
+   * Handle AJAX request to install or update libraries from an uploaded .h5p package.
+   *
+   * Works like the upload on the Libraries page (H5PLibraryAdmin::process_libraries()) and shares its
+   * H5P_Plugin_Admin::handle_upload(), which also honours the "Disable file extension check" option.
+   */
+  public function handle_library_upload() {
+    $this->verify_library_management_request();
+
+    $error = isset($_FILES['h5p_file']) ? (int) $_FILES['h5p_file']['error'] : UPLOAD_ERR_NO_FILE;
+    if ($error !== UPLOAD_ERR_OK) {
+      // Same messages as H5PLibraryAdmin::process_libraries(), so the translations stay in sync.
+      $upload_errors = array(
+        UPLOAD_ERR_INI_SIZE => __('The uploaded file exceeds the upload_max_filesize directive in php.ini', 'h5p'),
+        UPLOAD_ERR_FORM_SIZE => __('The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form', 'h5p'),
+        UPLOAD_ERR_PARTIAL => __('The uploaded file was only partially uploaded', 'h5p'),
+        UPLOAD_ERR_NO_FILE => __('No file was uploaded', 'h5p'),
+        UPLOAD_ERR_NO_TMP_DIR => __('Missing a temporary folder', 'h5p'),
+        UPLOAD_ERR_CANT_WRITE => __('Failed to write file to disk.', 'h5p'),
+        UPLOAD_ERR_EXTENSION => __('A PHP extension stopped the file upload.', 'h5p'),
+      );
+
+      wp_send_json_error(array(
+        'messages' => array(
+          'info' => array(),
+          'error' => array(
+            isset($upload_errors[$error])
+              ? $upload_errors[$error]
+              : __('The library package could not be uploaded. Please try again.', 'h5p')
+          ),
+        ),
+      ));
+    }
+
+    $result = H5P_Plugin_Admin::get_instance()->handle_upload(
+      NULL,
+      filter_input(INPUT_POST, 'h5p_upgrade_only') ? TRUE : FALSE
+    );
+
+    $messages = $this->collect_h5p_messages();
+    if ($result === FALSE || !empty($messages['error'])) {
+      wp_send_json_error(array('messages' => $messages));
+    }
+
+    // Core reports only added or updated libraries, so without this the notice after the reload would be empty.
+    if (empty($messages['info'])) {
+      $messages['info'][] = __('The package was valid, but no libraries were added or updated.', 'h5p');
+    }
+
+    wp_send_json_success(array('messages' => $messages));
+  }
+
+  /**
+   * Install one content type from the H5P Hub.
+   *
+   * Repeats the order of H5PEditorAjax::libraryInstall() with public calls only, so it can also be
+   * called from a scheduling endpoint later. Installs one content type per request, because the
+   * temporary upload path is cached statically per request. Never throws: the outcome comes back as
+   * a 'status' and 'messages' pair, so a bulk queue can continue past a failed item.
+   */
+  public function install_hub_library($machine_name) {
+    if (get_option('h5p_hub_is_enabled', TRUE) != TRUE) {
+      return array(
+        'status' => 'error',
+        'messages' => array(
+          'info' => array(),
+          // Same msgid as handle_update_content_type_cache(), so the translations stay in sync.
+          'error' => array(__('The H5P Hub is disabled. Enable it in the H5P settings to install content types.', 'h5p')),
+        ),
+      );
+    }
+
+    $cached = null;
+    // getContentTypeCache($name) returns no version columns, so reduce the whole cache to the newest
+    // version of this name, like get_library_overview() does.
+    foreach ((array) $this->get_hub_cache() as $row) {
+      if ($row->machine_name !== $machine_name) {
+        continue;
+      }
+      if ($cached === null || $this->compare_library_versions($row, $cached) > 0) {
+        $cached = $row;
+      }
+    }
+    if ($cached === null) {
+      // Same msgid as core's H5PEditorAjax::libraryInstall(), so the translations stay in sync.
+      return array(
+        'status' => 'error',
+        'messages' => array(
+          'info' => array(),
+          'error' => array(__('The chosen content type is invalid.', 'h5p')),
+        ),
+      );
+    }
+
+    if (!$this->is_hub_library_compatible($cached) || !$this->can_install_hub_library($cached)) {
+      // Same msgid as core's H5PEditorAjax::libraryInstall(), so the translations stay in sync.
+      return array(
+        'status' => 'error',
+        'messages' => array(
+          'info' => array(),
+          'error' => array(__('You do not have permission to install content types. Contact the administrator of your site.', 'h5p')),
+        ),
+      );
+    }
+
+    // An earlier item of the same run can have installed this content type as a dependency.
+    $interface = H5P_Plugin::get_instance()->get_h5p_instance('interface');
+    foreach ($interface->loadLibraries() as $name => $versions) {
+      if ($name !== $machine_name) {
+        continue;
+      }
+      foreach ($versions as $version) {
+        if ($this->compare_library_versions($version, $cached) >= 0) {
+          return array(
+            'status' => 'skipped',
+            'messages' => array(
+              'info' => array(),
+              'error' => array(),
+            ),
+          );
+        }
+      }
+    }
+
+    $core = H5P_Plugin::get_instance()->get_h5p_instance('core');
+    $core->mayUpdateLibraries(TRUE);
+
+    $path = $interface->getUploadedH5pPath();
+    $response = $interface->fetchExternalData(
+      H5PHubEndpoints::createURL(H5PHubEndpoints::CONTENT_TYPES . $machine_name),
+      NULL,
+      TRUE,
+      empty($path) ? TRUE : $path
+    );
+
+    $valid = FALSE;
+    if ($response) {
+      $valid = (new H5PValidator($interface, $core))->isValidPackage(TRUE, FALSE);
+    }
+
+    if ($valid) {
+      (new H5PStorage($interface, $core))->savePackage(NULL, NULL, TRUE);
+      $status = 'installed';
+    }
+    else {
+      $status = 'error';
+    }
+
+    // The temporary paths are static per request, so clean up on every exit path. Core removes the
+    // .h5p file in some cases, hence the @.
+    H5PCore::deleteFileTree($interface->getUploadedH5pFolderPath());
+    @unlink($path);
+
+    $messages = $this->collect_h5p_messages();
+    if ($status === 'error' && empty($messages['error'])) {
+      // A non-2xx hub answer sets no message of its own.
+      $messages['error'][] = __('The content type could not be downloaded. Please try again.', 'h5p');
+    }
+
+    return array('status' => $status, 'messages' => $messages);
+  }
+
+  /**
+   * Handle AJAX request to install one content type from the H5P Hub.
+   *
+   * Always answers success, with the outcome in the data: a failed item is data for the bulk queue,
+   * not a fatal error.
+   */
+  public function handle_library_install() {
+    $this->verify_library_management_request();
+
+    // Hub downloads are slow, like core's.
+    @set_time_limit(0);
+
+    $machine_name = filter_input(INPUT_POST, 'machineName', FILTER_SANITIZE_SPECIAL_CHARS);
+
+    wp_send_json_success($this->install_hub_library($machine_name));
+  }
+
+  /**
+   * Handle AJAX request to update the content type cache from the H5P Hub.
+   *
+   * Works like the "Update" button of the Libraries page (H5PLibraryAdmin::process_libraries()).
+   */
+  public function handle_update_content_type_cache() {
+    $this->verify_library_management_request();
+
+    // The button is only shown with the hub enabled, the same per-blog option get_library_overview() reads.
+    if (get_option('h5p_hub_is_enabled', TRUE) != TRUE) {
+      wp_send_json_error(array(
+        'messages' => array(
+          'info' => array(),
+          'error' => array(__('The H5P Hub is disabled. Enable it in the H5P settings to install content types.', 'h5p')),
+        ),
+      ));
+    }
+
+    $core = H5P_Plugin::get_instance()->get_h5p_instance('core');
+    try {
+      $result = $core->updateContentTypeCache();
+    }
+    catch (Exception $exception) {
+      error_log('H5P network management: ' . $exception->getMessage());
+      $result = FALSE;
+    }
+
+    // Core sets the messages itself, e.g. "Library cache was successfully updated!" or why it failed.
+    $messages = $this->collect_h5p_messages();
+    if ($result === FALSE || !empty($messages['error'])) {
+      if (empty($messages['error'])) {
+        $messages['error'][] = __('The content type cache could not be updated. Please try again.', 'h5p');
+      }
+      wp_send_json_error(array('messages' => $messages));
+    }
+
+    wp_send_json_success(array('messages' => $messages));
+  }
+
+  /**
+   * Handle AJAX request to rebuild the content caches (filtered parameters) of all blogs, one batch at a time.
+   *
+   * Works like the "Rebuild cache" button of the Libraries page. Its endpoint, wp_ajax_h5p_rebuild_cache
+   * (H5PNetworkLibraryAdmin::ajax_rebuild_cache()), is not reused: it checks no nonce, and it fetches H5PCore
+   * once before looping over the blogs, so filterParameters() deletes and creates the export files in the
+   * folders of the main blog instead of the content's blog. get_h5p_instance() keys its instances by the
+   * current blog, so H5PCore is fetched per blog here.
+   */
+  public function handle_rebuild_cache() {
+    $this->verify_library_management_request();
+
+    $start = microtime(TRUE);
+
+    $left = 0;
+    H5PCommons::for_each_blog(function () use (&$left) {
+      global $wpdb;
+
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+      if (!$this->table_exists($table_contents)) {
+        return; // Blog has no H5P content tables, so nothing to rebuild.
+      }
+
+      $left += (int) $wpdb->get_var("SELECT COUNT(id) FROM {$table_contents} WHERE filtered = ''");
+    });
+
+    // Rebuild as many caches as fit in the time budget, so a big network takes several requests.
+    H5PCommons::for_each_blog(function () use (&$left, $start) {
+      global $wpdb;
+
+      if ($left <= 0) {
+        return;
+      }
+
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+      if (!$this->table_exists($table_contents)) {
+        return; // Blog has no H5P content tables, so nothing to rebuild.
+      }
+
+      $contents = $wpdb->get_results("SELECT id FROM {$table_contents} WHERE filtered = ''");
+      if (empty($contents)) {
+        return;
+      }
+
+      $core = H5P_Plugin::get_instance()->get_h5p_instance('core');
+      foreach ($contents as $content) {
+        if ((microtime(TRUE) - $start) > H5PLibraryAdmin::UPGRADE_BATCH_TIMEOUT || $left <= 0) {
+          break;
+        }
+
+        $content = $core->loadContent($content->id);
+        $core->filterParameters($content);
+        $left--;
+      }
+    });
+
+    wp_send_json_success(array('left' => $left));
+  }
+
+  /**
+   * Verify that an AJAX request may manage the network libraries, or end it with an error.
+   *
+   * Same checks as handle_delete_library(): the nonce, and the capabilities for the network libraries.
+   */
+  private function verify_library_management_request() {
+    $this->verifyNetworkNonce();
+
+    if (!current_user_can('manage_network') || !H5PCommons::current_user_can_manage_libraries()) {
+      wp_send_json_error(
+        array('message' => __('Permission denied.', 'h5p')),
+        H5PCommons::HTTP_FORBIDDEN
+      );
+    }
+  }
+
+  /**
+   * Take the messages that H5P core has set during this request.
+   *
+   * @return array Lists of 'info' and 'error' messages as plain text, as the page shows them as text.
+   */
+  private function collect_h5p_messages() {
+    $interface = H5P_Plugin::get_instance()->get_h5p_instance('interface');
+
+    $messages = array('info' => array(), 'error' => array());
+    foreach (array_keys($messages) as $type) {
+      foreach ((array) $interface->getMessages($type) as $message) {
+        // Error messages are objects with a code, info messages are strings.
+        $messages[$type][] = wp_strip_all_tags(is_object($message) ? $message->message : $message);
+      }
+    }
+
+    return $messages;
   }
 
   /**

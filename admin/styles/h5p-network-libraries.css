@@ -11,6 +11,46 @@
     margin-bottom: 0.5rem;
   }
 
+  /* The library tools use the postboxes of the Libraries page (admin.css). */
+  .h5p-network-libraries-tools {
+    margin-bottom: 1.5rem;
+
+    .h5p-network-libraries-tools-notices {
+      margin-bottom: 0.5rem;
+    }
+
+    /* Span the page width like the grids, instead of the fixed 960px of admin.css. */
+    .h5p.postbox {
+      width: auto;
+      margin-bottom: 1rem;
+    }
+
+    /* Holds the button, or the spinner and progress while the action runs, at the height of a large button. */
+    .h5p-network-libraries-tool-action {
+      align-items: center;
+      display: inline-flex;
+      gap: 0.5rem;
+      min-height: 32px;
+
+      .spinner {
+        float: none;
+        margin: 0;
+      }
+    }
+
+    /* The bulk actions run all the eligible libraries, so their buttons share one row. */
+    .h5p-network-libraries-bulk-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .button[aria-disabled="true"] {
+      cursor: default;
+      opacity: 0.6;
+    }
+  }
+
   .h5p-network-libraries-installed,
   .h5p-network-libraries-available {
     .h5p-network-libraries-grid {

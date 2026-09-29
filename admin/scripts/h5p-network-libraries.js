@@ -7,7 +7,8 @@
  * and install, update, deletion, and content upgrades through the core
  * library-install and content-upgrade endpoints and the network delete
  * endpoint; the page reloads afterwards, so the grids rebuild from one
- * server-side state.
+ * server-side state. The library tools above the grids (as on the Libraries
+ * page) run through network endpoints the same way.
  */
 ((ns) => {
   const STORAGE_KEY = 'h5p-network-libraries-notice';
@@ -24,6 +25,30 @@
     const upgradeSettings = settings.upgrade || {};
 
     const noticesRegion = container.querySelector('.h5p-network-libraries-notices');
+    /**
+     * Find the notices region of a tools section, as the library tools show their notices next to themselves.
+     *
+     * @param {string} tools Name of the section (data-h5p-tools), e.g. 'caches' or 'upload'.
+     *
+     * @return {HTMLElement} The section's notices region, or the grids' region if the section is not rendered.
+     */
+    const toolsNoticesRegion = (tools) => {
+      const section = [...container.querySelectorAll('.h5p-network-libraries-tools')]
+        .find(candidate => candidate.dataset.h5pTools === tools);
+      return (section && section.querySelector('.h5p-network-libraries-tools-notices')) || noticesRegion;
+    };
+
+    /**
+     * Name the tools section that holds a tool's button.
+     *
+     * @param {HTMLElement} button A tool's button.
+     *
+     * @return {string|undefined} Name of the tools section holding the button.
+     */
+    const toolsOf = (button) => {
+      const section = button.closest('.h5p-network-libraries-tools');
+      return section ? section.dataset.h5pTools : undefined;
+    };
     const installedGrid = container.querySelector('.h5p-network-libraries-installed [role="grid"]');
     const availableGrid = container.querySelector('.h5p-network-libraries-available [role="grid"]');
 
@@ -115,8 +140,9 @@
      *
      * @param {string} type 'success' or 'error'
      * @param {string|string[]} message One line, or several.
+     * @param {HTMLElement} [region] Where to show the notice, by default the grids' region.
      */
-    const showNotice = (type, message) => {
+    const showNotice = (type, message, region = noticesRegion) => {
       const notice = document.createElement('div');
       notice.className =
         `notice ${type === 'error' ? 'notice-error' : 'notice-success'} is-dismissible`;
@@ -138,7 +164,7 @@
       dismiss.addEventListener('click', () => notice.remove());
       notice.append(dismiss);
 
-      noticesRegion.append(notice);
+      region.append(notice);
     };
 
     const setBusy = (value) => {
@@ -315,6 +341,258 @@
       finishWithReload({message: button.dataset.successMessage});
     };
 
+    /**
+     * Post to a network endpoint of the library tools.
+     *
+     * @param {string} action The wp_ajax action.
+     * @param {FormData} body Form fields to send along.
+     * @param {string} fallback Error message if the response carries none.
+     *
+     * @return {Promise<Object>} The data of the successful response.
+     */
+    const postToolAction = async (action, body, fallback) => {
+      body.append('action', action);
+      body.append('nonce', settings.nonce);
+
+      const response = await fetch(settings.ajaxUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body
+      });
+
+      let result;
+      try {
+        result = await response.json();
+      }
+      catch {
+        throw fail(`Unexpected status ${response.status}`);
+      }
+
+      if (!response.ok || !result || result.success !== true) {
+        // A failed nonce check answers -1, so the data may be missing altogether.
+        const data = (result && result.data) || {};
+        const errors = data.messages && data.messages.error && data.messages.error.length
+          ? data.messages.error
+          : [data.message || fallback];
+        const error = fail(errors.join(' '));
+        error.lines = errors;
+        throw error;
+      }
+
+      return result.data || {};
+    };
+
+    /**
+     * Put a tool's button back and show why its action failed.
+     *
+     * @param {Error} error What went wrong.
+     * @param {function} restore Puts the button back, from startAction().
+     * @param {string} fallback Message for errors that did not come from the server.
+     * @param {string} tools Name of the tools section to show the notice in.
+     */
+    const failToolAction = (error, restore, fallback, tools) => {
+      console.error('H5P network libraries:', error);
+      restore();
+      showNotice('error', error.requestError ? (error.lines || error.message) : fallback, toolsNoticesRegion(tools));
+    };
+
+    const updateContentTypeCache = async (button) => {
+      const {restore} = startAction(button.parentElement, button);
+
+      let data;
+      try {
+        data = await postToolAction(
+          'h5p_network_update_content_type_cache',
+          new FormData(),
+          l10n.contentTypeCacheFailed
+        );
+      }
+      catch (error) {
+        failToolAction(error, restore, l10n.contentTypeCacheFailed, toolsOf(button));
+        return;
+      }
+
+      // The available grid and the last update time are rebuilt by the reload.
+      finishWithReload({tools: toolsOf(button), message: data.messages ? data.messages.info : []});
+    };
+
+    /**
+     * Rebuild the content caches of all blogs, one time-limited batch per request, like the Libraries page.
+     *
+     * @param {HTMLButtonElement} button The Rebuild cache button.
+     */
+    const rebuildCache = async (button) => {
+      const progress = button.closest('.postbox').querySelector('.h5p-network-libraries-rebuild-progress');
+      const {restore} = startAction(button.parentElement, button);
+
+      try {
+        let left;
+        do {
+          const data = await postToolAction('h5p_network_rebuild_cache', new FormData(), l10n.rebuildFailed);
+          left = Number(data.left) || 0;
+
+          if (left > 0 && progress) {
+            progress.textContent = left === 1
+              ? l10n.notCachedSingular
+              : l10n.notCachedPlural.replace('%d', left);
+          }
+        } while (left > 0);
+      }
+      catch (error) {
+        failToolAction(error, restore, l10n.rebuildFailed, toolsOf(button));
+        return;
+      }
+
+      // The box is gone after the reload, as no content is left without a cache.
+      finishWithReload({tools: toolsOf(button), message: l10n.rebuildDone});
+    };
+
+    const uploadLibraries = async (button) => {
+      const form = button.form;
+      const file = form.querySelector('input[type="file"]');
+      if (!file.files.length) {
+        showNotice('error', l10n.noFile, toolsNoticesRegion(toolsOf(button)));
+        file.focus();
+        return;
+      }
+
+      const {restore} = startAction(button.parentElement, button);
+
+      let data;
+      try {
+        data = await postToolAction('h5p_network_library_upload', new FormData(form), l10n.uploadFailed);
+      }
+      catch (error) {
+        failToolAction(error, restore, l10n.uploadFailed, toolsOf(button));
+        return;
+      }
+
+      // The installed grid is rebuilt by the reload, and the notice lists what core added or updated.
+      finishWithReload({tools: toolsOf(button), message: data.messages ? data.messages.info : []});
+    };
+
+    /**
+     * Build the confirmation text of a bulk button from its count.
+     *
+     * @param {string} keyPrefix The l10n prefix, e.g. "bulkConfirmUpdate".
+     * @param {HTMLButtonElement} button The clicked bulk button.
+     * @return {string} The confirmation message.
+     */
+    const bulkConfirm = (keyPrefix, button) => {
+      const count = Number(button.dataset.count) || 0;
+      const template = l10n[keyPrefix + (count === 1 ? 'Singular' : 'Plural')] || '';
+      return template.replace('%d', String(count));
+    };
+
+    /**
+     * Run all the items of a bulk action sequentially, then reload once with a summary.
+     *
+     * An item error does not stop the run; only a fatal error (nonce, permission, transport) does.
+     *
+     * @param {HTMLButtonElement} button The clicked bulk button.
+     * @param {object} options
+     * @param {Array} options.items What the action runs over.
+     * @param {function} options.runItem Runs one item, resolving to {status, lines}.
+     * @param {function} options.describe Progress line for an item, by index.
+     * @param {function} options.summarize Summary lines from the done, skipped and failed counts.
+     */
+    const runBulk = async (button, options) => {
+      const {items, runItem, describe, summarize} = options;
+      // The button leaves the DOM when the action starts, so look both up before.
+      const tools = toolsOf(button);
+      const progress = button.closest('.postbox').querySelector('.h5p-network-libraries-bulk-progress');
+      const {restore} = startAction(button.parentElement, button);
+      const done = [];
+      const skipped = [];
+      const failed = [];
+      try {
+        for (let index = 0; index < items.length; index += 1) {
+          const item = items[index];
+          if (progress) {
+            progress.textContent = describe(index, item);
+          }
+          const outcome = await runItem(item);
+          if (outcome.status === 'done') {
+            done.push(item);
+          }
+          else if (outcome.status === 'skipped') {
+            skipped.push(item);
+          }
+          else {
+            failed.push({item, lines: outcome.lines});
+          }
+        }
+      }
+      catch (error) {
+        // A fatal error (nonce, permission, transport) stops the run.
+        console.error('H5P network libraries:', error);
+        if (done.length + skipped.length + failed.length > 0) {
+          // Some items already ran, so reload once to show what happened.
+          finishWithReload({
+            tools,
+            type: 'error',
+            message: [l10n.bulkFailed].concat(summarize(done.length, skipped.length, failed))
+          });
+        }
+        else {
+          restore();
+          showNotice('error', error.requestError ? (error.lines || error.message) : l10n.bulkFailed, toolsNoticesRegion(tools));
+        }
+        return;
+      }
+      finishWithReload({
+        tools,
+        type: failed.length ? 'error' : 'success',
+        message: summarize(done.length, skipped.length, failed)
+      });
+    };
+
+    /**
+     * Update all the installed libraries that have an update, via the network endpoint.
+     *
+     * @param {HTMLButtonElement} button The clicked bulk button.
+     */
+    const updateAll = (button) => {
+      const items = [...installedGrid.querySelectorAll('[data-h5p-library-action="update"]')]
+        .filter(rowButton => rowButton.dataset.machineName)
+        .map(rowButton => rowButton.dataset.machineName);
+      const runItem = async (machineName) => {
+        const body = new FormData();
+        body.append('machineName', machineName);
+        const data = await postToolAction('h5p_network_library_install', body, l10n.requestFailed);
+        const lines = (data.messages && data.messages.error && data.messages.error.length)
+          ? data.messages.error : [];
+        if (data.status === 'installed') {
+          return {status: 'done', lines};
+        }
+        if (data.status === 'skipped') {
+          return {status: 'skipped', lines};
+        }
+        return {status: 'failed', lines: lines.length ? lines : [l10n.requestFailed]};
+      };
+      runBulk(button, {
+        items,
+        runItem,
+        describe: (index, machineName) => l10n.bulkProgressUpdate
+          .replace('%lib', machineName).replace('%i', String(index + 1)).replace('%n', String(items.length)),
+        summarize: (doneCount, skippedCount, failures) => {
+          const lines = [];
+          if (doneCount > 0) {
+            lines.push(doneCount === 1 ? l10n.bulkUpdatedSingular : l10n.bulkUpdatedPlural.replace('%d', String(doneCount)));
+          }
+          if (skippedCount > 0) {
+            lines.push(skippedCount === 1 ? l10n.bulkSkippedSingular : l10n.bulkSkippedPlural.replace('%d', String(skippedCount)));
+          }
+          if (failures.length > 0) {
+            lines.push(failures.length === 1 ? l10n.bulkUpdateFailedSingular : l10n.bulkUpdateFailedPlural.replace('%d', String(failures.length)));
+            failures.forEach(failure => failure.lines.forEach(line => lines.push(failure.item + ': ' + line)));
+          }
+          return lines;
+        }
+      });
+    };
+
     // One dialog instance, since the dialog DOM stays in the document after it
     // is closed and a fresh instance per click would accumulate closed dialogs.
     let confirmDialog;
@@ -322,15 +600,16 @@
     /**
      * Ask the user to confirm before a state-changing action is run.
      *
-     * @param {HTMLButtonElement} button The clicked action button.
+     * @param {string} message The text shown in the dialog.
+     * @param {string} [label] The label of the confirm button, the l10n default when omitted.
      * @param {function} onConfirm What to run when the user confirms.
      */
-    const confirmAction = (button, onConfirm) => {
+    const confirmWith = (message, label, onConfirm) => {
       const params = {
         l10n: {
-          message: button.dataset.confirmMessage,
+          message,
           cancel: l10n.cancel,
-          confirm: button.dataset.confirmLabel || l10n.confirm
+          confirm: label || l10n.confirm
         }
       };
       const callbacks = {
@@ -344,6 +623,16 @@
         confirmDialog.update(params, callbacks);
       }
       confirmDialog.show();
+    };
+
+    /**
+     * Ask the user to confirm before a state-changing action is run.
+     *
+     * @param {HTMLButtonElement} button The clicked action button.
+     * @param {function} onConfirm What to run when the user confirms.
+     */
+    const confirmAction = (button, onConfirm) => {
+      confirmWith(button.dataset.confirmMessage, button.dataset.confirmLabel, onConfirm);
     };
 
     // One dialog instance, since the dialog DOM stays in the document after it
@@ -864,11 +1153,28 @@
           case 'delete':
             confirmAction(button, () => deleteLibrary(button));
             break;
+          case 'update-all':
+            confirmWith(bulkConfirm('bulkConfirmUpdate', button), button.dataset.confirmLabel, () => updateAll(button));
+            break;
           case 'info':
             showInfo(button);
             break;
+          case 'update-content-type-cache':
+            updateContentTypeCache(button);
+            break;
+          case 'upload':
+            uploadLibraries(button);
+            break;
+          case 'rebuild-cache':
+            rebuildCache(button);
+            break;
         }
       });
+    });
+
+    // The tool buttons post through AJAX, so the forms holding their fields must never submit natively.
+    container.querySelectorAll('.h5p-network-libraries-tools form').forEach(form => {
+      form.addEventListener('submit', event => event.preventDefault());
     });
 
     const focusInstalled = installedGrid ? makeGridNavigable(installedGrid) : null;
@@ -880,6 +1186,7 @@
     // target row are consumed once.
     let pendingFocus = null;
     let hadStoredNotice = false;
+    let fromTools = false;
     try {
       const stored = sessionStorage.getItem(STORAGE_KEY);
       if (stored) {
@@ -887,7 +1194,8 @@
         const storedNotice = JSON.parse(stored);
         const lines = (Array.isArray(storedNotice.message) ? storedNotice.message : [storedNotice.message])
           .filter(Boolean);
-        showNotice(storedNotice.type || 'success', lines);
+        fromTools = typeof storedNotice.tools === 'string';
+        showNotice(storedNotice.type || 'success', lines, fromTools ? toolsNoticesRegion(storedNotice.tools) : noticesRegion);
         pendingFocus = storedNotice.machineName || null;
       }
     }
@@ -912,7 +1220,7 @@
           focusInstalled(rows[rows.length - 1].firstElementChild);
         }
       }
-      else if (hadStoredNotice) {
+      else if (hadStoredNotice && !fromTools) {
         // After a deletion the row is gone, so return focus to the first data row.
         const rows = installedGrid.querySelectorAll('[role="row"]');
         if (rows.length > 1) {
