@@ -549,6 +549,29 @@
     };
 
     /**
+     * Install or update one content type from the hub, via the network endpoint.
+     *
+     * An item failure resolves as a failed outcome; only a fatal error rejects.
+     *
+     * @param {string} machineName The machine name of the content type.
+     * @return {Promise<{status: string, lines: string[]}>} The outcome of the item.
+     */
+    const runHubInstall = async (machineName) => {
+      const body = new FormData();
+      body.append('machineName', machineName);
+      const data = await postToolAction('h5p_network_library_install', body, l10n.requestFailed);
+      const lines = (data.messages && data.messages.error && data.messages.error.length)
+        ? data.messages.error : [];
+      if (data.status === 'installed') {
+        return {status: 'done', lines};
+      }
+      if (data.status === 'skipped') {
+        return {status: 'skipped', lines};
+      }
+      return {status: 'failed', lines: lines.length ? lines : [l10n.requestFailed]};
+    };
+
+    /**
      * Update all the installed libraries that have an update, via the network endpoint.
      *
      * @param {HTMLButtonElement} button The clicked bulk button.
@@ -557,21 +580,9 @@
       const items = [...installedGrid.querySelectorAll('[data-h5p-library-action="update"]')]
         .filter(rowButton => rowButton.dataset.machineName)
         .map(rowButton => rowButton.dataset.machineName);
-      const runItem = async (machineName) => {
-        const body = new FormData();
-        body.append('machineName', machineName);
-        const data = await postToolAction('h5p_network_library_install', body, l10n.requestFailed);
-        const lines = (data.messages && data.messages.error && data.messages.error.length)
-          ? data.messages.error : [];
-        if (data.status === 'installed') {
-          return {status: 'done', lines};
-        }
-        if (data.status === 'skipped') {
-          return {status: 'skipped', lines};
-        }
-        return {status: 'failed', lines: lines.length ? lines : [l10n.requestFailed]};
-      };
       runBulk(button, {
+        items,
+        runItem: runHubInstall,
         items,
         runItem,
         describe: (index, machineName) => l10n.bulkProgressUpdate
@@ -586,6 +597,39 @@
           }
           if (failures.length > 0) {
             lines.push(failures.length === 1 ? l10n.bulkUpdateFailedSingular : l10n.bulkUpdateFailedPlural.replace('%d', String(failures.length)));
+            failures.forEach(failure => failure.lines.forEach(line => lines.push(failure.item + ': ' + line)));
+          }
+          return lines;
+        }
+      });
+    };
+
+    /**
+     * Install all the available content types, via the network endpoint.
+     *
+     * The endpoint skips a content type an earlier install already pulled in as a dependency.
+     *
+     * @param {HTMLButtonElement} button The clicked bulk button.
+     */
+    const installAll = (button) => {
+      const items = [...availableGrid.querySelectorAll('[data-h5p-library-action="install"]')]
+        .filter(rowButton => rowButton.dataset.machineName)
+        .map(rowButton => rowButton.dataset.machineName);
+      runBulk(button, {
+        items,
+        runItem: runHubInstall,
+        describe: (index, machineName) => l10n.bulkProgressInstall
+          .replace('%lib', machineName).replace('%i', String(index + 1)).replace('%n', String(items.length)),
+        summarize: (doneCount, skippedCount, failures) => {
+          const lines = [];
+          if (doneCount > 0) {
+            lines.push(doneCount === 1 ? l10n.bulkInstalledSingular : l10n.bulkInstalledPlural.replace('%d', String(doneCount)));
+          }
+          if (skippedCount > 0) {
+            lines.push(skippedCount === 1 ? l10n.bulkSkippedSingular : l10n.bulkSkippedPlural.replace('%d', String(skippedCount)));
+          }
+          if (failures.length > 0) {
+            lines.push(failures.length === 1 ? l10n.bulkInstallFailedSingular : l10n.bulkInstallFailedPlural.replace('%d', String(failures.length)));
             failures.forEach(failure => failure.lines.forEach(line => lines.push(failure.item + ': ' + line)));
           }
           return lines;
@@ -1155,6 +1199,9 @@
             break;
           case 'update-all':
             confirmWith(bulkConfirm('bulkConfirmUpdate', button), button.dataset.confirmLabel, () => updateAll(button));
+            break;
+          case 'install-all':
+            confirmWith(bulkConfirm('bulkConfirmInstall', button), button.dataset.confirmLabel, () => installAll(button));
             break;
           case 'info':
             showInfo(button);
