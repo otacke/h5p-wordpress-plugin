@@ -229,7 +229,8 @@ class H5P_Network_Admin {
     catch (Exception $exception) {
       $rolled_back = false;
 
-      if (H5P_Network_Migrate_To_Network::isPhaseRollbackPossible($phase)) {
+      // Decided by the step that failed, not by the phase: the database phase runs step 3, which changes blogs.
+      if ($migrate->isRollbackPossible()) {
         try {
           $demigrate = new H5P_Network_Migrate_To_Local();
           $demigrate->deleteNetworkFilesDirectory();

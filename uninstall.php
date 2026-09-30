@@ -66,4 +66,7 @@ else {
   }
 
   switch_to_blog($original_blog_id);
+
+  // Shared by all blogs, so removed once after the blogs.
+  H5P_Plugin::uninstall_network();
 }

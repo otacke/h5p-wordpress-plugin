@@ -157,19 +157,6 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Whether migration can still be rolled back in given phase.
-   *
-   * Copy and database phases only add network files and tables; clear phase deletes blog files and
-   * cannot be undone. Mirrors isRollbackPossible() but reads persisted phase, not instance state.
-   *
-   * @param string $phase Phase migration was in.
-   * @return bool True if rollback is safe.
-   */
-  public static function isPhaseRollbackPossible($phase) {
-    return $phase === self::PHASE_COPY || $phase === self::PHASE_DATABASE;
-  }
-
-  /**
    * Run one batch of migration and report progress. Call until returned progress reports done.
    *
    * @return array Progress with 'phase', 'percentage' and 'done'.
@@ -185,13 +172,27 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         break;
 
       case self::PHASE_DATABASE:
+        if (!empty($state['updating_blogs'])) {
+          // Step 3 of an earlier request did not finish, so some blogs may already point to network ids or
+          // have lost their tables. Running step 2 again would read those blogs, and its rollback would drop
+          // network tables that they need.
+          $this->failed_step = 3;
+          throw new Exception(
+            __('An earlier attempt failed while the blog databases were being updated, so the migration cannot continue.', 'h5p')
+          );
+        }
+
         // Not batched: step 3 builds its id lookup from blog tables it then drops.
         $this->failed_step = 2;
         $this->migrateDatabaseTablesToNetwork($state['libraries']);
 
         $this->failed_step = 3;
+        // Stored before step 3 changes any blog, so an exception, a fatal error or a timeout is noticed next time.
+        $state['updating_blogs'] = true;
+        self::setState($state);
         $this->updateBlogsDatabase($state['libraries']);
 
+        unset($state['updating_blogs']);
         $state['phase'] = self::PHASE_CLEAR;
         $state['offset'] = 0;
         break;

@@ -344,10 +344,10 @@
           throw fail(`Unexpected status ${response.status}`);
         }
 
-        if (!response.ok || result.success === false) {
-          throw fail(result.message
-            ? `${result.message} (${result.errorCode || 'UNKNOWN'})`
-            : l10n.deleteFailed);
+        if (!response.ok || !result || result.success !== true) {
+          // wp_send_json_error() puts the message into data. A failed nonce check answers -1, so there may be none.
+          const data = (result && result.data) || {};
+          throw fail(data.message || l10n.deleteFailed);
         }
       }
       catch (error) {
