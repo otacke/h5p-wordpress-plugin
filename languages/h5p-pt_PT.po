@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: H5P 1.15.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/h5p-wordpress-"
 "plugin-master\n"
-"POT-Creation-Date: 2022-03-02 16:26:07+00:00\n"
+"POT-Creation-Date: 2026-09-30 12:51:16+00:00\n"
 "PO-Revision-Date: 2024-01-05 10:05+0100\n"
 "Last-Translator: Albane Coeurquetin <albane@instantnetwork.org>\n"
 "Language-Team: Portuguese (Portugal) <https://translate-h5p.tk/weblate/"
@@ -17,196 +17,211 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Poedit 3.4.1\n"
 
-#: admin/class-h5p-content-admin.php:185 admin/class-h5p-content-admin.php:697
-#: admin/class-h5p-library-admin.php:215 admin/class-h5p-privacy-policy.php:431
+#: admin/class-h5p-content-admin.php:188 admin/class-h5p-content-admin.php:705
+#: admin/class-h5p-library-admin.php:281 admin/class-h5p-privacy-policy.php:438
 msgid "Title"
 msgstr "Título"
 
-#: admin/class-h5p-content-admin.php:189 admin/class-h5p-content-admin.php:701
-#: admin/class-h5p-privacy-policy.php:471
+#: admin/class-h5p-content-admin.php:192 admin/class-h5p-content-admin.php:709
+#: admin/class-h5p-privacy-policy.php:478
 msgid "Content type"
 msgstr "Tipo de conteúdo"
 
-#: admin/class-h5p-content-admin.php:194 admin/class-h5p-content-admin.php:706
+#: admin/class-h5p-content-admin.php:197 admin/class-h5p-content-admin.php:714
 msgid "Author"
 msgstr "Autor"
 
-#: admin/class-h5p-content-admin.php:199 admin/class-h5p-content-admin.php:711
+#: admin/class-h5p-content-admin.php:202 admin/class-h5p-content-admin.php:719
 #: admin/views/new-content.php:98 admin/views/show-content.php:39
 msgid "Tags"
 msgstr "Marcações"
 
-#: admin/class-h5p-content-admin.php:204 admin/class-h5p-content-admin.php:716
+#: admin/class-h5p-content-admin.php:207 admin/class-h5p-content-admin.php:724
 msgid "Last modified"
 msgstr "Última modificação"
 
-#: admin/class-h5p-content-admin.php:208 admin/class-h5p-privacy-policy.php:373
-#: admin/class-h5p-privacy-policy.php:427
+#: admin/class-h5p-content-admin.php:211 admin/class-h5p-privacy-policy.php:380
+#: admin/class-h5p-privacy-policy.php:434
 msgid "ID"
 msgstr "ID"
 
-#: admin/class-h5p-content-admin.php:227 admin/class-h5p-content-admin.php:724
+#: admin/class-h5p-content-admin.php:230 admin/class-h5p-content-admin.php:732
 #: admin/views/select-content.php:31
 msgid "No H5P content available. You must upload or create new content."
 msgstr ""
 "Não existe guia do autor do conteúdo H5P. Envie ou crie novo guia do autor "
 "do conteúdo."
 
-#: admin/class-h5p-content-admin.php:238
+#: admin/class-h5p-content-admin.php:241
 msgid "You are not allowed to view this content."
 msgstr "Não está autorizado a ver este guia do autor do conteúdo."
 
-#: admin/class-h5p-content-admin.php:278
+#: admin/class-h5p-content-admin.php:281
 msgid "User"
 msgstr "Utilizador"
 
-#: admin/class-h5p-content-admin.php:282 admin/class-h5p-plugin-admin.php:1042
-#: admin/class-h5p-privacy-policy.php:264
+#: admin/class-h5p-content-admin.php:285 admin/class-h5p-plugin-admin.php:1118
+#: admin/class-h5p-privacy-policy.php:271
 msgid "Score"
 msgstr "Pontuação"
 
-#: admin/class-h5p-content-admin.php:286 admin/class-h5p-plugin-admin.php:1046
-#: admin/class-h5p-privacy-policy.php:268
+#: admin/class-h5p-content-admin.php:289 admin/class-h5p-plugin-admin.php:1122
+#: admin/class-h5p-privacy-policy.php:275
 msgid "Maximum Score"
 msgstr "Pontuação máxima"
 
-#: admin/class-h5p-content-admin.php:290 admin/class-h5p-plugin-admin.php:1050
-#: admin/class-h5p-privacy-policy.php:272
+#: admin/class-h5p-content-admin.php:293 admin/class-h5p-plugin-admin.php:1126
+#: admin/class-h5p-privacy-policy.php:279
 msgid "Opened"
 msgstr "Aberto"
 
-#: admin/class-h5p-content-admin.php:294 admin/class-h5p-plugin-admin.php:1054
-#: admin/class-h5p-privacy-policy.php:276
+#: admin/class-h5p-content-admin.php:297 admin/class-h5p-plugin-admin.php:1130
+#: admin/class-h5p-privacy-policy.php:283
 msgid "Finished"
 msgstr "Finalizado"
 
-#: admin/class-h5p-content-admin.php:297 admin/class-h5p-plugin-admin.php:1057
-#: admin/class-h5p-privacy-policy.php:280
+#: admin/class-h5p-content-admin.php:300 admin/class-h5p-plugin-admin.php:1133
+#: admin/class-h5p-privacy-policy.php:287
 msgid "Time spent"
 msgstr "Tempo gasto"
 
-#: admin/class-h5p-content-admin.php:300
+#: admin/class-h5p-content-admin.php:303
 msgid "There are no logged results for this content."
 msgstr ""
 "Não existem resultados registados para o seu guia do autor do conteúdo."
 
-#: admin/class-h5p-content-admin.php:317 admin/class-h5p-library-admin.php:147
+#: admin/class-h5p-content-admin.php:320 admin/class-h5p-library-admin.php:198
 msgid "Unknown task."
 msgstr "Tarefa desconhecida."
 
-#: admin/class-h5p-content-admin.php:352
+#: admin/class-h5p-content-admin.php:355
 msgid "You are not allowed to edit this content."
 msgstr "Não está autorizado a visualizar este guia do autor do conteúdo."
 
-#: admin/class-h5p-content-admin.php:374
+#: admin/class-h5p-content-admin.php:378
 msgid "Invalid confirmation code, not deleting."
 msgstr "Código de confirmação inválido. não apagar."
 
-#: admin/class-h5p-content-admin.php:564
+#: admin/class-h5p-content-admin.php:572
 msgid "Invalid library."
 msgstr "Biblioteca não válida."
 
-#: admin/class-h5p-content-admin.php:569
+#: admin/class-h5p-content-admin.php:577
 msgid "Something unexpected happened. We were unable to save this content."
 msgstr ""
 "Algo inesperado aconteceu. Não foi possível guardar este guia do autor do "
 "conteúdo."
 
-#: admin/class-h5p-content-admin.php:576
+#: admin/class-h5p-content-admin.php:584
 msgid "No such library."
 msgstr "Não existe esta biblioteca."
 
-#: admin/class-h5p-content-admin.php:587
+#: admin/class-h5p-content-admin.php:595
 msgid "Invalid parameters."
 msgstr "Parâmetros inválidos."
 
-#: admin/class-h5p-content-admin.php:597 admin/class-h5p-content-admin.php:656
+#: admin/class-h5p-content-admin.php:605 admin/class-h5p-content-admin.php:664
+#, php-format
 msgid "Missing %s."
 msgstr "Falta %s."
 
-#: admin/class-h5p-content-admin.php:602
+#: admin/class-h5p-content-admin.php:610
 msgid "Title is too long. Must be 256 letters or shorter."
 msgstr "Título muito longo. Deve conter no máximo 256 caracteres ou menos."
 
-#: admin/class-h5p-content-admin.php:674
+#: admin/class-h5p-content-admin.php:682
 msgid "Insert interactive content"
 msgstr "Inserir conteúdo interactivo"
 
-#: admin/class-h5p-content-admin.php:676
+#: admin/class-h5p-content-admin.php:684
 msgid "Add H5P"
 msgstr "Adicionar H5P"
 
-#: admin/class-h5p-content-admin.php:849
+#: admin/class-h5p-content-admin.php:859
+#, php-format
 msgid "%s ago"
 msgstr "%s atrás"
 
-#: admin/class-h5p-content-admin.php:907
+#: admin/class-h5p-content-admin.php:917
 msgid "Insert"
 msgstr "Inserir"
 
-#: admin/class-h5p-content-admin.php:939 admin/class-h5p-privacy-policy.php:288
+#: admin/class-h5p-content-admin.php:949 admin/class-h5p-privacy-policy.php:295
 #: admin/views/new-content.php:21 admin/views/show-content.php:17
 msgid "Results"
 msgstr "Resultados"
 
-#: admin/class-h5p-content-admin.php:948 admin/views/content-results.php:18
+#: admin/class-h5p-content-admin.php:958 admin/views/content-results.php:18
 #: admin/views/new-content.php:18 admin/views/show-content.php:20
 msgid "Edit"
 msgstr "Editar"
 
-#: admin/class-h5p-content-admin.php:1044
+#: admin/class-h5p-content-admin.php:1054
 msgid "Are you sure you wish to delete this content?"
 msgstr "Tem a certeza de que deseja eliminar este guia do autor do conteúdo?"
 
-#: admin/class-h5p-library-admin.php:62 admin/views/new-content.php:57
+#: admin/class-h5p-library-admin.php:92
+#: admin/views/network-libraries-bulk.php:61
+#: admin/views/network-libraries-installed.php:32
+#: admin/views/network-libraries-installed.php:168
+#: admin/views/new-content.php:57
 msgid "Delete"
 msgstr "Eliminar"
 
-#: admin/class-h5p-library-admin.php:65
+#: admin/class-h5p-library-admin.php:95
 msgid "Content Upgrade"
 msgstr "Atualizar guia do autor do conteúdo"
 
-#: admin/class-h5p-library-admin.php:102
+#: admin/class-h5p-library-admin.php:133
+#, php-format
 msgid "Cannot find library with id: %d."
 msgstr "Não se pode consegue encontrar bibliotecas com o id: %d."
 
-#: admin/class-h5p-library-admin.php:167 admin/class-h5p-library-admin.php:379
+#: admin/class-h5p-library-admin.php:155
+msgid "Error, insufficient permissions!"
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:218 admin/class-h5p-library-admin.php:443
 msgid "N/A"
 msgstr "Não aplicável"
 
-#: admin/class-h5p-library-admin.php:168
+#: admin/class-h5p-library-admin.php:219
 msgid "View library details"
 msgstr "Ver detalhes da biblioteca"
 
-#: admin/class-h5p-library-admin.php:169
+#: admin/class-h5p-library-admin.php:220
 msgid "Delete library"
 msgstr "Eliminar biblioteca"
 
-#: admin/class-h5p-library-admin.php:170
+#: admin/class-h5p-library-admin.php:221
 msgid "Upgrade library content"
 msgstr "Atualizar guia do autor do conteúdo da biblioteca"
 
-#: admin/class-h5p-library-admin.php:216
+#: admin/class-h5p-library-admin.php:282
 msgid "Restricted"
 msgstr "Restrito"
 
-#: admin/class-h5p-library-admin.php:218 admin/class-h5p-privacy-policy.php:479
+#: admin/class-h5p-library-admin.php:284 admin/class-h5p-privacy-policy.php:486
 msgid "Contents"
 msgstr "Guia do autor do conteúdo"
 
-#: admin/class-h5p-library-admin.php:222
+#: admin/class-h5p-library-admin.php:288
 msgid "Contents using it"
 msgstr "Guia do autor do conteúdo em uso"
 
-#: admin/class-h5p-library-admin.php:226
+#: admin/class-h5p-library-admin.php:292
 msgid "Libraries using it"
 msgstr "Bibliotecas em uso"
 
-#: admin/class-h5p-library-admin.php:229 admin/views/new-content.php:47
+#: admin/class-h5p-library-admin.php:295 admin/views/new-content.php:47
 msgid "Actions"
 msgstr "Ações"
 
-#: admin/class-h5p-library-admin.php:308
+#: admin/class-h5p-library-admin.php:328
+msgid "You are not allowed to manage H5P libraries."
+msgstr ""
+
+#: admin/class-h5p-library-admin.php:382 admin/class-h5p-network-admin.php:1240
 msgid ""
 "This Library is used by content or other libraries and can therefore not be "
 "deleted."
@@ -214,122 +229,132 @@ msgstr ""
 "Esta biblioteca é utilizada pelo guia do autor do conteúdo ou outras "
 "bibliotecas e, por isso, não pode ser eliminada."
 
-#: admin/class-h5p-library-admin.php:344
+#: admin/class-h5p-library-admin.php:416
 msgid "No content is using this library"
 msgstr "Nenhum guia do autor do conteúdo está a usar esta biblioteca"
 
-#: admin/class-h5p-library-admin.php:345
+#: admin/class-h5p-library-admin.php:417
 msgid "Content using this library"
 msgstr "Guia do autor do conteúdo a usar esta biblioteca"
 
-#: admin/class-h5p-library-admin.php:346
+#: admin/class-h5p-library-admin.php:418
 msgid "Elements per page"
 msgstr "Elementos por página"
 
-#: admin/class-h5p-library-admin.php:347
+#: admin/class-h5p-library-admin.php:419
 msgid "Filter content"
 msgstr "Filtrar guia do autor do conteúdo"
 
-#: admin/class-h5p-library-admin.php:348
+#: admin/class-h5p-library-admin.php:420
 msgid "Page $x of $y"
 msgstr "Página $x de $y"
 
-#: admin/class-h5p-library-admin.php:376 admin/class-h5p-network-admin.php:346
+#: admin/class-h5p-library-admin.php:440 admin/class-h5p-network-admin.php:934
+#: admin/views/network-libraries-available.php:22
+#: admin/views/network-libraries-installed.php:20
 msgid "Version"
 msgstr "Versão"
 
-#: admin/class-h5p-library-admin.php:377
+#: admin/class-h5p-library-admin.php:441
 msgid "Fullscreen"
 msgstr "Ecrã inteiro"
 
-#: admin/class-h5p-library-admin.php:377 admin/class-h5p-library-admin.php:378
+#: admin/class-h5p-library-admin.php:441 admin/class-h5p-library-admin.php:442
 msgid "Yes"
 msgstr "Sim"
 
-#: admin/class-h5p-library-admin.php:377 admin/class-h5p-library-admin.php:378
+#: admin/class-h5p-library-admin.php:441 admin/class-h5p-library-admin.php:442
 #: admin/views/settings.php:131
 msgid "No"
 msgstr "Não"
 
-#: admin/class-h5p-library-admin.php:378
+#: admin/class-h5p-library-admin.php:442
 msgid "Content library"
 msgstr "Guia do autor do conteúdo da biblioteca"
 
-#: admin/class-h5p-library-admin.php:379
+#: admin/class-h5p-library-admin.php:443
 msgid "Used by"
 msgstr "Usado por"
 
-#: admin/class-h5p-library-admin.php:379 admin/class-h5p-library-admin.php:430
+#: admin/class-h5p-library-admin.php:443 admin/class-h5p-library-admin.php:561
+#: admin/views/network-libraries-installed.php:117
+#, php-format
 msgid "1 content"
 msgid_plural "%d contents"
 msgstr[0] "Guia do autor do conteúdo 1"
 msgstr[1] "%d guia do autor do conteúdo"
 
-#: admin/class-h5p-library-admin.php:419
+#: admin/class-h5p-library-admin.php:550
 msgid "There are no available upgrades for this library."
 msgstr "Não existem atualizações disponíveis para esta biblioteca."
 
-#: admin/class-h5p-library-admin.php:426
+#: admin/class-h5p-library-admin.php:557
 msgid "There's no content instances to upgrade."
 msgstr "Não existem casos de guia do autor do conteúdo para atualizar."
 
-#: admin/class-h5p-library-admin.php:437
+#: admin/class-h5p-library-admin.php:568
+#, php-format
 msgid "You are about to upgrade %s. Please select upgrade version."
 msgstr ""
 "Está prestes a atualizar %s. Por favor, selecione a versão da atualização."
 
-#: admin/class-h5p-library-admin.php:438
+#: admin/class-h5p-library-admin.php:569 admin/class-h5p-network-admin.php:1017
 msgid "Upgrading to %ver..."
 msgstr "Atualizando para a %ver..."
 
-#: admin/class-h5p-library-admin.php:439
+#: admin/class-h5p-library-admin.php:570 admin/class-h5p-network-admin.php:1018
 msgid "An error occurred while processing parameters:"
 msgstr "Ocorreu um erro enquanto processava os seguintes parâmetros:"
 
-#: admin/class-h5p-library-admin.php:440
+#: admin/class-h5p-library-admin.php:571 admin/class-h5p-network-admin.php:1019
 msgid "Could not load data for library %lib."
 msgstr "Não foi possível carregar dados para a biblioteca %lib."
 
-#: admin/class-h5p-library-admin.php:441
+#: admin/class-h5p-library-admin.php:572 admin/class-h5p-network-admin.php:1020
 msgid "Could not upgrade content %id:"
 msgstr "Não foi possível atualizar o guia do autor do conteúdo %id:"
 
-#: admin/class-h5p-library-admin.php:442
+#: admin/class-h5p-library-admin.php:573 admin/class-h5p-network-admin.php:1021
 msgid "Could not load upgrades script for %lib."
 msgstr "Não foi possível carregar o script de atualização para %lib."
 
-#: admin/class-h5p-library-admin.php:443
+#: admin/class-h5p-library-admin.php:574 admin/class-h5p-network-admin.php:1022
 msgid "Parameters are broken."
 msgstr "Os parâmetros estão quebrados."
 
-#: admin/class-h5p-library-admin.php:444
+#: admin/class-h5p-library-admin.php:575 admin/class-h5p-network-admin.php:1023
 msgid "Missing required library %lib."
 msgstr "Biblioteca necessária %lib ausente."
 
-#: admin/class-h5p-library-admin.php:445
+#: admin/class-h5p-library-admin.php:576 admin/class-h5p-network-admin.php:1024
+#, php-format
 msgid ""
 "Parameters contain %used while only %supported or earlier are supported."
 msgstr ""
 "Os parâmetros contêm %used enquanto apenas %supported ou anterior são "
 "suportados."
 
-#: admin/class-h5p-library-admin.php:446
+#: admin/class-h5p-library-admin.php:577 admin/class-h5p-network-admin.php:1025
+#, php-format
 msgid "Parameters contain %used which is not supported."
 msgstr "Os parâmetros contêm %used que não é suportado."
 
-#: admin/class-h5p-library-admin.php:447
+#: admin/class-h5p-library-admin.php:578
+#, php-format
 msgid "You have successfully upgraded %s."
 msgstr "Actualizou com sucesso %s."
 
-#: admin/class-h5p-library-admin.php:447
+#: admin/class-h5p-library-admin.php:578
 msgid "Return"
 msgstr "Voltar"
 
-#: admin/class-h5p-library-admin.php:457
+#: admin/class-h5p-library-admin.php:588
+#: admin/views/network-libraries-bulk.php:67
 msgid "Upgrade"
 msgstr "Atualizar"
 
-#: admin/class-h5p-library-admin.php:532
+#: admin/class-h5p-library-admin.php:667
+#: admin/views/network-libraries-tools.php:55
 msgid ""
 "Not all content has gotten their cache rebuilt. This is required to be able "
 "to delete libraries, and to display how many contents that uses the library."
@@ -338,37 +363,341 @@ msgstr ""
 "poder eliminar bibliotecas e mostrar quantos guias dos autores dos conteúdos "
 "usa a biblioteca."
 
-#: admin/class-h5p-library-admin.php:533
+#: admin/class-h5p-library-admin.php:668 admin/class-h5p-network-admin.php:1013
+#: admin/class-h5p-network-admin.php:1014
+#: admin/views/network-libraries-tools.php:59
+#, php-format
 msgid "1 content need to get its cache rebuilt."
 msgid_plural "%d contents needs to get their cache rebuilt."
 msgstr[0] "Guia do autor do conteúdo 1 necessita reconstruir o cache."
 msgstr[1] "%d guia do autor do conteúdos necessitam reconstruir o cache."
 
-#: admin/class-h5p-library-admin.php:534
+#: admin/class-h5p-library-admin.php:669
+#: admin/views/network-libraries-tools.php:52
+#: admin/views/network-libraries-tools.php:68
 msgid "Rebuild cache"
 msgstr "Reconstruir cache"
 
-#: admin/class-h5p-library-admin.php:546
+#: admin/class-h5p-library-admin.php:748
 msgid "Error, invalid security token!"
 msgstr "Erro, token de segurança inválido!"
 
-#: admin/class-h5p-library-admin.php:552 admin/class-h5p-library-admin.php:671
+#: admin/class-h5p-library-admin.php:754 admin/class-h5p-library-admin.php:859
 msgid "Error, missing library!"
 msgstr "Erro, biblioteca em falta!"
 
-#: admin/class-h5p-library-admin.php:564 admin/class-h5p-library-admin.php:677
+#: admin/class-h5p-library-admin.php:767 admin/class-h5p-library-admin.php:865
 msgid "Error, invalid library!"
 msgstr "Erro, biblioteca inválida!"
 
-#: admin/class-h5p-plugin-admin.php:255
+#: admin/class-h5p-network-admin.php:41 admin/class-h5p-network-admin.php:42
+msgid "H5P Network"
+msgstr "Rede H5P"
+
+#: admin/class-h5p-network-admin.php:53 admin/class-h5p-network-admin.php:54
+#: admin/class-h5p-network-admin.php:84
+msgid "H5P Management"
+msgstr "Gestão do H5P"
+
+#: admin/class-h5p-network-admin.php:67 admin/class-h5p-network-admin.php:68
+#, fuzzy
+msgid "H5P Network Libraries"
+msgstr "Bibliotecas H5P"
+
+#: admin/class-h5p-network-admin.php:118
+msgid "You do not have permission to manage H5P content types."
+msgstr "Não está autorizado a gerir os tipos de conteúdo H5P."
+
+#: admin/class-h5p-network-admin.php:935
+msgid "Machine name"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:937
+msgid "Maintainer"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:941
+msgid "Description"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:945
+msgid "License"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:969
+#, fuzzy, php-format
+msgid "Number of contents using this library as main library: %d"
+msgid_plural "Number of contents using this library as main library: %d"
+msgstr[0] "Nenhum guia do autor do conteúdo está a usar esta biblioteca"
+msgstr[1] "Nenhum guia do autor do conteúdo está a usar esta biblioteca"
+
+#: admin/class-h5p-network-admin.php:973
+#, php-format
+msgid ""
+"Number of libraries using this library as preloaded or editor dependency: %d"
+msgid_plural ""
+"Number of libraries using this library as preloaded or editor dependency: %d"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-h5p-network-admin.php:998 admin/class-h5p-plugin-admin.php:528
+#: admin/views/network-settings.php:21
+msgid "Cancel"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:999
+msgid "Close"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1000 admin/views/libraries.php:45
+#: admin/views/network-libraries-bulk.php:49
+#: admin/views/network-libraries-installed.php:26
+#: admin/views/network-libraries-tools.php:44 admin/views/new-content.php:59
+msgid "Update"
+msgstr "Atualização"
+
+#: admin/class-h5p-network-admin.php:1001
+msgid "The library could not be installed or updated. Please try again."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1002
+msgid "The library could not be deleted. Please try again."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1003
+msgid "Working..."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1004
+msgid "Dismiss this notice."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1005
+#: admin/class-h5p-network-admin.php:1415
+msgid "The library package could not be uploaded. Please try again."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1007
+#: admin/class-h5p-network-admin.php:1403
+msgid "No file was uploaded"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1008
+#: admin/class-h5p-network-admin.php:1597
+msgid "The content type cache could not be updated. Please try again."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1009
+msgid "The content cache could not be rebuilt. Please try again."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1010
+#, fuzzy
+msgid "The content cache was rebuilt."
+msgstr "Guia do autor do conteúdo 1 necessita reconstruir o cache."
+
+#: admin/class-h5p-network-admin.php:1027
+#: admin/class-h5p-network-admin.php:1028
+#, fuzzy, php-format
+msgid "1 content upgraded"
+msgid_plural "%d contents upgraded"
+msgstr[0] "Atualizar guia do autor do conteúdo"
+msgstr[1] "Atualizar guia do autor do conteúdo"
+
+#: admin/class-h5p-network-admin.php:1029
+#: admin/class-h5p-network-admin.php:1030
+#, php-format
+msgid "1 content could not be upgraded"
+msgid_plural "%d contents could not be upgraded"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-h5p-network-admin.php:1032
+#, fuzzy
+msgid "Update 1 library?"
+msgstr "Eliminar biblioteca"
+
+#: admin/class-h5p-network-admin.php:1033
+#, fuzzy, php-format
+msgid "Update %d libraries?"
+msgstr "Carregar bibliotecas"
+
+#: admin/class-h5p-network-admin.php:1034
+#, fuzzy
+msgid "Install 1 content type?"
+msgstr "Guia do autor do conteúdo inválido"
+
+#: admin/class-h5p-network-admin.php:1035
+#, fuzzy, php-format
+msgid "Install %d content types?"
+msgstr "Guia do autor do conteúdo inválido"
+
+#: admin/class-h5p-network-admin.php:1036
+msgid "Delete 1 library, and any that become deletable afterwards?"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1037
+#, php-format
+msgid "Delete %d libraries, and any that become deletable afterwards?"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1038
+msgid "Upgrade the contents of 1 library to a newer version?"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1039
+#, php-format
+msgid "Upgrade the contents of %d libraries to newer versions?"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1040
+msgid "Updating %lib (%i of %n)..."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1041
+msgid "Installing %lib (%i of %n)..."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1042
+#, php-format
+msgid "Deleting... %d deleted"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1043
+msgid "Upgrading %lib %old to %new (%i of %n)..."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1044
+#: admin/class-h5p-network-admin.php:1045
+#, php-format
+msgid "1 library updated"
+msgid_plural "%d libraries updated"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-h5p-network-admin.php:1046
+#: admin/class-h5p-network-admin.php:1047
+#, fuzzy, php-format
+msgid "1 content type installed"
+msgid_plural "%d content types installed"
+msgstr[0] "Tipo de conteúdo cache"
+msgstr[1] "Tipo de conteúdo cache"
+
+#: admin/class-h5p-network-admin.php:1048
+#: admin/class-h5p-network-admin.php:1049
+#, fuzzy, php-format
+msgid "1 library deleted:"
+msgid_plural "%d libraries deleted:"
+msgstr[0] "Ver detalhes da biblioteca"
+msgstr[1] "Ver detalhes da biblioteca"
+
+#: admin/class-h5p-network-admin.php:1050
+#: admin/class-h5p-network-admin.php:1051
+#, php-format
+msgid "1 skipped (already up to date)"
+msgid_plural "%d skipped (already up to date)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-h5p-network-admin.php:1052
+#: admin/class-h5p-network-admin.php:1053
+#, php-format
+msgid "1 library could not be updated:"
+msgid_plural "%d libraries could not be updated:"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-h5p-network-admin.php:1054
+#: admin/class-h5p-network-admin.php:1055
+#, php-format
+msgid "1 content type could not be installed:"
+msgid_plural "%d content types could not be installed:"
+msgstr[0] ""
+msgstr[1] ""
+
+#: admin/class-h5p-network-admin.php:1056
+msgid "One of the requests failed, so the bulk action was stopped."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1084
+#: admin/class-h5p-network-admin.php:1181
+#: admin/class-h5p-network-admin.php:1217
+#: admin/class-h5p-network-admin.php:1674
+msgid "Permission denied."
+msgstr "Permissão negada."
+
+#: admin/class-h5p-network-admin.php:1167
+msgid "Migrated libraries to network level."
+msgstr "Bibliotecas migradas para o nível de rede."
+
+#: admin/class-h5p-network-admin.php:1229
+msgid "This library is no longer installed."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1400
+msgid "The uploaded file exceeds the upload_max_filesize directive in php.ini"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1401
+msgid ""
+"The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in "
+"the HTML form"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1402
+msgid "The uploaded file was only partially uploaded"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1404
+msgid "Missing a temporary folder"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1405
+#, fuzzy
+msgid "Failed to write file to disk."
+msgstr "Falha ao carregar dados."
+
+#: admin/class-h5p-network-admin.php:1406
+msgid "A PHP extension stopped the file upload."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1433
+msgid "The package was valid, but no libraries were added or updated."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1454
+#: admin/class-h5p-network-admin.php:1579
+#: admin/views/network-libraries-available.php:15
+msgid ""
+"The H5P Hub is disabled. Enable it in the H5P settings to install content "
+"types."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1476
+msgid "The chosen content type is invalid."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:1487
+#, fuzzy
+msgid ""
+"You do not have permission to install content types. Contact the "
+"administrator of your site."
+msgstr "Não está autorizado a gerir os tipos de conteúdo H5P."
+
+#: admin/class-h5p-network-admin.php:1543
+msgid "The content type could not be downloaded. Please try again."
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:262
 msgid "Content unavailable."
 msgstr "Guia do autor do conteúdo indisponível."
 
-#: admin/class-h5p-plugin-admin.php:305
+#: admin/class-h5p-plugin-admin.php:312
 msgid "Thank you for choosing H5P."
 msgstr "Obrigado por escolher H5P."
 
-#: admin/class-h5p-plugin-admin.php:307
+#: admin/class-h5p-plugin-admin.php:314
+#, php-format
 msgid ""
 "You are ready to <a href=\"%s\">start creating</a> interactive content. "
 "Check out our <a href=\"%s\" target=\"_blank\">Examples and Downloads</a> "
@@ -378,11 +707,12 @@ msgstr ""
 "Confira o nosso <a href=\"%s\" target=\"_em branco\">Exemplo e Downloads</a> "
 "página para inspiração."
 
-#: admin/class-h5p-plugin-admin.php:311
+#: admin/class-h5p-plugin-admin.php:318
 msgid "Thank you for staying up to date with H5P."
 msgstr "Obrigado por manter-se atualizado com o H5P."
 
-#: admin/class-h5p-plugin-admin.php:319
+#: admin/class-h5p-plugin-admin.php:326
+#, php-format
 msgid ""
 "You should <strong>upgrade your H5P content types!</strong> The old content "
 "types still work, but the authoring tool's look and feel is greatly improved "
@@ -395,7 +725,7 @@ msgstr ""
 "conteúdo. Aqui estão mais algumas informações sobre <a href=\"%s\" "
 "target=\"_em branco\">atualizar os tipos de conteúdo</a>."
 
-#: admin/class-h5p-plugin-admin.php:325
+#: admin/class-h5p-plugin-admin.php:332
 msgid ""
 "H5P now fetches content types directly from the H5P Hub. In order to do "
 "this, the H5P plugin will communicate with H5P.org once per day to fetch "
@@ -409,7 +739,8 @@ msgstr ""
 "dados anónimos ao hub sobre o uso do H5P. Pode desactivar a contribuição de "
 "dados e/ou o H5P Hub nas configurações do H5P."
 
-#: admin/class-h5p-plugin-admin.php:338 admin/views/new-content.php:42
+#: admin/class-h5p-plugin-admin.php:345 admin/views/new-content.php:42
+#, php-format
 msgid ""
 "If you need any help you can always file a <a href=\"%s\" "
 "target=\"_blank\">Support Request</a>, check out our <a href=\"%s\" "
@@ -421,31 +752,43 @@ msgstr ""
 "target=\"_blank\">Forum</a> junte-se na conversa no <a href=\"%s\" "
 "target=\"_blank\"> Chat da Comunidade H5P</a>."
 
-#: admin/class-h5p-plugin-admin.php:396 public/class-h5p-plugin.php:753
+#: admin/class-h5p-plugin-admin.php:403 public/class-h5p-plugin.php:905
 msgid "H5P Content"
 msgstr "Guia do autor do conteúdo H5P"
 
-#: admin/class-h5p-plugin-admin.php:399
+#: admin/class-h5p-plugin-admin.php:406
 msgid "All H5P Content"
 msgstr "Todo o guia do autor do conteúdo H5P"
 
-#: admin/class-h5p-plugin-admin.php:399
+#: admin/class-h5p-plugin-admin.php:406
 msgid "My H5P Content"
 msgstr "Meu guia do autor do conteúdo H5P"
 
-#: admin/class-h5p-plugin-admin.php:402
+#: admin/class-h5p-plugin-admin.php:409
 msgid "Add New"
 msgstr "Adicionar novo"
 
-#: admin/class-h5p-plugin-admin.php:408
+#: admin/class-h5p-plugin-admin.php:416
 msgid "Libraries"
 msgstr "Bibliotecas"
 
-#: admin/class-h5p-plugin-admin.php:415 admin/views/my-results.php:14
+#: admin/class-h5p-plugin-admin.php:424 admin/views/my-results.php:14
 msgid "My Results"
 msgstr "Meus resultados"
 
-#: admin/class-h5p-plugin-admin.php:592
+#: admin/class-h5p-plugin-admin.php:526 admin/views/network-settings.php:18
+msgid "Confirmation action"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:527
+msgid "Do you still want to enable the hub ?"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:529 admin/views/network-settings.php:22
+msgid "Confirm"
+msgstr ""
+
+#: admin/class-h5p-plugin-admin.php:603
 msgid ""
 "You're trying to upload content of an older version of H5P. Please upgrade "
 "the content on the server it originated from and try to upload again or turn "
@@ -456,57 +799,57 @@ msgstr ""
 "tente carregar novamente ou active o H5P Hub para ter este servidor a "
 "atualizar automaticamente."
 
-#: admin/class-h5p-plugin-admin.php:749
+#: admin/class-h5p-plugin-admin.php:761
 msgid "Invalid content"
 msgstr "Guia do autor do conteúdo inválido"
 
-#: admin/class-h5p-plugin-admin.php:753 admin/class-h5p-plugin-admin.php:1186
+#: admin/class-h5p-plugin-admin.php:765 admin/class-h5p-plugin-admin.php:1263
 msgid "Invalid security token"
 msgstr "Token de segurança inválido"
 
-#: admin/class-h5p-plugin-admin.php:982
+#: admin/class-h5p-plugin-admin.php:1058
 msgid "Loading data."
 msgstr "Carregando dados."
 
-#: admin/class-h5p-plugin-admin.php:983
+#: admin/class-h5p-plugin-admin.php:1059
 msgid "Failed to load data."
 msgstr "Falha ao carregar dados."
 
-#: admin/class-h5p-plugin-admin.php:984
+#: admin/class-h5p-plugin-admin.php:1060
 msgid "There's no data available that matches your criteria."
 msgstr "Não existe conteúdo disponível que preencha os seus critérios."
 
-#: admin/class-h5p-plugin-admin.php:985
+#: admin/class-h5p-plugin-admin.php:1061
 msgid "Page $current of $total"
 msgstr "Página $current de $total"
 
-#: admin/class-h5p-plugin-admin.php:986
+#: admin/class-h5p-plugin-admin.php:1062
 msgid "Next page"
 msgstr "Próxima página"
 
-#: admin/class-h5p-plugin-admin.php:987
+#: admin/class-h5p-plugin-admin.php:1063
 msgid "Previous page"
 msgstr "Página anterior"
 
-#: admin/class-h5p-plugin-admin.php:988
+#: admin/class-h5p-plugin-admin.php:1064
 msgid "Search"
 msgstr "Procurar"
 
-#: admin/class-h5p-plugin-admin.php:989
+#: admin/class-h5p-plugin-admin.php:1065
 msgid "Remove"
 msgstr "Remover"
 
-#: admin/class-h5p-plugin-admin.php:991
+#: admin/class-h5p-plugin-admin.php:1067
 msgid "Show my content only"
 msgstr "Mostrar apenas o meu guia do autor do conteúdo"
 
-#: admin/class-h5p-plugin-admin.php:1038 admin/class-h5p-privacy-policy.php:256
-#: admin/class-h5p-privacy-policy.php:311
-#: admin/class-h5p-privacy-policy.php:393
+#: admin/class-h5p-plugin-admin.php:1114 admin/class-h5p-privacy-policy.php:263
+#: admin/class-h5p-privacy-policy.php:318
+#: admin/class-h5p-privacy-policy.php:400
 msgid "Content"
 msgstr "Conteúdo"
 
-#: admin/class-h5p-plugin-admin.php:1060
+#: admin/class-h5p-plugin-admin.php:1136
 msgid "There are no logged results for your user."
 msgstr "Não existem resultados registados para o seu utilizador."
 
@@ -535,6 +878,7 @@ msgid "Suggested text (\"We\" and \"our\" mean \"you\", not \"us\"!):"
 msgstr "Texto sugerido (\"Nós\" e \"nosso\" significa \"você\", não \"nós\"!):"
 
 #: admin/class-h5p-privacy-policy.php:74
+#, php-format
 msgid ""
 "We may process and store personal data about your interactions using %s. We "
 "use the data to learn about how well the interactions are designed and how "
@@ -563,6 +907,7 @@ msgstr ""
 "nos ajudar a dar-lhe feedback."
 
 #: admin/class-h5p-privacy-policy.php:76
+#, php-format
 msgid ""
 "We may store interactive content that you create on our platform. We also "
 "may send anonymized reports about content creation without any personal data "
@@ -574,6 +919,7 @@ msgstr ""
 "favor, consulte a página %s para detalhes."
 
 #: admin/class-h5p-privacy-policy.php:77
+#, php-format
 msgid ""
 "If you use interactive content that contains a video that is hosted on "
 "YouTube, YouTube will set cookies on your computer. YouTube uses these "
@@ -592,6 +938,7 @@ msgstr ""
 "dos autores dos conteúdos de vídeo de outra forma."
 
 #: admin/class-h5p-privacy-policy.php:78
+#, php-format
 msgid ""
 "If you use interactive content that contains a Twitter feed, Twitter will "
 "set a cookie on your computer. Twitter uses these cookies to help them and "
@@ -609,6 +956,7 @@ msgstr ""
 "outra forma."
 
 #: admin/class-h5p-privacy-policy.php:79
+#, php-format
 msgid ""
 "If you use interactive content that contains speech recognition, Google "
 "Cloud will process your voice for converting it to text. Please consult %s "
@@ -622,85 +970,118 @@ msgstr ""
 "precisamos dos seus serviços para o nosso conteúdo interactivo e não seria "
 "possível fornecer-lhe os recursos de outra maneira."
 
-#: admin/class-h5p-privacy-policy.php:260
-#: admin/class-h5p-privacy-policy.php:315
-#: admin/class-h5p-privacy-policy.php:377
-#: admin/class-h5p-privacy-policy.php:443
+#: admin/class-h5p-privacy-policy.php:267
+#: admin/class-h5p-privacy-policy.php:322
+#: admin/class-h5p-privacy-policy.php:384
+#: admin/class-h5p-privacy-policy.php:450
 msgid "User ID"
 msgstr "ID Utilizador"
 
-#: admin/class-h5p-privacy-policy.php:319
+#: admin/class-h5p-privacy-policy.php:326
 msgid "Subcontent ID"
 msgstr "ID sub-conteúdo"
 
-#: admin/class-h5p-privacy-policy.php:323
+#: admin/class-h5p-privacy-policy.php:330
 msgid "Data ID"
 msgstr "ID Dados"
 
-#: admin/class-h5p-privacy-policy.php:327
+#: admin/class-h5p-privacy-policy.php:334
 msgid "Data"
 msgstr "Dados"
 
-#: admin/class-h5p-privacy-policy.php:331
+#: admin/class-h5p-privacy-policy.php:338
 msgid "Preload"
 msgstr "Pré-carregamento"
 
-#: admin/class-h5p-privacy-policy.php:335
+#: admin/class-h5p-privacy-policy.php:342
 msgid "Invalidate"
 msgstr "Invalidar"
 
-#: admin/class-h5p-privacy-policy.php:339
-#: admin/class-h5p-privacy-policy.php:439
+#: admin/class-h5p-privacy-policy.php:346
+#: admin/class-h5p-privacy-policy.php:446
 msgid "Updated at"
 msgstr "Atualizado a"
 
-#: admin/class-h5p-privacy-policy.php:346
+#: admin/class-h5p-privacy-policy.php:353
 msgid "Saved content state"
 msgstr "Estado do guia do autor do conteúdo guardado"
 
-#: admin/class-h5p-privacy-policy.php:381
-#: admin/class-h5p-privacy-policy.php:435
+#: admin/class-h5p-privacy-policy.php:388
+#: admin/class-h5p-privacy-policy.php:442
 msgid "Created at"
 msgstr "Criado a"
 
-#: admin/class-h5p-privacy-policy.php:385
+#: admin/class-h5p-privacy-policy.php:392
 msgid "Type"
 msgstr "Tipo"
 
-#: admin/class-h5p-privacy-policy.php:389
+#: admin/class-h5p-privacy-policy.php:396
 msgid "Sub type"
 msgstr "Sub-tipo"
 
-#: admin/class-h5p-network-admin.php:345 admin/class-h5p-privacy-policy.php:397
-#: admin/class-h5p-privacy-policy.php:447
+#: admin/class-h5p-privacy-policy.php:404
+#: admin/class-h5p-privacy-policy.php:454
+#: admin/views/network-libraries-available.php:21
+#: admin/views/network-libraries-installed.php:19
 msgid "Library"
 msgstr "Biblioteca"
 
-#: admin/class-h5p-privacy-policy.php:404
+#: admin/class-h5p-privacy-policy.php:411
 msgid "Events"
 msgstr "Eventos"
 
-#: admin/class-h5p-privacy-policy.php:451
+#: admin/class-h5p-privacy-policy.php:458
 msgid "Parameters"
 msgstr "Parâmetros"
 
-#: admin/class-h5p-privacy-policy.php:455
+#: admin/class-h5p-privacy-policy.php:462
 msgid "Filtered parameters"
 msgstr "Parâmetros filtrados"
 
-#: admin/class-h5p-privacy-policy.php:459
+#: admin/class-h5p-privacy-policy.php:466
 msgid "Slug"
 msgstr "URL"
 
-#: admin/class-h5p-privacy-policy.php:463
+#: admin/class-h5p-privacy-policy.php:470
 msgid "Embed type"
 msgstr "Conteúdo incorporado"
 
-#: admin/class-h5p-privacy-policy.php:467
+#: admin/class-h5p-privacy-policy.php:474 admin/views/network-settings.php:65
 msgid "Disable"
 msgstr "Desactivar"
 
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:463
+#, php-format
+msgid "Failed to create network libraries directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:485
+#, php-format
+msgid "Failed to create network cachedassets directory: %s"
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:731
+#, php-format
+msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:809
+#, php-format
+msgid "Failed to update library IDs in \"%s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:952
+#, php-format
+msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:996
+#, php-format
+msgid "Failed to copy translations for library %1$d into \"%2$s\"."
+msgstr ""
+
 #: admin/views/content-results.php:15
+#, php-format
 msgid "Results for \"%s\""
 msgstr "Resultados para \"%s\""
 
@@ -717,11 +1098,11 @@ msgstr "Esperando o JavaScript."
 msgid "Add new"
 msgstr "Adicionar novo"
 
-#: admin/views/libraries.php:16
+#: admin/views/libraries.php:16 admin/views/network-libraries-tools.php:22
 msgid "Content Type Cache"
 msgstr "Tipo de conteúdo cache"
 
-#: admin/views/libraries.php:20
+#: admin/views/libraries.php:20 admin/views/network-libraries-tools.php:25
 msgid ""
 "Making sure the content type cache is up to date will ensure that you can "
 "view, download and use the latest libraries. This is different from updating "
@@ -731,20 +1112,15 @@ msgstr ""
 "que consegue ver, fazer download e usar as bibliotecas mais recentes. Isto é "
 "diferente de atualizar as próprias bibliotecas."
 
-#: admin/views/libraries.php:24
+#: admin/views/libraries.php:24 admin/views/network-libraries-tools.php:29
 msgid "Last update"
 msgstr "Última atualização"
 
-#: admin/class-h5p-network-admin.php:354 admin/views/libraries.php:45
-#: admin/views/new-content.php:59
-msgid "Update"
-msgstr "Atualização"
-
-#: admin/views/libraries.php:51
+#: admin/views/libraries.php:51 admin/views/network-libraries-upload.php:17
 msgid "Upload Libraries"
 msgstr "Carregar bibliotecas"
 
-#: admin/views/libraries.php:55
+#: admin/views/libraries.php:55 admin/views/network-libraries-upload.php:21
 msgid ""
 "Here you can upload new libraries or upload updates to existing libraries. "
 "Files uploaded here must be in the .h5p file format."
@@ -753,15 +1129,17 @@ msgstr ""
 "bibliotecas existentes. Os arquivos enviados aqui devem ter o formato de "
 "arquivo .h5p."
 
-#: admin/views/libraries.php:58
+#: admin/views/libraries.php:58 admin/views/network-libraries-upload.php:24
 msgid "Only update existing libraries"
 msgstr "Atualizar apenas as bibliotecas existentes"
 
-#: admin/views/libraries.php:61 admin/views/new-content.php:33
+#: admin/views/libraries.php:61 admin/views/network-libraries-upload.php:29
+#: admin/views/new-content.php:33
 msgid "Disable file extension check"
 msgstr "Desactivar verificação de extensão do ficheiro"
 
-#: admin/views/libraries.php:62 admin/views/new-content.php:34
+#: admin/views/libraries.php:62 admin/views/network-libraries-upload.php:31
+#: admin/views/new-content.php:34
 msgid ""
 "Warning! This may have security implications as it allows for uploading php "
 "files. That in turn could make it possible for attackers to execute "
@@ -773,7 +1151,8 @@ msgstr ""
 "malicioso no seu site. Por favor, assegure-se de que sabe exatamente o que "
 "está a carregar."
 
-#: admin/views/libraries.php:68 admin/views/new-content.php:49
+#: admin/views/libraries.php:68 admin/views/network-libraries-upload.php:38
+#: admin/views/new-content.php:49
 msgid "Upload"
 msgstr "Carregar"
 
@@ -782,6 +1161,7 @@ msgid "Installed Libraries"
 msgstr "Bibliotecas instaladas"
 
 #: admin/views/library-content-upgrade.php:15
+#, php-format
 msgid "Upgrade %s %d.%d.%d content"
 msgstr "Atualizar guia do autor do conteúdo %s %d.%d.%d"
 
@@ -797,11 +1177,217 @@ msgstr "Tem a certeza que deseja eliminar esta biblioteca H5P?"
 msgid "Do it!"
 msgstr "Faça!"
 
+#: admin/views/network-libraries-available.php:17
+msgid "All available content types are installed."
+msgstr ""
+
+#: admin/views/network-libraries-available.php:25
+#: admin/views/network-libraries-installed.php:23
+msgid "Information"
+msgstr ""
+
+#: admin/views/network-libraries-available.php:28
+#: admin/views/network-libraries-bulk.php:55
+msgid "Install"
+msgstr ""
+
+#: admin/views/network-libraries-available.php:45
+#: admin/views/network-libraries-installed.php:61
+#, php-format
+msgid "Information about %1$s"
+msgstr ""
+
+#: admin/views/network-libraries-available.php:59
+#, php-format
+msgid "Install %1$s"
+msgstr ""
+
+#: admin/views/network-libraries-available.php:66
+#, php-format
+msgid "%1$s was installed."
+msgstr ""
+
+#: admin/views/network-libraries-bulk.php:48
+#, fuzzy, php-format
+msgid "Update all (%d)"
+msgstr "Atualizado a"
+
+#: admin/views/network-libraries-bulk.php:54
+#, php-format
+msgid "Install all (%d)"
+msgstr ""
+
+#: admin/views/network-libraries-bulk.php:60
+#, php-format
+msgid "Delete all (%d)"
+msgstr ""
+
+#: admin/views/network-libraries-bulk.php:66
+#, fuzzy, php-format
+msgid "Upgrade all contents (%d)"
+msgstr "Atualizar guia do autor do conteúdo da biblioteca"
+
+#: admin/views/network-libraries-bulk.php:76
+#, fuzzy
+msgid "Bulk actions"
+msgstr "Ações"
+
+#: admin/views/network-libraries-icon-button.php:25
+msgid "Not available yet"
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:15
+msgid "No libraries installed."
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:29
+#, fuzzy
+msgid "Upgrade contents"
+msgstr "Atualizar guia do autor do conteúdo da biblioteca"
+
+#: admin/views/network-libraries-installed.php:78
+#, php-format
+msgid "Update %1$s to %2$s (new major or minor version)"
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:79
+#, php-format
+msgid "Update %1$s to %2$s"
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:84
+#, php-format
+msgid ""
+"Update %1$s from %2$s to %3$s? After the update, upgrade the existing "
+"contents created with this library."
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:85
+#, php-format
+msgid "Update %1$s from %2$s to %3$s?"
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:86
+#, php-format
+msgid "%1$s was updated."
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:94
+#, php-format
+msgid "Update %1$s"
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:111
+#, php-format
+msgid "Upgrade contents using %1$s"
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:127
+#, php-format
+msgid "Upgrade %1$s using %2$s from %3$s to %4$s?"
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:143
+#, php-format
+msgid "Delete %1$s %2$s?"
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:144
+#, php-format
+msgid "%1$s was deleted."
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:150
+#, php-format
+msgid "Delete %1$s %2$s? Its editor %3$s will be deleted as well."
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:156
+#, php-format
+msgid "%1$s and %2$s were deleted."
+msgstr ""
+
+#: admin/views/network-libraries-installed.php:163
+#: admin/views/network-libraries-installed.php:176
+#, php-format
+msgid "Delete %1$s"
+msgstr ""
+
+#: admin/views/network-libraries-tools.php:34
+#, fuzzy
+msgid "never"
+msgstr "Nunca"
+
+#: admin/views/network-management.php:27
+msgid "Installed libraries"
+msgstr ""
+
+#: admin/views/network-management.php:35
+msgid "Available libraries"
+msgstr ""
+
+#: admin/views/network-settings.php:19
+msgid ""
+"This will migrate all local libraries (files + database) to the network "
+"level and revoke h5p library handling capabilities from blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:20
+msgid ""
+"This will migrate all network libraries (files + database) back to the local "
+"level and grant h5p library handling capabilities to blog admins. DO YOU "
+"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
+msgstr ""
+
+#: admin/views/network-settings.php:23
+msgid "Migration failed and was rolled back. No changes were made."
+msgstr ""
+
+#: admin/views/network-settings.php:24
+msgid ""
+"Migration failed and could not be rolled back automatically. Please restore "
+"from a backup."
+msgstr ""
+
+#: admin/views/network-settings.php:25
+msgid "The migration request failed. Please check the server error log."
+msgstr ""
+
+#: admin/views/network-settings.php:26
+msgid "Migrating..."
+msgstr ""
+
+#: admin/views/network-settings.php:27
+msgid "Migrating... %percentage %"
+msgstr ""
+
+#: admin/views/network-settings.php:42 admin/views/settings.php:17
+msgid "Settings saved."
+msgstr "Opções salvas."
+
+#: admin/views/network-settings.php:49
+msgid "H5P network"
+msgstr ""
+
+#: admin/views/network-settings.php:55
+msgid "Network is enabled. Libraries are served from the network."
+msgstr ""
+
+#: admin/views/network-settings.php:56
+msgid "Network is disabled. Libraries are served from local blogs."
+msgstr ""
+
+#: admin/views/network-settings.php:66
+msgid "Enable"
+msgstr ""
+
 #: admin/views/new-content.php:38
 msgid "Waiting for javascript..."
 msgstr "Esperando o JavaScript..."
 
 #: admin/views/new-content.php:41
+#, php-format
 msgid ""
 "It looks like there are no content types installed. You can get the ones you "
 "want by using the small 'Download' button in the lower left corner on any "
@@ -853,10 +1439,6 @@ msgstr "Exibir botão copiar"
 #: admin/views/new-content.php:101
 msgid "Separate tags with commas"
 msgstr "Separar tags com vírgulas"
-
-#: admin/views/settings.php:17
-msgid "Settings saved."
-msgstr "Opções salvas."
 
 #: admin/views/settings.php:24
 msgid "Toolbar Below Content"
@@ -977,6 +1559,7 @@ msgid "Reference content by id"
 msgstr "Guia do autor do conteúdo de referência por id"
 
 #: admin/views/settings.php:163
+#, php-format
 msgid "Reference content by <a href=\"%s\" target=\"_blank\">slug</a>"
 msgstr ""
 "Guia do autor do conteúdo de referência por <a href=\"%s\" target=\"_em "
@@ -1027,6 +1610,7 @@ msgid "Automatically contribute usage statistics"
 msgstr "Contribuir automaticamente com estatísticas de utilização"
 
 #: admin/views/settings.php:210
+#, php-format
 msgid ""
 "Usage statistics numbers will automatically be reported to help the "
 "developers better understand how H5P is used and to determine potential "
@@ -1080,6 +1664,7 @@ msgstr ""
 "atualizações para aqueles já instalados."
 
 #: admin/views/user-consent.php:22
+#, php-format
 msgid ""
 "In order for the H5P Hub to be able to do this, communication with H5P.org "
 "is required.<br/>\n"
@@ -1103,21 +1688,28 @@ msgstr "Eu concordo, dê-me o Hub!"
 msgid "I disapprove"
 msgstr "Eu não concordo"
 
-#: public/class-h5p-plugin.php:867
+#: public/class-h5p-plugin.php:1040
 msgid "Missing H5P identifier."
 msgstr "Identificador H5P em falta."
 
-#: public/class-h5p-plugin.php:875
+#: public/class-h5p-plugin.php:1048
+#, php-format
 msgid "Cannot find H5P content with id: %d."
 msgstr "Não é possível encontrar o guia do autor do conteúdo H5P com id: %d."
 
-#: public/class-h5p-plugin.php:901
+#: public/class-h5p-plugin.php:1075
+#, php-format
 msgid "Database error: %s."
 msgstr "Erro na base dados: %s."
 
-#: public/class-h5p-plugin.php:905
+#: public/class-h5p-plugin.php:1079
+#, php-format
 msgid "Cannot find H5P content with slug: %s."
 msgstr "Não é possível encontrar guia do autor do conteúdo H5P com URL: %s."
+
+#: public/class-h5p-wordpress.php:767
+msgid "Invalid json in semantics for %library"
+msgstr ""
 
 #. Plugin Name of the plugin/theme
 msgid "H5P"
@@ -1126,114 +1718,6 @@ msgstr "H5P"
 #. Plugin URI of the plugin/theme
 msgid "http://h5p.org/wordpress"
 msgstr "http://h5p.org/wordpress"
-
-#: admin/class-h5p-network-admin.php:28 admin/class-h5p-network-admin.php:29
-msgid "H5P Network"
-msgstr "Rede H5P"
-
-#: admin/class-h5p-network-admin.php:39 admin/class-h5p-network-admin.php:40
-msgid "H5P Libraries"
-msgstr "Bibliotecas H5P"
-
-#: admin/class-h5p-network-admin.php:49 admin/class-h5p-network-admin.php:50
-msgid "H5P Management"
-msgstr "Gestão do H5P"
-
-#: admin/class-h5p-network-admin.php:64
-msgid "You do not have permission to manage H5P content types."
-msgstr "Não está autorizado a gerir os tipos de conteúdo H5P."
-
-#: admin/class-h5p-network-admin.php:394 admin/class-h5p-network-admin.php:491
-msgid "Permission denied."
-msgstr "Permissão negada."
-
-#: admin/class-h5p-network-admin.php:477
-msgid "Migrated libraries to network level."
-msgstr "Bibliotecas migradas para o nível de rede."
-
-#: admin/class-h5p-network-admin.php:347
-msgid "Information about %1$s"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:348
-msgid "Update %1$s"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:351
-msgid "Update %1$s from %2$s to %3$s?"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:352
-msgid ""
-"Update %1$s from %2$s to %3$s? After the update, upgrade the existing "
-"contents created with this library."
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:349
-msgid "Update %1$s to %2$s"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:350
-msgid "Update %1$s to %2$s (new major or minor version)"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:355
-msgid "Upgrade contents using %1$s"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:356
-msgid "Delete %1$s"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:357
-msgid "Install %1$s"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:358
-msgid "Not available yet"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:359
-msgid "No libraries installed."
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:360
-msgid "All available content types are installed."
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:361
-msgid ""
-"The H5P Hub is disabled. Enable it in the H5P settings to install content "
-"types."
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:362
-msgid "%1$s was installed."
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:363
-msgid "%1$s was updated."
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:364
-msgid "The library could not be installed or updated. Please try again."
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:365
-msgid "Working..."
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:366
-msgid "Dismiss this notice."
-msgstr ""
-
-#: admin/views/network-management.php:22
-msgid "Installed libraries"
-msgstr ""
-
-#: admin/views/network-management.php:30
-msgid "Available libraries"
-msgstr ""
 
 #. Description of the plugin/theme
 msgid ""
@@ -1250,103 +1734,3 @@ msgstr "Joubel"
 #. Author URI of the plugin/theme
 msgid "http://joubel.com"
 msgstr "http://joubel.com"
-
-#: admin/class-h5p-library-admin.php:155
-msgid "Error, insufficient permissions!"
-msgstr ""
-
-#: admin/class-h5p-library-admin.php:328
-msgid "You are not allowed to manage H5P libraries."
-msgstr ""
-
-#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:500
-msgid "Failed to create network libraries directory: %s"
-msgstr ""
-
-#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:522
-msgid "Failed to create network cachedassets directory: %s"
-msgstr ""
-
-#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:771
-msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
-msgstr ""
-
-#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:854
-msgid "Failed to update library IDs in \"%s\"."
-msgstr ""
-
-#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1001
-msgid "Failed to insert library \"%1$s\" into \"%2$s\"."
-msgstr ""
-
-#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:1046
-msgid "Failed to copy translations for library %1$d into \"%2$s\"."
-msgstr ""
-
-#: admin/views/network-settings.php:18
-msgid "Confirmation action"
-msgstr ""
-
-#: admin/views/network-settings.php:19
-msgid ""
-"This will migrate all local libraries (files + database) to the network "
-"level and revoke h5p library handling capabilities from blog admins. DO YOU "
-"HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?"
-msgstr ""
-
-#: admin/views/network-settings.php:20
-msgid ""
-"This will migrate all network libraries (files + database) back to the local "
-"level and grant h5p library handling capabilities to blog admins. DO YOU "
-"HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?"
-msgstr ""
-
-#: admin/class-h5p-network-admin.php:353 admin/views/network-settings.php:21
-msgid "Cancel"
-msgstr ""
-
-#: admin/views/network-settings.php:22
-msgid "Confirm"
-msgstr ""
-
-#: admin/views/network-settings.php:23
-msgid "Migration failed and was rolled back. No changes were made."
-msgstr ""
-
-#: admin/views/network-settings.php:24
-msgid ""
-"Migration failed and could not be rolled back automatically. Please restore "
-"from a backup."
-msgstr ""
-
-#: admin/views/network-settings.php:25
-msgid "The migration request failed. Please check the server error log."
-msgstr ""
-
-#: admin/views/network-settings.php:26
-msgid "Migrating..."
-msgstr ""
-
-#: admin/views/network-settings.php:29
-msgid "Migrating... %percentage %"
-msgstr ""
-
-#: admin/views/network-settings.php:51
-msgid "H5P network"
-msgstr ""
-
-#: admin/views/network-settings.php:57
-msgid "Network is enabled. Libraries are served from the network."
-msgstr ""
-
-#: admin/views/network-settings.php:58
-msgid "Network is disabled. Libraries are served from local blogs."
-msgstr ""
-
-#: admin/views/network-settings.php:68
-msgid "Enable"
-msgstr ""
-
-#: admin/class-h5p-plugin-admin.php:527
-msgid "Do you still want to enable the hub ?"
-msgstr ""
