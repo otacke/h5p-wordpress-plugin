@@ -7,7 +7,7 @@
  * counts use the same conditions as the row buttons of the installed and available grids, and the
  * section is left out if no button applies.
  *
- * Expects $overview from H5P_Network_Admin::get_library_overview().
+ * Expects $overview from H5P_Network_Library_Overview::get_library_overview().
  *
  * @package   H5P
  * @license   MIT

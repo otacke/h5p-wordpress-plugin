@@ -2,7 +2,7 @@
 /**
  * Grid of the libraries installed on the network (WAI-ARIA APG data grid pattern).
  *
- * Expects $overview from H5P_Network_Admin::get_library_overview().
+ * Expects $overview from H5P_Network_Library_Overview::get_library_overview().
  *
  * @package   H5P
  * @license   MIT
@@ -37,13 +37,13 @@
     // The confirm message for a circular deletion names the editor that is deleted as well.
     $installed_names_by_id = array();
     foreach ($overview['installed'] as $installed) {
-      $installed_names_by_id[$installed['id']] = $this->format_library_name($installed);
+      $installed_names_by_id[$installed['id']] = H5P_Network_Library_Helpers::format_library_name($installed);
     }
     ?>
     <?php foreach ($overview['installed'] as $library): ?>
       <?php
-      $name = $this->format_library_name($library);
-      $version = $this->format_library_version($library);
+      $name = H5P_Network_Library_Helpers::format_library_name($library);
+      $version = H5P_Network_Library_Helpers::format_library_version($library);
       // Non-runnable libraries (dependencies) can neither be updated nor have contents upgraded.
       $runnable = !empty($library['runnable']);
       $is_minor_or_major = $runnable && !empty($library['update']['isMinorOrMajor']);
@@ -71,7 +71,7 @@
         <div class="h5p-network-libraries-cell" role="gridcell">
           <?php
           if ($runnable && $overview['hubIsEnabled'] && !empty($library['update'])) {
-            $target = $this->format_library_version($library['update']);
+            $target = H5P_Network_Library_Helpers::format_library_version($library['update']);
             $button = array(
               'icon' => 'database-export',
               'label' => $is_minor_or_major

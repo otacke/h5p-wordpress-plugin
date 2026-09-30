@@ -4,8 +4,8 @@
  *
  * The buttons run through the page script (AJAX). The section is left out if none of its boxes applies.
  *
- * Expects $overview from H5P_Network_Admin::get_library_overview(), $content_type_cache_updated_at (timestamp,
- * 0 if never) and $not_cached (number of contents on all blogs without a cache).
+ * Expects $overview from H5P_Network_Library_Overview::get_library_overview(), $content_type_cache_updated_at
+ * (timestamp, 0 if never) and $not_cached (number of contents on all blogs without a cache).
  *
  * @package   H5P
  * @license   MIT

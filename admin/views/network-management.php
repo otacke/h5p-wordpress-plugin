@@ -6,7 +6,7 @@
  * cache tables: the libraries installed on the network, and the available
  * content types that can be installed and updated.
  *
- * Expects $overview from H5P_Network_Admin::get_library_overview().
+ * Expects $overview from H5P_Network_Library_Overview::get_library_overview().
  *
  * @package   H5P
  * @license   MIT

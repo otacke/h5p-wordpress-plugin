@@ -2,7 +2,7 @@
 /**
  * Grid of the hub content types that are not installed yet (WAI-ARIA APG data grid pattern).
  *
- * Expects $overview from H5P_Network_Admin::get_library_overview().
+ * Expects $overview from H5P_Network_Library_Overview::get_library_overview().
  *
  * @package   H5P
  * @license   MIT
@@ -31,12 +31,12 @@
 
     <?php foreach ($overview['available'] as $library): ?>
       <?php
-      $name = $this->format_library_name($library);
+      $name = H5P_Network_Library_Helpers::format_library_name($library);
       $bold_name = FALSE;
       ?>
       <div class="h5p-network-libraries-row" role="row" data-library="<?php print esc_attr($library['machineName']); ?>">
         <?php include __DIR__ . '/network-libraries-library-cell.php'; ?>
-        <div class="h5p-network-libraries-cell" role="gridcell"><?php print esc_html($this->format_library_version($library)); ?></div>
+        <div class="h5p-network-libraries-cell" role="gridcell"><?php print esc_html(H5P_Network_Library_Helpers::format_library_version($library)); ?></div>
 
         <div class="h5p-network-libraries-cell" role="gridcell">
           <?php
