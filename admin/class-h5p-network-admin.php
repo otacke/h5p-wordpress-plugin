@@ -11,11 +11,21 @@
  */
 class H5P_Network_Admin {
 
+  /**
+   * Sub content reference results by name and major.minor, cached while delete_deletable_libraries() runs.
+   *
+   * Null outside that loop, so has_subcontent_references() queries fresh for the single-row delete.
+   *
+   * @var array|null
+   */
+  private $subcontent_references = null;
+
   public function __construct() {
     add_action('network_admin_menu', array($this, 'add_network_admin_menu'));
     add_action('wp_ajax_h5p_migrate_to_network', array($this, 'handle_migrate_to_network'));
     add_action('wp_ajax_h5p_migrate_to_local', array($this, 'handle_migrate_to_local'));
     add_action('wp_ajax_h5p_network_library_delete', array($this, 'handle_delete_library'));
+    add_action('wp_ajax_h5p_network_library_delete_all', array($this, 'handle_delete_all_libraries'));
     add_action('wp_ajax_h5p_network_library_install', array($this, 'handle_library_install'));
     add_action('wp_ajax_h5p_network_library_upload', array($this, 'handle_library_upload'));
     add_action('wp_ajax_h5p_network_update_content_type_cache', array($this, 'handle_update_content_type_cache'));
@@ -389,13 +399,14 @@ class H5P_Network_Admin {
 
     $libraries = array();
     foreach ((array) $wpdb->get_results(
-      "SELECT id, name, major_version, minor_version, add_to FROM {$table_libraries}"
+      "SELECT id, name, major_version, minor_version, patch_version, add_to FROM {$table_libraries}"
     ) as $row) {
       $libraries[(int) $row->id] = array(
         'id' => (int) $row->id,
         'name' => $row->name,
         'majorVersion' => (int) $row->major_version,
         'minorVersion' => (int) $row->minor_version,
+        'patchVersion' => (int) $row->patch_version,
         'addTo' => (string) $row->add_to,
       );
     }
@@ -602,6 +613,12 @@ class H5P_Network_Admin {
    * @return bool
    */
   private function has_subcontent_references($name, $major, $minor) {
+    // Content parameters do not change while delete_deletable_libraries() runs, so neither can the answer.
+    $key = $name . ' ' . $major . '.' . $minor;
+    if ($this->subcontent_references !== null && isset($this->subcontent_references[$key])) {
+      return $this->subcontent_references[$key];
+    }
+
     $pattern = $this->subcontent_reference_pattern($name, $major, $minor);
 
     $found = false;
@@ -628,6 +645,10 @@ class H5P_Network_Admin {
         )
       );
     });
+
+    if ($this->subcontent_references !== null) {
+      $this->subcontent_references[$key] = $found;
+    }
 
     return $found;
   }
@@ -1024,14 +1045,14 @@ class H5P_Network_Admin {
       'bulkUpdatedPlural' => _n('1 library updated', '%d libraries updated', 2, 'h5p'),
       'bulkInstalledSingular' => _n('1 content type installed', '%d content types installed', 1, 'h5p'),
       'bulkInstalledPlural' => _n('1 content type installed', '%d content types installed', 2, 'h5p'),
-      'bulkDeletedSingular' => _n('1 library deleted', '%d libraries deleted', 1, 'h5p'),
-      'bulkDeletedPlural' => _n('1 library deleted', '%d libraries deleted', 2, 'h5p'),
+      'bulkDeletedSingular' => _n('1 library deleted:', '%d libraries deleted:', 1, 'h5p'),
+      'bulkDeletedPlural' => _n('1 library deleted:', '%d libraries deleted:', 2, 'h5p'),
       'bulkSkippedSingular' => _n('1 skipped (already up to date)', '%d skipped (already up to date)', 1, 'h5p'),
       'bulkSkippedPlural' => _n('1 skipped (already up to date)', '%d skipped (already up to date)', 2, 'h5p'),
-      'bulkUpdateFailedSingular' => _n('1 library could not be updated', '%d libraries could not be updated', 1, 'h5p'),
-      'bulkUpdateFailedPlural' => _n('1 library could not be updated', '%d libraries could not be updated', 2, 'h5p'),
-      'bulkInstallFailedSingular' => _n('1 content type could not be installed', '%d content types could not be installed', 1, 'h5p'),
-      'bulkInstallFailedPlural' => _n('1 content type could not be installed', '%d content types could not be installed', 2, 'h5p'),
+      'bulkUpdateFailedSingular' => _n('1 library could not be updated:', '%d libraries could not be updated:', 1, 'h5p'),
+      'bulkUpdateFailedPlural' => _n('1 library could not be updated:', '%d libraries could not be updated:', 2, 'h5p'),
+      'bulkInstallFailedSingular' => _n('1 content type could not be installed:', '%d content types could not be installed:', 1, 'h5p'),
+      'bulkInstallFailedPlural' => _n('1 content type could not be installed:', '%d content types could not be installed:', 2, 'h5p'),
       'bulkFailed' => __('One of the requests failed, so the bulk action was stopped.', 'h5p'),
     );
   }
@@ -1189,8 +1210,6 @@ class H5P_Network_Admin {
    * Handle AJAX request to delete an installed library version.
    */
   public function handle_delete_library() {
-    global $wpdb;
-
     $this->verifyNetworkNonce();
 
     if (!current_user_can('manage_network') || !H5PCommons::current_user_can_manage_libraries()) {
@@ -1225,13 +1244,27 @@ class H5P_Network_Admin {
       );
     }
 
+    $this->delete_library_version($id, $deletion['alsoDelete']);
+
+    wp_send_json_success();
+  }
+
+  /**
+   * Delete a library version, and the circular partner that must go with it.
+   *
+   * @param int $id
+   * @param int|null $also_delete Id of the circular partner, from is_library_deletable().
+   */
+  private function delete_library_version($id, $also_delete) {
+    global $wpdb;
+
     $plugin = H5P_Plugin::get_instance();
     $interface = $plugin->get_h5p_instance('interface');
     $core = $plugin->get_h5p_instance('core');
 
     $to_delete = array($id);
-    if ($deletion['alsoDelete'] !== null) {
-      $to_delete[] = $deletion['alsoDelete'];
+    if ($also_delete !== null) {
+      $to_delete[] = $also_delete;
     }
 
     $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
@@ -1249,8 +1282,106 @@ class H5P_Network_Admin {
         $interface->deleteLibrary($to_be_deleted);
       }
     }
+  }
 
-    wp_send_json_success();
+  /**
+   * Delete every deletable library version, and those that become deletable by that, until the time is up.
+   *
+   * Works in passes. Each pass rebuilds the libraries and dependencies of the model and deletes what
+   * is_library_deletable() passes, addons included. Within a pass the model still lists the versions
+   * deleted in it as dependents, so it can only block more, never allow more; the versions they free
+   * are deleted in the next pass. Passes repeat while one deletes something and there is time left.
+   *
+   * Can also be called outside an AJAX request, e.g. by a scheduled task.
+   *
+   * @param float $deadline microtime(TRUE) after which no new pass is started.
+   * @param bool $dry_run Only record what would be deleted, for testing the passes on real data.
+   *
+   * @return array With 'deleted', the names and versions deleted, and 'more', whether time ran out
+   *               while the last pass still deleted something.
+   */
+  public function delete_deletable_libraries($deadline, $dry_run = false) {
+    // Deleting libraries does not change which contents use them.
+    $content_counts = $this->get_content_counts();
+
+    $deleted = array();
+    $deleted_ids = array();
+    $more = false;
+
+    $this->subcontent_references = array();
+    try {
+      do {
+        $model = $this->get_deletion_model($content_counts);
+
+        // A dry run deletes nothing, so leave out what it would have deleted, like the database would.
+        foreach (array_keys($deleted_ids) as $deleted_id) {
+          unset($model['libraries'][$deleted_id], $model['dependencies']['dependents'][$deleted_id]);
+        }
+        foreach ($model['dependencies']['dependents'] as $required_id => $dependents) {
+          $model['dependencies']['dependents'][$required_id] = array_values(array_filter(
+            $dependents,
+            function ($dependent) use ($deleted_ids) {
+              return !isset($deleted_ids[(int) $dependent]);
+            }
+          ));
+        }
+
+        $deleted_in_pass = 0;
+        foreach ($model['libraries'] as $id => $library) {
+          if (isset($deleted_ids[$id])) {
+            continue; // Deleted as the circular partner of an earlier version in this pass.
+          }
+
+          $deletion = $this->is_library_deletable($library, $model);
+          if (!$deletion['deletable']) {
+            continue;
+          }
+
+          if (!$dry_run) {
+            $this->delete_library_version($id, $deletion['alsoDelete']);
+          }
+
+          $versions = array($id);
+          if ($deletion['alsoDelete'] !== null) {
+            $versions[] = (int) $deletion['alsoDelete'];
+          }
+          foreach ($versions as $version_id) {
+            if (isset($model['libraries'][$version_id])) {
+              $version = $model['libraries'][$version_id];
+              $deleted[] = $version['name'] . ' ' . $version['majorVersion'] . '.' . $version['minorVersion']
+                . '.' . $version['patchVersion'];
+            }
+            $deleted_ids[$version_id] = TRUE;
+            $deleted_in_pass++;
+          }
+        }
+
+        $time_left = microtime(TRUE) < $deadline;
+      } while ($deleted_in_pass > 0 && $time_left);
+
+      $more = $deleted_in_pass > 0 && !$time_left;
+    }
+    finally {
+      $this->subcontent_references = null;
+    }
+
+    return array(
+      'deleted' => $deleted,
+      'more' => $more,
+    );
+  }
+
+  /**
+   * Handle AJAX request to delete every deletable library version, one time budget at a time.
+   *
+   * Answers 'more' while the page should repeat the request.
+   */
+  public function handle_delete_all_libraries() {
+    $this->verify_library_management_request();
+
+    wp_send_json_success(
+      $this->delete_deletable_libraries(microtime(TRUE) + H5PLibraryAdmin::UPGRADE_BATCH_TIMEOUT)
+    );
   }
 
   /**

@@ -244,6 +244,26 @@
     };
 
     /**
+     * Disable the buttons while a bulk action runs; the progress line below them shows what it does.
+     *
+     * @param {HTMLButtonElement} button The clicked bulk button, which stays in place.
+     * @param {HTMLElement|null} progress The progress line of the bulk actions.
+     *
+     * @return {function} Enables the buttons again, clears the progress line and refocuses the clicked button.
+     */
+    const startBulkAction = (button, progress) => {
+      setBusy(true);
+
+      return () => {
+        if (progress) {
+          progress.textContent = '';
+        }
+        setBusy(false);
+        button.focus();
+      };
+    };
+
+    /**
      * Store a notice to show after the page reload, then reload it.
      *
      * The page reloads, so sessionStorage is the bridge for the success notice
@@ -499,10 +519,9 @@
      */
     const runBulk = async (button, options) => {
       const {items, runItem, describe, summarize} = options;
-      // The button leaves the DOM when the action starts, so look both up before.
       const tools = toolsOf(button);
       const progress = button.closest('.postbox').querySelector('.h5p-network-libraries-bulk-progress');
-      const {restore} = startAction(button.parentElement, button);
+      const restore = startBulkAction(button, progress);
       const done = [];
       const skipped = [];
       const failed = [];
@@ -583,8 +602,6 @@
       runBulk(button, {
         items,
         runItem: runHubInstall,
-        items,
-        runItem,
         describe: (index, machineName) => l10n.bulkProgressUpdate
           .replace('%lib', machineName).replace('%i', String(index + 1)).replace('%n', String(items.length)),
         summarize: (doneCount, skippedCount, failures) => {
@@ -635,6 +652,48 @@
           return lines;
         }
       });
+    };
+
+    /**
+     * Delete all the deletable libraries, and those that become deletable by that, via the network endpoint.
+     *
+     * The endpoint deletes what fits in its time budget, so the request repeats while it answers more.
+     *
+     * @param {HTMLButtonElement} button The clicked bulk button.
+     */
+    const deleteAll = async (button) => {
+      const tools = toolsOf(button);
+      const progress = button.closest('.postbox').querySelector('.h5p-network-libraries-bulk-progress');
+      const restore = startBulkAction(button, progress);
+      const deleted = [];
+      const summarize = () => [
+        deleted.length === 1 ? l10n.bulkDeletedSingular : l10n.bulkDeletedPlural.replace('%d', String(deleted.length))
+      ].concat(deleted);
+      try {
+        let more = true;
+        while (more) {
+          if (progress) {
+            progress.textContent = l10n.bulkProgressDelete.replace('%d', String(deleted.length));
+          }
+          const data = await postToolAction('h5p_network_library_delete_all', new FormData(), l10n.deleteFailed);
+          deleted.push(...(data.deleted || []));
+          more = data.more === true;
+        }
+      }
+      catch (error) {
+        // A fatal error (nonce, permission, transport) stops the run.
+        console.error('H5P network libraries:', error);
+        if (deleted.length > 0) {
+          // Some libraries are already gone, so reload once to show what happened.
+          finishWithReload({tools, type: 'error', message: [l10n.bulkFailed].concat(summarize())});
+        }
+        else {
+          restore();
+          showNotice('error', error.requestError ? (error.lines || error.message) : l10n.bulkFailed, toolsNoticesRegion(tools));
+        }
+        return;
+      }
+      finishWithReload({tools, type: 'success', message: summarize()});
     };
 
     // One dialog instance, since the dialog DOM stays in the document after it
@@ -758,24 +817,79 @@
       document.head.append(script);
     };
 
+    // Library data for the upgrades, shared by all runs of the page, as it does not change until the reload.
+    const libraryCache = Object.create(null);
+    const libraryWaiters = Object.create(null);
+
     /**
-     * Upgrade the contents that use a library to the newest installed version of it.
+     * Fetch the library data an upgrade runs against, shared by all workers.
+     *
+     * @param {string} name
+     * @param {{major: number, minor: number}} version
+     * @param {function(?string, ?Object)} next
+     */
+    const loadLibrary = (name, version, next) => {
+      const key = name + '/' + version.major + '/' + version.minor;
+
+      if (libraryCache[key] === true) {
+        libraryWaiters[key].push(next);
+        return;
+      }
+
+      if (typeof libraryCache[key] === 'object') {
+        next(null, libraryCache[key]);
+        return;
+      }
+
+      libraryCache[key] = true;
+      libraryWaiters[key] = [];
+
+      fetch(upgradeSettings.libraryBaseUrl + '/' + key, {
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+        .then(response => (response.ok ? response.json() : Promise.reject(response)))
+        .then(library => {
+          libraryCache[key] = library;
+          const waiters = libraryWaiters[key];
+          delete libraryWaiters[key];
+          next(null, library);
+          waiters.forEach(waiter => waiter(null, library));
+        })
+        .catch(() => {
+          // The failure is not cached, so a later request can retry.
+          delete libraryCache[key];
+          const waiters = libraryWaiters[key];
+          delete libraryWaiters[key];
+          const message = l10n.errorData.replace('%lib', name + ' ' + version.major + '.' + version.minor);
+          next(message);
+          waiters.forEach(waiter => waiter(message));
+        });
+    };
+
+    /**
+     * Upgrade the contents that use a library version to another installed version of it.
      *
      * Reimplements the batch loop of core's h5p-content-upgrade.js on top of the
      * existing network-aware endpoints; that script is a closed IIFE, so it can
      * neither be enqueued nor stopped, and it is replaced instead.
      *
-     * @param {HTMLButtonElement} button
+     * Creates its own workers and terminates them when done. Contents upgraded in
+     * earlier batches stay saved on the server if the run fails later.
+     *
+     * @param {Object} job
+     * @param {string} job.sourceId Id of the library version the contents use now.
+     * @param {string} job.targetId Id of the library version to upgrade to.
+     * @param {string} job.machineName
+     * @param {string} job.oldVersion major.minor of the source.
+     * @param {string} job.newVersion major.minor of the target.
+     * @param {number} job.total Number of contents to upgrade, for the progress.
+     * @param {function(number)} onProgress Called with the percentage done.
+     *
+     * @return {Promise<{assigned: number, failed: number, errors: string[]}>} Rejects on a fatal error.
      */
-    const upgradeContents = async (button) => {
-      const {status, restore} = startAction(button.parentElement, button, true);
-
-      const machineName = button.dataset.machineName;
-      const oldVersion = button.dataset.oldVersion;
-      const newVersion = button.dataset.newVersion;
-      const total = Number(button.dataset.total) || 0;
-      const progressMessage = l10n.inProgress.replace('%ver', newVersion);
-      status.textContent = progressMessage;
+    const runContentUpgrade = (job, onProgress) => new Promise((resolve, reject) => {
+      const {machineName, oldVersion, newVersion, total} = job;
 
       // Counts the contents assigned so far; upgraded and skipped go back to the server per batch.
       const state = {
@@ -836,62 +950,13 @@
         errors.push(l10n.error + ' ' + message);
       };
 
-      const libraryCache = Object.create(null);
-      const libraryWaiters = Object.create(null);
-
-      /**
-       * Fetch the library data an upgrade runs against, shared by all workers.
-       *
-       * @param {string} name
-       * @param {{major: number, minor: number}} version
-       * @param {function(?string, ?Object)} next
-       */
-      const loadLibrary = (name, version, next) => {
-        const key = name + '/' + version.major + '/' + version.minor;
-
-        if (libraryCache[key] === true) {
-          libraryWaiters[key].push(next);
-          return;
-        }
-
-        if (typeof libraryCache[key] === 'object') {
-          next(null, libraryCache[key]);
-          return;
-        }
-
-        libraryCache[key] = true;
-        libraryWaiters[key] = [];
-
-        fetch(upgradeSettings.libraryBaseUrl + '/' + key, {
-          credentials: 'same-origin',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-          .then(response => (response.ok ? response.json() : Promise.reject(response)))
-          .then(library => {
-            libraryCache[key] = library;
-            const waiters = libraryWaiters[key];
-            delete libraryWaiters[key];
-            next(null, library);
-            waiters.forEach(waiter => waiter(null, library));
-          })
-          .catch(() => {
-            // The failure is not cached, so a later request can retry.
-            delete libraryCache[key];
-            const waiters = libraryWaiters[key];
-            delete libraryWaiters[key];
-            const message = l10n.errorData.replace('%lib', name + ' ' + version.major + '.' + version.minor);
-            next(message);
-            waiters.forEach(waiter => waiter(message));
-          });
-      };
-
       const workers = [];
       const terminate = () => workers.forEach(worker => worker.terminate());
 
       let failedYet = false;
 
       /**
-       * Stop the run, restore the button and report the error.
+       * Stop the run with a fatal error.
        *
        * @param {Error} error
        */
@@ -902,34 +967,15 @@
         failedYet = true;
 
         terminate();
-        console.error('H5P network libraries:', error);
-        restore();
-        showNotice('error', error.requestError ? error.message : l10n.requestFailed);
+        reject(error);
       };
 
       /**
-       * Report the finished run, then reload so the grids rebuild from the server state.
+       * Stop the run with its outcome.
        */
       const finish = () => {
         terminate();
-
-        const failed = state.skipped.length;
-        const succeeded = state.assigned - failed;
-
-        const lines = [
-          succeeded === 1 ? l10n.upgradedSingular : l10n.upgradedPlural.replace('%d', String(succeeded))
-        ];
-
-        if (failed > 0) {
-          lines.push(failed === 1 ? l10n.failedSingular : l10n.failedPlural.replace('%d', String(failed)));
-          lines.push(...errors);
-        }
-
-        finishWithReload({
-          machineName,
-          type: failed > 0 ? 'error' : 'success',
-          message: lines
-        });
+        resolve({assigned: state.assigned, failed: state.skipped.length, errors});
       };
 
       /**
@@ -940,7 +986,7 @@
       const requestNextBatch = async () => {
         // The first request carries no skipped or params; the server sends none back yet.
         const body = new URLSearchParams({
-          libraryId: button.dataset.targetId,
+          libraryId: job.targetId,
           token: state.token
         });
 
@@ -949,7 +995,7 @@
           body.set('params', JSON.stringify(state.upgraded));
         }
 
-        const response = await fetch(upgradeSettings.progressUrl + button.dataset.libraryId, {
+        const response = await fetch(upgradeSettings.progressUrl + job.sourceId, {
           method: 'POST',
           credentials: 'same-origin',
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -1100,10 +1146,9 @@
           state.upgraded[id] = result;
         }
 
-        if (status && total > 0) {
+        if (total > 0) {
           // state.left still counts the batch just returned, so current compensates.
-          const percent = Math.round((total - state.left + state.current) / (total / 100));
-          status.textContent = progressMessage + ' ' + percent + ' %';
+          onProgress(Math.round((total - state.left + state.current) / (total / 100)));
         }
 
         if (assignWork(worker) === false && state.working === 0) {
@@ -1111,7 +1156,12 @@
         }
       };
 
-      try {
+      /**
+       * Create the workers, or load the scripts for the main thread, and fetch the first batch.
+       *
+       * @return {Promise<void>}
+       */
+      const start = async () => {
         if (window.Worker !== undefined) {
           const numWorkers = (window.navigator !== undefined && window.navigator.hardwareConcurrency)
             ? window.navigator.hardwareConcurrency
@@ -1168,10 +1218,123 @@
         }
 
         await requestNextBatch();
+      };
+
+      start().catch(handleFailure);
+    });
+
+    /**
+     * The upgrade job of a row upgrade button.
+     *
+     * @param {HTMLButtonElement} button
+     *
+     * @return {Object} The job for runContentUpgrade().
+     */
+    const upgradeJobOf = (button) => ({
+      sourceId: button.dataset.libraryId,
+      targetId: button.dataset.targetId,
+      machineName: button.dataset.machineName,
+      oldVersion: button.dataset.oldVersion,
+      newVersion: button.dataset.newVersion,
+      total: Number(button.dataset.total) || 0
+    });
+
+    /**
+     * Summary lines of a finished content upgrade: upgraded, and failed with the errors.
+     *
+     * @param {{assigned: number, failed: number}} result From runContentUpgrade().
+     *
+     * @return {string[]} The upgraded line, then the failed line, if any.
+     */
+    const upgradeCountLines = (result) => {
+      const succeeded = result.assigned - result.failed;
+      const lines = [
+        succeeded === 1 ? l10n.upgradedSingular : l10n.upgradedPlural.replace('%d', String(succeeded))
+      ];
+
+      if (result.failed > 0) {
+        lines.push(result.failed === 1 ? l10n.failedSingular : l10n.failedPlural.replace('%d', String(result.failed)));
+      }
+
+      return lines;
+    };
+
+    /**
+     * Upgrade the contents that use a library to the newest installed version of it.
+     *
+     * @param {HTMLButtonElement} button
+     */
+    const upgradeContents = async (button) => {
+      const {status, restore} = startAction(button.parentElement, button, true);
+
+      const job = upgradeJobOf(button);
+      const progressMessage = l10n.inProgress.replace('%ver', job.newVersion);
+      status.textContent = progressMessage;
+
+      let result;
+      try {
+        result = await runContentUpgrade(job, (percent) => {
+          status.textContent = progressMessage + ' ' + percent + ' %';
+        });
       }
       catch (error) {
-        handleFailure(error);
+        console.error('H5P network libraries:', error);
+        restore();
+        showNotice('error', error.requestError ? error.message : l10n.requestFailed);
+        return;
       }
+
+      finishWithReload({
+        machineName: job.machineName,
+        type: result.failed > 0 ? 'error' : 'success',
+        message: result.failed > 0 ? upgradeCountLines(result).concat(result.errors) : upgradeCountLines(result)
+      });
+    };
+
+    /**
+     * Upgrade the contents of all the libraries that have an upgrade target, one library after the other.
+     *
+     * A library whose run fails is recorded as failed and the next one runs; contents upgraded in its
+     * earlier batches are already saved on the server.
+     *
+     * @param {HTMLButtonElement} button The clicked bulk button.
+     */
+    const upgradeAll = (button) => {
+      const jobs = [...installedGrid.querySelectorAll('[data-h5p-library-action="upgrade"]')]
+        .filter(rowButton => rowButton.dataset.libraryId && rowButton.dataset.targetId)
+        .map(upgradeJobOf);
+      // runBulk looks the progress line up itself; the percentage needs it as well.
+      const progress = button.closest('.postbox').querySelector('.h5p-network-libraries-bulk-progress');
+      const describe = (index, job) => l10n.bulkProgressUpgrade
+        .replace('%lib', job.machineName).replace('%old', job.oldVersion).replace('%new', job.newVersion)
+        .replace('%i', String(index + 1)).replace('%n', String(jobs.length));
+      // One summary block per library, in the order they ran.
+      const summaries = [];
+
+      runBulk(button, {
+        items: jobs,
+        runItem: async (job) => {
+          const index = jobs.indexOf(job);
+          try {
+            const result = await runContentUpgrade(job, (percent) => {
+              if (progress) {
+                progress.textContent = describe(index, job) + ' ' + percent + ' %';
+              }
+            });
+            summaries.push([job.machineName + ': ' + upgradeCountLines(result).join(', ')].concat(result.errors));
+            return {status: result.failed > 0 ? 'failed' : 'done', lines: result.errors};
+          }
+          catch (error) {
+            // A failed run of one library does not stop the others.
+            console.error('H5P network libraries:', error);
+            const message = error.requestError ? error.message : l10n.requestFailed;
+            summaries.push([job.machineName + ': ' + message]);
+            return {status: 'failed', lines: [message]};
+          }
+        },
+        describe,
+        summarize: () => summaries.flat()
+      });
     };
 
     // Only available actions carry data-h5p-library-action; placeholders stay inert.
@@ -1202,6 +1365,12 @@
             break;
           case 'install-all':
             confirmWith(bulkConfirm('bulkConfirmInstall', button), button.dataset.confirmLabel, () => installAll(button));
+            break;
+          case 'delete-all':
+            confirmWith(bulkConfirm('bulkConfirmDelete', button), button.dataset.confirmLabel, () => deleteAll(button));
+            break;
+          case 'upgrade-all':
+            confirmWith(bulkConfirm('bulkConfirmUpgrade', button), button.dataset.confirmLabel, () => upgradeAll(button));
             break;
           case 'info':
             showInfo(button);
