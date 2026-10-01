@@ -82,27 +82,6 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   protected $id_lookup_table = null;
 
   /**
-   * Migrate all libraries (files and database) to network level.
-   *
-   * @throws Exception If something fails.
-   */
-  public function migrateToNetwork() {
-    $this->failed_step = 1;
-    $network_libraries_installed = $this->migrateLibrariesToNetwork();
-
-    $this->failed_step = 2;
-    $network_libraries_installed = $this->migrateDatabaseTablesToNetwork($network_libraries_installed);
-
-    $this->failed_step = 3;
-    $this->updateBlogsDatabase($network_libraries_installed);
-
-    $this->failed_step = 4;
-    $this->clearBlogsLibrariesAndCachedassets();
-
-    $this->failed_step = null;
-  }
-
-  /**
    * Get step that was running when migration failed.
    *
    * @return int|null Step number 1-4, or null if no step failed.
@@ -133,7 +112,6 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         'phase'      => self::PHASE_COPY,
         'offset'     => 0,
         'libraries'  => array(),
-        'started_at' => time(),
       );
     }
 
@@ -190,7 +168,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         // Stored before step 3 changes any blog, so an exception, a fatal error or a timeout is noticed next time.
         $state['updating_blogs'] = true;
         self::setState($state);
-        $this->updateBlogsDatabase($state['libraries']);
+        $this->updateBlogsDatabase();
 
         unset($state['updating_blogs']);
         $state['phase'] = self::PHASE_CLEAR;
@@ -320,27 +298,6 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Migrate library directories from all blog upload folders to network level.
-   *
-   * @return array Keyed by versioned machine name, each value holding version and blog_id.
-   * @throws Exception If file system operation fails.
-   */
-  public function migrateLibrariesToNetwork() {
-    $this->ensureNetworkLibrariesDir();
-    $this->ensureNetworkCachedassetsDir();
-
-    $network_libraries_path = $this->getNetworkLibrariesPath();
-
-    $network_libraries_installed = array();
-
-    H5PCommons::for_each_blog(function ($blog_id) use ($network_libraries_path, &$network_libraries_installed) {
-      $this->copyBlogLibrariesToNetwork($blog_id, $network_libraries_path, $network_libraries_installed);
-    });
-
-    return $network_libraries_installed;
-  }
-
-  /**
    * Copy library directories of one blog to network level.
    *
    * Records copies in $network_libraries_installed, keeping only highest patch of each major.minor
@@ -386,23 +343,6 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
       $network_libraries_installed[$result['versioned_machine_name']] = $result;
     }
-  }
-
-  /**
-   * Clear blog-level libraries and cachedassets that were migrated to network level.
-   *
-   * Empties every blog's h5p/libraries and h5p/cachedassets, keeping directories themselves. Primary
-   * site is included, since its directories are separate from network h5p_network directory.
-   *
-   * @throws Exception If existing file or directory cannot be deleted.
-   */
-  protected function clearBlogsLibrariesAndCachedassets() {
-    WP_Filesystem();
-    global $wp_filesystem;
-
-    H5PCommons::for_each_blog(function () use ($wp_filesystem) {
-      $this->clearBlogLibrariesAndCachedassets($wp_filesystem);
-    });
   }
 
   /**
@@ -546,13 +486,12 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
    * Set up network-level libraries database table for blogs.
    *
    * @param array $network_libraries_installed Stuff that was installed on network level.
-   * @return array Modified array with 'library_id' added to each entry.
+   * @return array The array that was passed in, unmodified.
    *
    * @throws Exception If network table does not exist or insert fails.
    */
   public function migrateDatabaseTablesToNetwork($network_libraries_installed) {
     global $wpdb;
-    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
     foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
       $this->createTableFromExisting(
@@ -847,12 +786,8 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
   /**
    * Update blog-level library_id references and drop obsolete tables.
-   *
-   * @param array $network_libraries_installed Stuff that was installed on network level.
    */
-  protected function updateBlogsDatabase($network_libraries_installed) {
-    global $wpdb;
-
+  protected function updateBlogsDatabase() {
     $this->updateBlogsLibraryIds();
     $this->dropBlogsTables();
   }
@@ -868,20 +803,6 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         $wpdb->query("DROP TABLE IF EXISTS " . H5PCommons::build_full_db_table_name_singlesite($table_name));
       }
     });
-  }
-
-  /**
-   * Create network-level table by copying schema from blog-level table.
-   *
-   * @param string $network_table_name Network-level table name.
-   * @param string $source_table_name  Existing blog-level table name.
-   */
-  protected function createNetworkTable($network_table_name, $source_table_name) {
-    $this->createTableFromExisting(
-      $source_table_name,
-      $network_table_name,
-      true
-    );
   }
 
   /**

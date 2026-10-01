@@ -188,12 +188,6 @@ class H5P_Network_Admin {
    * Render network settings page.
    */
   public function render_settings_page() {
-    $save = filter_input( INPUT_POST, 'save_network_settings', FILTER_SANITIZE_SPECIAL_CHARS );
-
-    if ($save !== null) {
-      check_admin_referer( 'h5p_network_settings', 'save_network_settings' );
-    }
-
     // Read back the stored state, so the form always shows what is in effect.
     $enabled = H5PCommons::is_network_enabled();
 
@@ -261,8 +255,6 @@ class H5P_Network_Admin {
         ),
         H5PCommons::HTTP_OK
       );
-
-      return;
     }
 
     if (!$progress['done']) {
@@ -275,7 +267,6 @@ class H5P_Network_Admin {
           'nonce'      => wp_create_nonce('h5p_network_ajax'),
         )
       );
-      return;
     }
 
     $this->set_network_mode(true);

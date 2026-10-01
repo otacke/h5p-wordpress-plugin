@@ -15,7 +15,6 @@
     $core = $plugin->get_h5p_instance('core');
 
     $networkSettingsProperties = array(
-      'networkToggleConfirmationDialogHeader' => $core->h5pF->t('Confirmation action'),
       'networkToggleConfirmationDialogMessageEnable' => $core->h5pF->t('This will migrate all local libraries (files + database) to the network level and revoke h5p library handling capabilities from blog admins. DO YOU HAVE MADE A BACKUP FIRST? Do you want to enable the network settings?'),
       'networkToggleConfirmationDialogMessageDisable' => $core->h5pF->t('This will migrate all network libraries (files + database) back to the local level and grant h5p library handling capabilities to blog admins. DO YOU HAVE MADE A BACKUP FIRST? Do you want to disable the network settings?'),
       'networkToggleConfirmationDialogCancelLabel' => $core->h5pF->t('Cancel'),
@@ -37,12 +36,6 @@
     \H5P_Plugin_Admin::print_messages();
     ?>
   <h2><?php print esc_html(get_admin_page_title()); ?></h2>
-  <?php if ($save !== NULL): ?>
-    <div id="setting-error-settings_updated" class="updated settings-error">
-      <p><strong><?php esc_html_e('Settings saved.', 'h5p') ?></strong></p>
-    </div>
-  <?php endif; ?>
-  <form method="post">
     <table class="form-table">
       <tbody>
         <tr valign="top">
@@ -71,7 +64,4 @@
         </tr>
       </tbody>
     </table>
-    <?php wp_nonce_field('h5p_network_settings', 'save_network_settings'); ?>
-    <p class="submit"><input type="submit" name="submit" id="submit" class="button button-primary" value="Save Changes"></p>
-  </form>
 </div>

@@ -3,7 +3,7 @@
 /**
  * H5P_Network_Admin_Base
  *
- * Shared base for network migration operations: path resolution, table creation, nonce verification.
+ * Shared base for network migration operations: path resolution, table creation.
  * @package H5P
  * @since 1.19.0
  */
@@ -68,7 +68,6 @@ abstract class H5P_Network_Admin_Base {
    */
   protected function createTableFromExisting($source_table_name, $new_table_name, $fail_on_error = false) {
     global $wpdb;
-    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
     $row = $wpdb->get_row(
       "SHOW CREATE TABLE `{$source_table_name}`",
@@ -97,12 +96,5 @@ abstract class H5P_Network_Admin_Base {
     $wpdb->query("DROP TABLE IF EXISTS `{$new_table_name}`");
 
     return $wpdb->query($create_statement) !== false;
-  }
-
-  /**
-   * Verify AJAX request nonce. Dies on failure, so callers need no check.
-   */
-  protected function verifyNetworkNonce() {
-    check_ajax_referer('h5p_network_ajax', 'nonce', true);
   }
 }
