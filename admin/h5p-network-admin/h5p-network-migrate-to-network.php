@@ -183,6 +183,9 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
     if ($state['phase'] === self::PHASE_DONE) {
       $this->failed_step = null;
+      // The network tables are now current, so check_for_updates() will not re-run them
+      // on every blog until the plugin version changes.
+      update_site_option('h5p_network_db_version', H5P_Plugin::VERSION);
       self::clearState();
     }
     else {

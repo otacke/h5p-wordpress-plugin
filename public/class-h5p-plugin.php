@@ -278,38 +278,15 @@ class H5P_Plugin {
       KEY content_user (content_id,user_id)
     ) {$charset};");
 
-    // Keep track of h5p libraries
-    // Note: When in network mode, the dbDelta run on
-    // h5p_libraries, h5p_libraries_cachedassets, h5p_libraries_languages and h5p_libraries_libraries
-    // will run for every single blog. A little wasteful, but does not break anything.
-    // TODO: Change upgrade from init hook to to upgrader_process_complete hook and run
-    //       over all blogs immediately and only run for these 4 once if network is enabled
-    $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
-    dbDelta("CREATE TABLE {$table_libraries} (
-      id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-      created_at TIMESTAMP NOT NULL,
-      updated_at TIMESTAMP NOT NULL,
-      name VARCHAR(127) NOT NULL,
-      title VARCHAR(255) NOT NULL,
-      major_version INT UNSIGNED NOT NULL,
-      minor_version INT UNSIGNED NOT NULL,
-      patch_version INT UNSIGNED NOT NULL,
-      runnable INT UNSIGNED NOT NULL,
-      restricted INT UNSIGNED NOT NULL DEFAULT 0,
-      fullscreen INT UNSIGNED NOT NULL,
-      embed_types VARCHAR(255) NOT NULL,
-      preloaded_js TEXT NULL,
-      preloaded_css TEXT NULL,
-      drop_library_css TEXT NULL,
-      semantics TEXT NOT NULL,
-      tutorial_url VARCHAR(1023) NOT NULL,
-      has_icon INT UNSIGNED NOT NULL DEFAULT 0,
-      metadata_settings TEXT NULL,
-      add_to TEXT DEFAULT NULL,
-      PRIMARY KEY  (id),
-      KEY name_version (name,major_version,minor_version,patch_version),
-      KEY runnable (runnable)
-    ) {$charset};");
+    // Keep track of h5p libraries, dependencies, languages and cached asset hashes.
+    // In network mode these four tables are shared by all blogs and are maintained
+    // once at network level by update_network_database() instead.
+    if (!H5PCommons::is_network_enabled()) {
+      self::update_library_tables(
+        array('H5PCommons', 'build_full_db_table_name'),
+        $charset
+      );
+    }
 
     // Keep track of h5p libraries content type cache
     dbDelta("CREATE TABLE {$wpdb->base_prefix}h5p_libraries_hub_cache (
@@ -339,24 +316,6 @@ class H5P_Plugin {
       KEY name_version (machine_name,major_version,minor_version,patch_version)
     ) {$charset};");
 
-    // Keep track of h5p library dependencies
-    $table_libraries_libraries = H5PCommons::build_full_db_table_name('h5p_libraries_libraries');
-    dbDelta("CREATE TABLE {$table_libraries_libraries} (
-      library_id INT UNSIGNED NOT NULL,
-      required_library_id INT UNSIGNED NOT NULL,
-      dependency_type VARCHAR(31) NOT NULL,
-      PRIMARY KEY  (library_id,required_library_id)
-    ) {$charset};");
-
-    // Keep track of h5p library translations
-    $table_libraries_languages = H5PCommons::build_full_db_table_name('h5p_libraries_languages');
-    dbDelta("CREATE TABLE {$table_libraries_languages} (
-      library_id INT UNSIGNED NOT NULL,
-      language_code VARCHAR(31) NOT NULL,
-      translation TEXT NOT NULL,
-      PRIMARY KEY  (library_id,language_code)
-    ) {$charset};");
-
     // Keep track of logged h5p events
     $table_events = H5PCommons::build_full_db_table_name('h5p_events');
     dbDelta("CREATE TABLE {$table_events} (
@@ -380,13 +339,6 @@ class H5P_Plugin {
       library_version VARCHAR(31) NOT NULL,
       num INT UNSIGNED NOT NULL,
       PRIMARY KEY  (type,library_name,library_version)
-    ) {$charset};");
-
-    $table_libraries_cachedassets = H5PCommons::build_full_db_table_name('h5p_libraries_cachedassets');
-    dbDelta("CREATE TABLE {$table_libraries_cachedassets} (
-      library_id INT UNSIGNED NOT NULL,
-      hash VARCHAR(64) NOT NULL,
-      PRIMARY KEY  (library_id,hash)
     ) {$charset};");
 
     $table_tmpfiles = H5PCommons::build_full_db_table_name('h5p_tmpfiles');
@@ -414,6 +366,89 @@ class H5P_Plugin {
     add_option('h5p_hub_is_enabled', FALSE);
     add_option('h5p_send_usage_statistics', FALSE);
     add_option('h5p_has_request_user_consent', FALSE);
+  }
+
+  /**
+   * Create or update the four H5P library tables: libraries, library dependencies,
+   * library languages and cached asset hashes.
+   *
+   * The same schema at blog level and at network level; the resolver picks the full table names.
+   *
+   * @since 1.19.0
+   * @param callable $table_name_builder Returns the full table name for a library table name.
+   * @param string   $charset            Charset clause to append to each CREATE TABLE.
+   */
+  private static function update_library_tables(callable $table_name_builder, $charset) {
+    // Keep track of h5p libraries
+    $table_libraries = $table_name_builder('h5p_libraries');
+    dbDelta("CREATE TABLE {$table_libraries} (
+      id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      created_at TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP NOT NULL,
+      name VARCHAR(127) NOT NULL,
+      title VARCHAR(255) NOT NULL,
+      major_version INT UNSIGNED NOT NULL,
+      minor_version INT UNSIGNED NOT NULL,
+      patch_version INT UNSIGNED NOT NULL,
+      runnable INT UNSIGNED NOT NULL,
+      restricted INT UNSIGNED NOT NULL DEFAULT 0,
+      fullscreen INT UNSIGNED NOT NULL,
+      embed_types VARCHAR(255) NOT NULL,
+      preloaded_js TEXT NULL,
+      preloaded_css TEXT NULL,
+      drop_library_css TEXT NULL,
+      semantics TEXT NOT NULL,
+      tutorial_url VARCHAR(1023) NOT NULL,
+      has_icon INT UNSIGNED NOT NULL DEFAULT 0,
+      metadata_settings TEXT NULL,
+      add_to TEXT DEFAULT NULL,
+      PRIMARY KEY  (id),
+      KEY name_version (name,major_version,minor_version,patch_version),
+      KEY runnable (runnable)
+    ) {$charset};");
+
+    // Keep track of h5p library dependencies
+    $table_libraries_libraries = $table_name_builder('h5p_libraries_libraries');
+    dbDelta("CREATE TABLE {$table_libraries_libraries} (
+      library_id INT UNSIGNED NOT NULL,
+      required_library_id INT UNSIGNED NOT NULL,
+      dependency_type VARCHAR(31) NOT NULL,
+      PRIMARY KEY  (library_id,required_library_id)
+    ) {$charset};");
+
+    // Keep track of h5p library translations
+    $table_libraries_languages = $table_name_builder('h5p_libraries_languages');
+    dbDelta("CREATE TABLE {$table_libraries_languages} (
+      library_id INT UNSIGNED NOT NULL,
+      language_code VARCHAR(31) NOT NULL,
+      translation TEXT NOT NULL,
+      PRIMARY KEY  (library_id,language_code)
+    ) {$charset};");
+
+    // Keep track of cached asset hashes per library
+    $table_libraries_cachedassets = $table_name_builder('h5p_libraries_cachedassets');
+    dbDelta("CREATE TABLE {$table_libraries_cachedassets} (
+      library_id INT UNSIGNED NOT NULL,
+      hash VARCHAR(64) NOT NULL,
+      PRIMARY KEY  (library_id,hash)
+    ) {$charset};");
+  }
+
+  /**
+   * Create or update the network level H5P library tables.
+   *
+   * Shared by all blogs in network mode, so these run once per network, not once per blog
+   * like the rest of update_database().
+   *
+   * @since 1.19.0
+   */
+  public static function update_network_database() {
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+    self::update_library_tables(
+      array('H5PCommons', 'build_full_db_table_name_multisite'),
+      self::determine_charset()
+    );
   }
 
   /**
@@ -452,6 +487,15 @@ class H5P_Plugin {
    */
   public static function check_for_updates() {
     global $wpdb;
+
+    // The network level library tables are shared by all blogs, so they are updated
+    // once per network via a site option, before the per blog version check below.
+    if (H5PCommons::is_network_enabled()
+      && get_site_option('h5p_network_db_version') !== self::VERSION) {
+      self::update_network_database();
+      self::clearNetworkCachedAssets();
+      update_site_option('h5p_network_db_version', self::VERSION);
+    }
 
     $current_version = get_option('h5p_version');
     if ($current_version === self::VERSION) {
@@ -695,7 +739,9 @@ class H5P_Plugin {
   }
 
   /**
-   * Clear cached assets, both files and database entries.
+   * Clear the cached assets of the current blog: its own folder, and in single site or
+   * local mode its own table. In network mode the table is shared, so it is left alone
+   * and cleared once per network by clearNetworkCachedAssets() instead.
    */
   private static function clearCachedAssets() {
     WP_Filesystem();
@@ -714,7 +760,33 @@ class H5P_Plugin {
       }
     }
 
-    $table_libraries_cachedassets = H5PCommons::build_full_db_table_name('h5p_libraries_cachedassets');
+    if (!H5PCommons::is_network_enabled()) {
+      $table_libraries_cachedassets = H5PCommons::build_full_db_table_name('h5p_libraries_cachedassets');
+      $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
+    }
+  }
+
+  /**
+   * Clear the network level cached assets, once per network: the shared table and the
+   * h5p_network/cachedassets folder.
+   */
+  private static function clearNetworkCachedAssets() {
+    WP_Filesystem();
+    global $wp_filesystem;
+    global $wpdb;
+
+    $cachedassets_path = H5PCommons::get_h5p_network_path() . DIRECTORY_SEPARATOR . 'cachedassets';
+
+    if ($wp_filesystem->is_dir($cachedassets_path)) {
+      $file_paths = glob($cachedassets_path . DIRECTORY_SEPARATOR . '*');
+      foreach ($file_paths as $file_path) {
+        if (is_file($file_path)) {
+          $wp_filesystem->delete($file_path);
+        }
+      }
+    }
+
+    $table_libraries_cachedassets = H5PCommons::build_full_db_table_name_multisite('h5p_libraries_cachedassets');
     $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
   }
 
@@ -1921,6 +1993,7 @@ class H5P_Plugin {
     }
 
     delete_site_option('h5p_network_enabled');
+    delete_site_option('h5p_network_db_version');
     delete_site_option(H5P_Network_Migrate_To_Network::STATE_OPTION);
 
     self::recursive_unlink(H5PCommons::get_h5p_network_path());

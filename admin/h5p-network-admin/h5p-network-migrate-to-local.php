@@ -17,6 +17,9 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
     $this->copyDatabaseTablesToBlogs();
     $this->deleteNetworkFilesDirectory();
     $this->dropNetworkTables();
+
+    // The network tables are gone, so the network schema version is meaningless.
+    delete_site_option('h5p_network_db_version');
   }
 
   /**
