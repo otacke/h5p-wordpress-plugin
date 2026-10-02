@@ -292,14 +292,14 @@ class H5P_Network_Library_Deletion {
     $found = false;
     H5PCommons::for_each_blog(function () use ($pattern, &$found) {
       if ($found) {
-        return; // One hit on any blog is enough.
+        return H5PCommons::STOP_ITERATION; // One hit on any blog is enough.
       }
 
       global $wpdb;
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
 
-      if (!H5P_Network_Library_Helpers::table_exists($table_contents)) {
+      if (!H5PCommons::table_exists($table_contents)) {
         return; // Blog has no H5P content tables yet.
       }
 

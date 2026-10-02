@@ -462,8 +462,14 @@ class H5PContentAdmin {
     }
 
     // Remove tags that are not connected to content (old tags)
-    $and_where = empty($tag_ids) ? '' : " AND tag_id NOT IN (". implode(',', $tag_ids) .")";
-    $wpdb->query("DELETE FROM {$table_contents_tags} WHERE content_id = {$content_id}{$and_where}");
+    $sql = "DELETE FROM {$table_contents_tags} WHERE content_id = %d";
+    $args = array($content_id);
+    if (!empty($tag_ids)) {
+      $sql .= ' AND tag_id NOT IN (' . H5PCommons::int_placeholders($tag_ids) . ')';
+      $args = array_merge($args, $tag_ids);
+    }
+
+    $wpdb->query($wpdb->prepare($sql, $args));
 
     // Maintain tags table by remove unused tags
     $wpdb->query("DELETE t.* FROM {$table_tags} t LEFT JOIN {$table_contents_tags} ct ON t.id = ct.tag_id WHERE ct.content_id IS NULL");

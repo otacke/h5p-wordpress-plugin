@@ -32,7 +32,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
       $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
 
-      if (!$this->table_exists($table_contents_libraries) || !$this->table_exists($table_contents)) {
+      if (!H5PCommons::table_exists($table_contents_libraries) || !H5PCommons::table_exists($table_contents)) {
         return; // Blog has no H5P content tables yet.
       }
 
@@ -67,30 +67,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
    */
   protected function get_num_content_using_library($library_id, $skipped = NULL) {
     if ($this->library_content_counts === NULL) {
-      $this->library_content_counts = array();
-
-      H5PCommons::for_each_blog(function () {
-        global $wpdb;
-
-        $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-
-        if (!$this->table_exists($table_contents)) {
-          return; // Blog has no H5P content tables yet.
-        }
-
-        $rows = $wpdb->get_results(
-          "SELECT library_id, COUNT(id) AS content_count
-            FROM {$table_contents}
-            GROUP BY library_id"
-        );
-
-        foreach ($rows as $row) {
-          $id = (int) $row->library_id;
-          $this->library_content_counts[$id] =
-            (isset($this->library_content_counts[$id]) ? $this->library_content_counts[$id] : 0)
-            + (int) $row->content_count;
-        }
-      });
+      $this->library_content_counts = H5P_Network_Library_Helpers::get_content_counts();
     }
 
     return isset($this->library_content_counts[(int) $library_id])
@@ -157,16 +134,11 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
     }
 
     foreach ($by_blog as $blog_id => $items) {
-      switch_to_blog($blog_id);
-
-      try {
+      H5PCommons::in_blog($blog_id, function () use ($items, $to_library) {
         foreach ($items as $item) {
           $this->apply_upgraded_params($item['id'], $item['upgraded'], $to_library);
         }
-      }
-      finally {
-        restore_current_blog();
-      }
+      });
     }
   }
 
@@ -175,7 +147,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
    *
    * @since 1.19.0
    * @return array{keys: array, by_blog: array} Composite keys to echo back unchanged, and a map of
-   *         blog id to comma separated content ids for queries.
+   *         blog id to the list of content ids to exclude, ready for H5PCommons::int_placeholders().
    */
   private function parse_skipped_from_request() {
     $skipped = filter_input(INPUT_POST, 'skipped');
@@ -196,7 +168,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
     }
 
     foreach ($by_blog as $blog_id => $ids) {
-      $by_blog[$blog_id] = implode(',', array_unique($ids));
+      $by_blog[$blog_id] = array_values(array_unique($ids));
     }
 
     return array('keys' => $keys, 'by_blog' => $by_blog);
@@ -207,7 +179,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
    *
    * @since 1.19.0
    * @param int $library_id Id of library to count content for.
-   * @param array $skip_by_blog Map of blog id to comma separated content ids to exclude.
+   * @param array $skip_by_blog Map of blog id to list of content ids to exclude.
    * @return int
    */
   private function count_remaining_content($library_id, $skip_by_blog) {
@@ -218,16 +190,19 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
 
-      if (!$this->table_exists($table_contents)) {
+      if (!H5PCommons::table_exists($table_contents)) {
         return; // Blog has no H5P content tables yet
       }
 
-      $skip = isset($skip_by_blog[$blog_id]) ? $skip_by_blog[$blog_id] : '';
-      $skip_query = empty($skip) ? '' : " AND id NOT IN ($skip)";
-      $left += (int) $wpdb->get_var($wpdb->prepare(
-        "SELECT COUNT(id) FROM {$table_contents} WHERE library_id = %d {$skip_query}",
-        $library_id
-      ));
+      $skip = isset($skip_by_blog[$blog_id]) ? $skip_by_blog[$blog_id] : array();
+      $sql = "SELECT COUNT(id) FROM {$table_contents} WHERE library_id = %d";
+      $args = array($library_id);
+      if (!empty($skip)) {
+        $sql .= ' AND id NOT IN (' . H5PCommons::int_placeholders($skip) . ')';
+        $args = array_merge($args, $skip);
+      }
+
+      $left += (int) $wpdb->get_var($wpdb->prepare($sql, $args));
     });
 
     return $left;
@@ -239,23 +214,28 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
    * @since 1.19.0
    * @param object $out Response being built; params are added under composite "blogId_contentId" keys.
    * @param int $library_id Id of library to fetch content for.
-   * @param array $skip_by_blog Map of blog id to comma separated content ids to exclude.
+   * @param array $skip_by_blog Map of blog id to list of content ids to exclude.
    */
   private function fill_next_batch($out, $library_id, $skip_by_blog) {
     H5PCommons::for_each_blog(function ($blog_id) use (&$out, $library_id, $skip_by_blog) {
+      global $wpdb;
+
       $remaining = self::UPGRADE_BATCH_SIZE - count($out->params);
       if ($remaining <= 0) {
-        return; // Batch is full.
+        return H5PCommons::STOP_ITERATION; // Batch is full.
       }
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
 
-      if (!$this->table_exists($table_contents)) {
+      if (!H5PCommons::table_exists($table_contents)) {
         return; // Blog has no H5P content tables, so nothing to fetch.
       }
 
-      $skip = isset($skip_by_blog[$blog_id]) ? $skip_by_blog[$blog_id] : '';
-      $contents = $this->get_next_contents($library_id, $skip === '' ? '' : " AND id NOT IN ($skip)", $remaining);
+      $skip = isset($skip_by_blog[$blog_id]) ? $skip_by_blog[$blog_id] : array();
+      $skip_query = empty($skip)
+        ? ''
+        : ' AND id NOT IN (' . $wpdb->prepare(H5PCommons::int_placeholders($skip), $skip) . ')';
+      $contents = $this->get_next_contents($library_id, $skip_query, $remaining);
       foreach ($contents as $content) {
         $out->params[$blog_id . '_' . $content->id] =
           '{"params":' . $content->params .
@@ -274,54 +254,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
 
     $this->require_manage_libraries();
 
-    $plugin = H5P_Plugin::get_instance();
-    $core = $plugin->get_h5p_instance('core');
-
-    $start = microtime(TRUE);
-
-    $left = 0;
-    H5PCommons::for_each_blog(function ($blog_id) use (&$left) {
-      global $wpdb;
-
-      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-
-      if (!$this->table_exists($table_contents)) {
-        return; // Blog has no H5P content tables, so nothing to rebuild.
-      }
-
-      $left += (int) $wpdb->get_var(
-        "SELECT COUNT(id) FROM {$table_contents} WHERE filtered = ''"
-      );
-    });
-
-    // Rebuild as many caches as fit in the time budget, so a big network takes several requests.
-    H5PCommons::for_each_blog(function ($blog_id) use (&$left, $core, $start) {
-      global $wpdb;
-
-      if ($left <= 0) {
-        return;
-      }
-
-      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-
-      if (!$this->table_exists($table_contents)) {
-        return; // Blog has no H5P content tables, so nothing to rebuild.
-      }
-
-      $contents = $wpdb->get_results(
-        "SELECT id FROM {$table_contents} WHERE filtered = ''"
-      );
-
-      foreach ($contents as $content) {
-        if ((microtime(TRUE) - $start) > self::UPGRADE_BATCH_TIMEOUT || $left <= 0) {
-          break;
-        }
-
-        $content = $core->loadContent($content->id);
-        $core->filterParameters($content);
-        $left--;
-      }
-    });
+    $left = (new H5P_Network_Content_Cache())->rebuild(microtime(TRUE) + self::UPGRADE_BATCH_TIMEOUT);
 
     print $left;
     exit;
@@ -342,20 +275,5 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
     }
 
     return array((int) $parts[0], (int) $parts[1]);
-  }
-
-  /**
-   * Determine whether given database table exists on current blog.
-   *
-   * @since 1.19.0
-   * @param string $table Full table name.
-   * @return bool
-   */
-  private function table_exists($table) {
-    global $wpdb;
-
-    return $wpdb->get_var(
-      $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))
-    ) === $table;
   }
 }

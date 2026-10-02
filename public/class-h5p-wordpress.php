@@ -309,7 +309,7 @@ class H5PWordPress implements H5PFrameworkInterface {
     $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
     $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
 
-    if (!$this->tableExists($table_contents_libraries) || !$this->tableExists($table_contents)) {
+    if (!H5PCommons::table_exists($table_contents_libraries) || !H5PCommons::table_exists($table_contents)) {
       return array();
     }
 
@@ -326,21 +326,6 @@ class H5PWordPress implements H5PFrameworkInterface {
     }
 
     return $usage;
-  }
-
-  /**
-   * Whether the given database table exists.
-   *
-   * @since 1.19.0
-   * @param string $table Full table name.
-   * @return bool
-   */
-  private function tableExists($table) {
-    global $wpdb;
-
-    return $wpdb->get_var(
-      $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))
-    ) === $table;
   }
 
   /**
@@ -1003,7 +988,7 @@ class H5PWordPress implements H5PFrameworkInterface {
       $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
 
       // A blog where H5P has never been loaded has no content tables, and no content either.
-      if (!$this->tableExists($table_contents) || !$this->tableExists($table_contents_libraries)) {
+      if (!H5PCommons::table_exists($table_contents) || !H5PCommons::table_exists($table_contents_libraries)) {
         return;
       }
 
@@ -1065,7 +1050,7 @@ class H5PWordPress implements H5PFrameworkInterface {
 
     $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
 
-    if (!$this->tableExists($table_contents)) {
+    if (!H5PCommons::table_exists($table_contents)) {
       return 0;
     }
 

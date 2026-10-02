@@ -58,14 +58,10 @@ if (!is_multisite()) {
 else {
   // Run uninstall on each site in the network.
   $blog_ids = $wpdb->get_col("SELECT blog_id FROM {$wpdb->blogs}");
-  $original_blog_id = get_current_blog_id();
 
   foreach ($blog_ids as $blog_id) {
-    switch_to_blog($blog_id);
-    H5P_Plugin::uninstall();
+    H5PCommons::in_blog($blog_id, 'H5P_Plugin::uninstall');
   }
-
-  switch_to_blog($original_blog_id);
 
   // Shared by all blogs, so removed once after the blogs.
   H5P_Plugin::uninstall_network();

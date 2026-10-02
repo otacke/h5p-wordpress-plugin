@@ -12,11 +12,10 @@ class H5P_Network_Content_Cache {
   /**
    * Rebuild as many content caches as fit in the time budget, so a big network takes several requests.
    *
-   * Works like the "Rebuild cache" button of the Libraries page. Its endpoint, wp_ajax_h5p_rebuild_cache
-   * (H5PNetworkLibraryAdmin::ajax_rebuild_cache()), is not reused: it checks no nonce, and it fetches H5PCore
-   * once before looping over the blogs, so filterParameters() deletes and creates the export files in the
-   * folders of the main blog instead of the content's blog. get_h5p_instance() keys its instances by the
-   * current blog, so H5PCore is fetched per blog here.
+   * Works like the "Rebuild cache" button of the Libraries page; H5PNetworkLibraryAdmin::ajax_rebuild_cache()
+   * delegates here. get_h5p_instance() keys its instances by the current blog, so H5PCore is fetched per
+   * blog: filterParameters() must delete and create the export files in the folders of the content's own
+   * blog, not the main blog's.
    *
    * @param float $deadline microtime(TRUE) after which no new content is started.
    *
@@ -28,7 +27,7 @@ class H5P_Network_Content_Cache {
       global $wpdb;
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-      if (!H5P_Network_Library_Helpers::table_exists($table_contents)) {
+      if (!H5PCommons::table_exists($table_contents)) {
         return; // Blog has no H5P content tables, so nothing to rebuild.
       }
 
@@ -39,11 +38,11 @@ class H5P_Network_Content_Cache {
       global $wpdb;
 
       if ($left <= 0) {
-        return;
+        return H5PCommons::STOP_ITERATION;
       }
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-      if (!H5P_Network_Library_Helpers::table_exists($table_contents)) {
+      if (!H5PCommons::table_exists($table_contents)) {
         return; // Blog has no H5P content tables, so nothing to rebuild.
       }
 

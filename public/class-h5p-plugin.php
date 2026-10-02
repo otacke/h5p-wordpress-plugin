@@ -1806,10 +1806,7 @@ class H5P_Plugin {
    * @param int $blog_id
    */
   public function delete_blog($blog_id) {
-    $original_blog_id = get_current_blog_id();
-    switch_to_blog($blog_id);
-    self::uninstall();
-    switch_to_blog($original_blog_id);
+    H5PCommons::in_blog($blog_id, 'H5P_Plugin::uninstall');
   }
 
   /**

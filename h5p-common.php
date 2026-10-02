@@ -35,6 +35,9 @@ class H5PCommons {
 		'h5p_libraries_libraries'
 	];
 
+	/** Value a for_each_blog() callback returns to stop iteration over the remaining blogs. */
+	const STOP_ITERATION = 'h5p_stop_iteration';
+
 	/**
 	 * Cached network enable flag to avoid repeated database calls.
 	 *
@@ -187,6 +190,34 @@ class H5PCommons {
 	}
 
 	/**
+	 * Determine whether given database table exists on current blog.
+	 *
+	 * Not memoized, because update_database() creates tables within a request.
+	 *
+	 * @since 1.19.0
+	 * @param string $table Full table name.
+	 * @return bool
+	 */
+	public static function table_exists($table) {
+		global $wpdb;
+
+		return $wpdb->get_var(
+			$wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))
+		) === $table;
+	}
+
+	/**
+	 * Build a comma separated list of %d placeholders for $wpdb->prepare().
+	 *
+	 * @since 1.19.0
+	 * @param int[] $ids Values the placeholders stand in for.
+	 * @return string One %d per id, separated by commas, for interpolation in a query.
+	 */
+	public static function int_placeholders(array $ids) {
+		return implode(',', array_fill(0, count($ids), '%d'));
+	}
+
+	/**
 	 * Get ids of all blogs in network.
 	 *
 	 * get_sites() defaults to 'number' => 100, so it must be 0 to get every blog. Without that,
@@ -243,10 +274,29 @@ class H5PCommons {
 	}
 
 	/**
+	 * Run callback in context of one blog.
+	 *
+	 * @since 1.19.0
+	 * @param int      $blog_id Blog to switch to for the duration of the callback.
+	 * @param callable $callback
+	 * @return mixed Result of the callback.
+	 */
+	public static function in_blog($blog_id, callable $callback) {
+		switch_to_blog($blog_id);
+
+		try {
+			return $callback();
+		}
+		finally {
+			restore_current_blog();
+		}
+	}
+
+	/**
 	 * Run callback once per blog.
 	 *
 	 * @since 1.19.0
-	 * @param callable $callback Receives current blog id.
+	 * @param callable $callback Receives current blog id. Returning self::STOP_ITERATION stops.
 	 */
 	public static function for_each_blog(callable $callback) {
 		if (!is_multisite()) {
@@ -254,7 +304,7 @@ class H5PCommons {
 			return;
 		}
 
-		self::switch_through_blogs(self::get_all_blog_ids(), $callback);
+		self::switch_through_blogs(self::get_all_blog_ids(), $callback, 0, self::STOP_ITERATION);
 	}
 
 	/**
@@ -292,12 +342,13 @@ class H5PCommons {
 	 * Run callback for each given blog, in blog context.
 	 *
 	 * @since 1.19.0
-	 * @param int[]    $blog_ids Blog ids to visit.
-	 * @param callable $callback Receives current blog id and its offset. Returning false stops.
-	 * @param int      $offset   Offset of first blog in list.
+	 * @param int[]    $blog_ids   Blog ids to visit.
+	 * @param callable $callback   Receives current blog id and its offset. Returning $stop_value stops.
+	 * @param int      $offset     Offset of first blog in list.
+	 * @param mixed    $stop_value Callback result that stops iteration.
 	 * @return int Offset after last visited blog.
 	 */
-	private static function switch_through_blogs($blog_ids, callable $callback, $offset = 0) {
+	private static function switch_through_blogs($blog_ids, callable $callback, $offset = 0, $stop_value = false) {
 		foreach ($blog_ids as $blog_id) {
 			switch_to_blog($blog_id);
 
@@ -310,7 +361,7 @@ class H5PCommons {
 
 			$offset++;
 
-			if ($result === false) {
+			if ($result === $stop_value) {
 				break;
 			}
 		}

@@ -674,6 +674,8 @@ class H5PLibraryAdmin {
    * AJAX processing for content upgrade script.
    */
   public function ajax_upgrade_progress() {
+    global $wpdb;
+
     $prepared = $this->prepare_upgrade_progress();
     $library_id = $prepared['library_id'];
     $to_library = $prepared['to_library'];
@@ -711,7 +713,10 @@ class H5PLibraryAdmin {
     $out->left = $this->get_num_content_using_library($library_id, $skipped);
 
     if ($out->left) {
-      $skip_query = empty($skipped) ? '' : " AND id NOT IN ($skipped)";
+      // Fragment is fully expanded by prepare, so it can be embedded in the prepared query below.
+      $skip_query = empty($out->skipped)
+        ? ''
+        : ' AND id NOT IN (' . $wpdb->prepare(H5PCommons::int_placeholders($out->skipped), $out->skipped) . ')';
 
       // Find next batch of contents using library and add to params
       $contents = $this->get_next_contents($library_id, $skip_query);

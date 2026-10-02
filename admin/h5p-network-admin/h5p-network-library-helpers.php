@@ -3,27 +3,12 @@
 /**
  * H5P_Network_Library_Helpers
  *
- * Helpers shared by the network level library management classes and their views: table checks, content counts,
+ * Helpers shared by the network level library management classes and their views: content counts,
  * hub cache, version comparison and formatting, and H5P core messages.
  * @package H5P
  * @since 1.19.0
  */
 class H5P_Network_Library_Helpers {
-
-  /**
-   * Determine whether given database table exists on the current blog.
-   *
-   * @param string $table Full table name.
-   *
-   * @return bool
-   */
-  public static function table_exists($table) {
-    global $wpdb;
-
-    return $wpdb->get_var(
-      $wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))
-    ) === $table;
-  }
 
   /**
    * Count the contents that use each library version as their main library, across all blogs.
@@ -38,7 +23,7 @@ class H5P_Network_Library_Helpers {
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
 
-      if (!self::table_exists($table_contents)) {
+      if (!H5PCommons::table_exists($table_contents)) {
         return; // Blog has no H5P content tables yet.
       }
 
