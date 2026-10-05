@@ -101,11 +101,7 @@ class H5PWordPress implements H5PFrameworkInterface {
    * the blog's own h5p folder.
    */
   private function getLibrariesPath() {
-    if (H5PCommons::is_network_enabled()) {
-      return H5PCommons::get_h5p_network_path() . '/libraries';
-    }
-
-    return $this->getH5pPath() . '/libraries';
+    return H5PCommons::get_libraries_path();
   }
 
   /**
@@ -113,14 +109,13 @@ class H5PWordPress implements H5PFrameworkInterface {
    */
   public function getLibraryFileUrl($libraryFolderName, $fileName) {
     if (H5PCommons::is_network_enabled()) {
-      $base = H5PCommons::get_h5p_network_url();
-    }
-    else {
-      $upload_dir = wp_upload_dir();
-      $base = $upload_dir['baseurl'] . '/h5p';
+      return H5PCommons::get_libraries_url() . '/' . $libraryFolderName . '/' . $fileName;
     }
 
-    return $base . '/libraries/' . $libraryFolderName . '/' . $fileName;
+    // The local branch keeps wp_upload_dir() as base, since that is the path H5P core and
+    // editor expect for library files in the blog's own h5p folder.
+    $upload_dir = wp_upload_dir();
+    return $upload_dir['baseurl'] . '/h5p/libraries/' . $libraryFolderName . '/' . $fileName;
   }
 
   /**

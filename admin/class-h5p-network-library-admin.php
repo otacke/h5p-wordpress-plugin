@@ -17,6 +17,42 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   private $library_content_counts = NULL;
 
   /**
+   * Libraries page lives in the network admin.
+   *
+   * @since 1.19.0
+   * @param string $query Admin page query string.
+   * @return string
+   */
+  protected function libraries_page_url($query) {
+    return network_admin_url($query);
+  }
+
+  /**
+   * Content URL points at the blog the content lives on.
+   *
+   * @since 1.19.0
+   * @param object $content Row with id and blog_id.
+   * @return string
+   */
+  protected function get_content_url($content) {
+    return get_admin_url($content->blog_id, 'admin.php?page=h5p&task=show&id=' . $content->id);
+  }
+
+  /**
+   * Upgrades script lives in the shared network folder.
+   *
+   * @since 1.19.0
+   * @param string $suffix Path fragment beginning at the h5p folder, e.g. /libraries/H5P.X-1.0/upgrades.js.
+   * @return array{path: string, url: string}
+   */
+  protected function get_upgrade_script_location($suffix) {
+    return array(
+      'path' => H5PCommons::get_h5p_network_path() . $suffix,
+      'url' => H5PCommons::get_h5p_network_url() . $suffix,
+    );
+  }
+
+  /**
    * List content that uses given library, across all blogs.
    *
    * @since 1.19.0

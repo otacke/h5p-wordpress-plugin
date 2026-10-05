@@ -67,6 +67,16 @@ class H5PCommons {
 	}
 
 	/**
+	 * Whether H5P Hub access is enabled on the current blog.
+	 *
+	 * @since 1.19.0
+	 * @return bool
+	 */
+	public static function is_hub_enabled() {
+		return get_option('h5p_hub_is_enabled', TRUE) == TRUE;
+	}
+
+	/**
 	 * Whether current user may manage libraries.
 	 *
 	 * @return bool
@@ -120,7 +130,7 @@ class H5PCommons {
 	 * Get URL for network level H5P files folder.
 	 *
 	 * Always absolute, since H5P core and editor only leave asset paths untouched when they carry
-	 * scheme. Mirrors HTTPS fixup of H5P_Plugin::get_h5p_url(), so SSL pages never load plain HTTP.
+	 * scheme. Applies the shared HTTPS fixup, so SSL pages never load plain HTTP.
 	 *
 	 * @return string
 	 */
@@ -129,11 +139,54 @@ class H5PCommons {
 		$base = self::strip_blog_from_uploads_base($upload_dir['baseurl']);
 		$url = $base . '/' . self::NETWORK_DIRECTORY_NAME;
 
+		return self::ensure_https($url);
+	}
+
+	/**
+	 * Update protocol of an absolute URL to HTTPS when the request is served over SSL.
+	 *
+	 * @since 1.19.0
+	 * @param string $url Absolute URL.
+	 * @return string URL with HTTPS protocol when served over SSL, otherwise unchanged.
+	 */
+	public static function ensure_https($url) {
 		if (is_ssl() && substr($url, 0, 5) !== 'https') {
-			$url = 'https' . substr($url, 4);
+			// Update protocol
+			return 'https' . substr($url, 4);
 		}
 
 		return $url;
+	}
+
+	/**
+	 * Get path to the libraries folder, wherever the current mode stores them.
+	 *
+	 * In network mode libraries are shared by all blogs, so they live in the network folder;
+	 * otherwise they live in the current blog's h5p folder.
+	 *
+	 * @since 1.19.0
+	 * @return string
+	 */
+	public static function get_libraries_path() {
+		$base = self::is_network_enabled()
+			? self::get_h5p_network_path()
+			: H5P_Plugin::get_instance()->get_h5p_path();
+
+		return $base . '/libraries';
+	}
+
+	/**
+	 * Get URL to the libraries folder, wherever the current mode stores them.
+	 *
+	 * @since 1.19.0
+	 * @return string
+	 */
+	public static function get_libraries_url() {
+		$base = self::is_network_enabled()
+			? self::get_h5p_network_url()
+			: H5P_Plugin::get_instance()->get_h5p_url();
+
+		return $base . '/libraries';
 	}
 
 	/**

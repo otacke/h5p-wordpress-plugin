@@ -1035,10 +1035,7 @@ class H5P_Plugin {
       $url[$id]['rel'] = '/' . preg_replace('/^[^:]+:\/\/[^\/]+\//', '', $url[$id]['abs']);
 
       // Check for HTTPS
-      if (is_ssl() && substr($url[$id]['abs'], 0, 5) !== 'https') {
-        // Update protocol
-        $url[$id]['abs'] = 'https' . substr($url[$id]['abs'], 4);
-      }
+      $url[$id]['abs'] = H5PCommons::ensure_https($url[$id]['abs']);
     }
 
     return $absolute ? $url[$id]['abs'] : $url[$id]['rel'];
@@ -1509,7 +1506,7 @@ class H5P_Plugin {
       'l10n' => array(
         'H5P' => $core->getLocalization(),
       ),
-      'hubIsEnabled' => get_option('h5p_hub_is_enabled', TRUE) == TRUE,
+      'hubIsEnabled' => H5PCommons::is_hub_enabled(),
       'reportingIsEnabled' => (get_option('h5p_enable_lrs_content_types', FALSE) === '1') ? TRUE : FALSE,
       'libraryConfig' => $h5p->getLibraryConfig(),
       'crossorigin' => defined('H5P_CROSSORIGIN') ? H5P_CROSSORIGIN : null,
@@ -1685,7 +1682,7 @@ class H5P_Plugin {
    * @since 1.2.0
    */
   public function get_library_updates() {
-    if (get_option('h5p_hub_is_enabled', TRUE) || get_option('h5p_send_usage_statistics', TRUE)) {
+    if (H5PCommons::is_hub_enabled() || get_option('h5p_send_usage_statistics', TRUE)) {
       $core = $this->get_h5p_instance('core');
       $core->fetchLibrariesMetadata();
     }

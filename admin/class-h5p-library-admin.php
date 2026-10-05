@@ -222,8 +222,6 @@ class H5PLibraryAdmin {
       )
     );
 
-    $is_network_enabled = H5PCommons::is_network_enabled();
-
     // Add settings for each library
     $i = 0;
     foreach ($libraries as $versions) {
@@ -233,9 +231,7 @@ class H5PLibraryAdmin {
           $upgrades = $core->getUpgrades($library, $versions);
           $upgradeUrl = empty($upgrades) ? FALSE : TRUE;
           if ($upgradeUrl) {
-            $upgradeUrl = $is_network_enabled ?
-              network_admin_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . network_admin_url('admin.php?page=h5p_libraries')) :
-              admin_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . admin_url('admin.php?page=h5p_libraries'));
+            $upgradeUrl = $this->libraries_page_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . $this->libraries_page_url('admin.php?page=h5p_libraries'));
           }
 
           $restricted = ($library->restricted ? TRUE : FALSE);
@@ -251,13 +247,9 @@ class H5PLibraryAdmin {
           $restricted_url = NULL;
         }
 
-        $detailsUrlBase = H5PCommons::is_network_enabled() ?
-          network_admin_url('admin.php?page=h5p_libraries&task=show&id=') :
-          admin_url('admin.php?page=h5p_libraries&task=show&id=');
+        $detailsUrlBase = $this->libraries_page_url('admin.php?page=h5p_libraries&task=show&id=');
 
-        $deleteUrlBase = H5PCommons::is_network_enabled() ?
-          network_admin_url('admin.php?page=h5p_libraries&task=delete&id=') :
-          admin_url('admin.php?page=h5p_libraries&task=delete&id=');
+        $deleteUrlBase = $this->libraries_page_url('admin.php?page=h5p_libraries&task=delete&id=');
 
         $contents_count = $this->get_num_content_using_library($library->id);
         $settings['libraryList']['listData'][] = array(
@@ -306,7 +298,7 @@ class H5PLibraryAdmin {
 
     // Load content type cache time
     $last_update = get_site_option('h5p_content_type_cache_updated_at', '');
-    $hubOn = get_option('h5p_hub_is_enabled', TRUE);
+    $hubOn = H5PCommons::is_hub_enabled();
 
     include_once('views/libraries.php');
     $plugin->print_settings($settings, 'H5PAdminIntegration');
@@ -483,21 +475,47 @@ class H5PLibraryAdmin {
   }
 
   /**
+   * Build admin URL for the libraries page.
+   *
+   * The network variant overrides this to point at the network admin.
+   *
+   * @since 1.19.0
+   * @param string $query Admin page query string.
+   * @return string
+   */
+  protected function libraries_page_url($query) {
+    return admin_url($query);
+  }
+
+  /**
    * Build admin URL for viewing piece of content.
    *
-   * In network mode content lives on specific blog, so URL points at that blog's admin.
-   * On single site install this is just current site's admin URL.
+   * The network variant overrides this to point at the blog the content lives on.
    *
    * @since 1.19.0
    * @param object $content Row with id and blog_id.
    * @return string
    */
   protected function get_content_url($content) {
-    $path = 'admin.php?page=h5p&task=show&id=' . $content->id;
+    return admin_url('admin.php?page=h5p&task=show&id=' . $content->id);
+  }
 
-    return H5PCommons::is_network_enabled()
-      ? get_admin_url($content->blog_id, $path)
-      : admin_url($path);
+  /**
+   * Get path and URL of the upgrades.js file of a library, wherever libraries are stored.
+   *
+   * The network variant overrides this to point at the shared network folder.
+   *
+   * @since 1.19.0
+   * @param string $suffix Path fragment beginning at the h5p folder, e.g. /libraries/H5P.X-1.0/upgrades.js.
+   * @return array{path: string, url: string}
+   */
+  protected function get_upgrade_script_location($suffix) {
+    $plugin = H5P_Plugin::get_instance();
+
+    return array(
+      'path' => $plugin->get_h5p_path() . $suffix,
+      'url' => $plugin->get_h5p_url() . $suffix,
+    );
   }
 
   /**
@@ -889,21 +907,15 @@ class H5PLibraryAdmin {
 //      $dev_lib = $core->h5pD->getLibrary($library->name, $library->version->major, $library->version->minor);
 //    }
 
+    $suffix = '/libraries/' . $library->name . '-' . $library->version->major . '.' . $library->version->minor . '/upgrades.js';
+
     if (isset($dev_lib)) {
       $upgrades_script_path = $upgrades_script_url = $dev_lib['path'] . '/upgrades.js';
     }
     else {
-      $suffix = '/libraries/' . $library->name . '-' . $library->version->major . '.' . $library->version->minor . '/upgrades.js';
-
-      // Libraries are shared by all blogs in network mode.
-      if (H5PCommons::is_network_enabled()) {
-        $upgrades_script_path = H5PCommons::get_h5p_network_path() . $suffix;
-        $upgrades_script_url = H5PCommons::get_h5p_network_url() . $suffix;
-      }
-      else {
-        $upgrades_script_path = $plugin->get_h5p_path() . $suffix;
-        $upgrades_script_url = $plugin->get_h5p_url() . $suffix;
-      }
+      $location = $this->get_upgrade_script_location($suffix);
+      $upgrades_script_path = $location['path'];
+      $upgrades_script_url = $location['url'];
     }
 
     if (file_exists($upgrades_script_path)) {

@@ -45,7 +45,7 @@ class H5P_Network_Library_Overview {
     $core = $plugin->get_h5p_instance('core');
     $interface = $plugin->get_h5p_instance('interface');
 
-    $hub_is_enabled = get_option('h5p_hub_is_enabled', TRUE) == TRUE;
+    $hub_is_enabled = H5PCommons::is_hub_enabled();
 
     // Keep the hub cache fresh, like H5PEditorAjax::isContentTypeCacheUpdated() does.
     if ($hub_is_enabled && $interface->getOption('content_type_cache_updated_at', 0) + 60 * 60 * 24 * 7 < time()) {

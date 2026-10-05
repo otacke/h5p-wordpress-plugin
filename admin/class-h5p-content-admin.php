@@ -487,7 +487,7 @@ class H5PContentAdmin {
     }
 
     $contentExists = ($this->content !== NULL && !is_string($this->content));
-    $hubIsEnabled = get_option('h5p_hub_is_enabled', TRUE);
+    $hubIsEnabled = H5PCommons::is_hub_enabled();
 
     $plugin = H5P_Plugin::get_instance();
     $core = $plugin->get_h5p_instance('core');

@@ -46,7 +46,7 @@ class H5P_Network_Library_Installer {
    * a 'status' and 'messages' pair, so a bulk queue can continue past a failed item.
    */
   public function install_hub_library($machine_name) {
-    if (get_option('h5p_hub_is_enabled', TRUE) != TRUE) {
+    if (!H5PCommons::is_hub_enabled()) {
       return array(
         'status' => 'error',
         'messages' => array(
@@ -209,7 +209,7 @@ class H5P_Network_Library_Installer {
   public function update_content_type_cache() {
     // The button is only shown with the hub enabled, the same per-blog option
     // H5P_Network_Library_Overview::get_library_overview() reads.
-    if (get_option('h5p_hub_is_enabled', TRUE) != TRUE) {
+    if (!H5PCommons::is_hub_enabled()) {
       return array(
         'success' => FALSE,
         'messages' => array(
