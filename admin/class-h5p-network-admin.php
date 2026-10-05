@@ -308,9 +308,37 @@ class H5P_Network_Admin {
     ignore_user_abort(true);
 
     $demigrate = new H5P_Network_Migrate_To_Local();
-    $demigrate->migrateToLocal();
+
+    try {
+      $demigrate->migrateToLocal();
+    }
+    catch (Exception $exception) {
+      // The network data is still intact and the partial local copies do no harm: in network mode
+      // the table resolver ignores them, and a retry recreates them with drop-first.
+      error_log('H5P local demigration failed: ' . $exception->getMessage());
+
+      wp_send_json_error(
+        array(
+          'message'    => $exception->getMessage(),
+          'rolledBack' => true,
+        ),
+        H5PCommons::HTTP_OK
+      );
+    }
 
     $this->set_network_mode(false);
+
+    try {
+      $demigrate->deleteNetworkFilesDirectory();
+      $demigrate->dropNetworkTables();
+
+      // The network tables are gone, so the network schema version is meaningless.
+      delete_site_option('h5p_network_db_version');
+    }
+    catch (Exception $exception) {
+      // The site is already local, so leftover network data is inert: log and go on.
+      error_log('H5P local demigration cleanup failed: ' . $exception->getMessage());
+    }
 
     if (!(defined('H5P_DISABLE_AGGREGATION') && H5P_DISABLE_AGGREGATION === true)) {
       try {
@@ -318,7 +346,7 @@ class H5P_Network_Admin {
       }
       catch (Exception $exception) {
         // Not fatal: cached assets are created lazily when content is viewed.
-        error_log('H5P network demigration: ' . $exception->getMessage());
+        error_log('H5P local demigration: ' . $exception->getMessage());
       }
     }
 
@@ -494,6 +522,9 @@ class H5P_Network_Admin {
   private function set_network_mode($enabled) {
     H5PCommons::set_network_enabled($enabled);
     H5P_Plugin::assign_capabilities_all_blogs();
+    // Cores built for the previous mode resolve their storage at construction,
+    // so drop them and let them rebuild for the new mode.
+    H5P_Plugin::clear_core_instances();
   }
 
   /**

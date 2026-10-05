@@ -48,6 +48,12 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   const PHASE_DATABASE = 'database';
 
   /**
+   * Phase remapping blog-level library ids and dropping the blogs' obsolete library tables.
+   * Destructive, but resumable per blog and per stage.
+   */
+  const PHASE_REMAP = 'remap';
+
+  /**
    * Phase deleting library files left on blogs. Destructive.
    */
   const PHASE_CLEAR = 'clear';
@@ -75,11 +81,11 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   protected $network_library_columns = null;
 
   /**
-   * Cached blog library id to network library id lookup table.
+   * Cached network library ids, keyed by library version key.
    *
    * @var array|null
    */
-  protected $id_lookup_table = null;
+  protected $network_library_ids = null;
 
   /**
    * Get step that was running when migration failed.
@@ -151,28 +157,24 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
       case self::PHASE_DATABASE:
         if (!empty($state['updating_blogs'])) {
-          // Step 3 of an earlier request did not finish, so some blogs may already point to network ids or
-          // have lost their tables. Running step 2 again would read those blogs, and its rollback would drop
-          // network tables that they need.
+          // Older code set this marker inside this phase while it updated the blogs, so such a state may
+          // hold half-remapped blog databases. The migration cannot continue and has to be restarted.
           $this->failed_step = 3;
           throw new Exception(
             __('An earlier attempt failed while the blog databases were being updated, so the migration cannot continue.', 'h5p')
           );
         }
 
-        // Not batched: step 3 builds its id lookup from blog tables it then drops.
+        // The remap that follows is resumable per blog, so this phase only runs step 2.
         $this->failed_step = 2;
         $this->migrateDatabaseTablesToNetwork($state['libraries']);
-
-        $this->failed_step = 3;
-        // Stored before step 3 changes any blog, so an exception, a fatal error or a timeout is noticed next time.
-        $state['updating_blogs'] = true;
-        self::setState($state);
-        $this->updateBlogsDatabase();
-
-        unset($state['updating_blogs']);
-        $state['phase'] = self::PHASE_CLEAR;
+        $state['phase'] = self::PHASE_REMAP;
         $state['offset'] = 0;
+        break;
+
+      case self::PHASE_REMAP:
+        $this->failed_step = 3;
+        $state = $this->runRemapBatch($state);
         break;
 
       case self::PHASE_CLEAR:
@@ -198,7 +200,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Describe how far migration has got, as percentage so progress only moves forwards.
    *
-   * Blogs are walked twice, once copying and once clearing, so blog count is not total.
+   * Blogs are walked three times, copying, remapping and clearing, so blog count is not total.
    *
    * @param array $state Current migration state.
    * @return array Progress with 'phase', 'percentage' and 'done'.
@@ -213,16 +215,20 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         break;
 
       case self::PHASE_DATABASE:
-        // Copying finished, clearing not started.
+        // Copying finished, remapping not started.
         $passed = $blogs;
         break;
 
-      default:
+      case self::PHASE_REMAP:
         $passed = $blogs + (int) $state['offset'];
+        break;
+
+      default:
+        $passed = $blogs * 2 + (int) $state['offset'];
         break;
     }
 
-    $total = $blogs * 2;
+    $total = $blogs * 3;
 
     return array(
       'phase'      => $state['phase'],
@@ -266,6 +272,109 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     }
 
     return $state;
+  }
+
+  /**
+   * Remap library ids and drop obsolete library tables of next blogs, batched and resumable per blog.
+   *
+   * @param array $state Current migration state.
+   * @return array Updated migration state.
+   * @throws Exception If a blog-level update fails.
+   */
+  protected function runRemapBatch($state) {
+    $start = microtime(true);
+
+    $offset = H5PCommons::for_each_blog_page(
+      $state['offset'],
+      self::BATCH_BLOG_LIMIT,
+      function ($blog_id) use ($start, &$state) {
+        $this->remapBlog($blog_id, $state);
+
+        // Stop once budget is spent, leaving no blog half remapped.
+        return (microtime(true) - $start) <= self::BATCH_TIMEOUT;
+      }
+    );
+
+    $state['offset'] = $offset;
+
+    if ($offset >= H5PCommons::count_blogs()) {
+      $state['phase'] = self::PHASE_CLEAR;
+      $state['offset'] = 0;
+      unset($state['remap']);
+    }
+
+    return $state;
+  }
+
+  /**
+   * Remap one blog's library ids and drop its obsolete library tables, resuming at its saved stage.
+   *
+   * Stages run in a fixed order and each is saved right after its statement, so re-running a
+   * finished stage is a no-op: pass one only matches old ids, pass two only matches temporary
+   * ids, and dropping tables is idempotent.
+   *
+   * @param int $blog_id Blog id.
+   * @param array $state Migration state, updated with the blog's progress.
+   * @throws Exception If a blog-level update fails.
+   */
+  protected function remapBlog($blog_id, &$state) {
+    $stages = array(
+      'h5p_contents:1',
+      'h5p_contents:2',
+      'h5p_contents_libraries:1',
+      'h5p_contents_libraries:2',
+      'dropped'
+    );
+
+    $recorded_stage = null;
+    if (isset($state['remap']['blog']) && (int) $state['remap']['blog'] === $blog_id) {
+      $recorded_stage = $state['remap']['stage'];
+    }
+    $recorded_index = array_search($recorded_stage, $stages, true);
+    if ($recorded_index === false) {
+      $recorded_index = -1;
+    }
+
+    // A blog that already dropped its tables is done, even if the batch that dropped them did not
+    // get to persist its offset.
+    $already_dropped = H5PCommons::in_blog($blog_id, function () use ($recorded_stage) {
+      return $recorded_stage === 'dropped'
+        && !H5PCommons::table_exists(H5PCommons::build_full_db_table_name_singlesite('h5p_libraries'));
+    });
+    if ($already_dropped) {
+      return;
+    }
+
+    $mappings = $this->buildBlogIdLookup($blog_id);
+
+    foreach ($stages as $index => $stage) {
+      if ($index <= $recorded_index) {
+        continue;
+      }
+
+      if ($stage === 'dropped') {
+        $this->dropBlogLibraryTables($blog_id);
+      }
+      elseif (!empty($mappings)) {
+        list($table_name, $pass) = explode(':', $stage);
+        H5PCommons::in_blog($blog_id, function () use ($table_name, $pass, $mappings) {
+          $blog_table = H5PCommons::build_full_db_table_name_singlesite($table_name);
+
+          if ($pass === '1') {
+            $this->remapLibraryIdsPass1($blog_table, $mappings);
+          }
+          else {
+            $this->remapLibraryIdsPass2($blog_table);
+          }
+        });
+      }
+
+      $state['remap'] = array(
+        'blog'  => $blog_id,
+        'stage' => $stage
+      );
+      self::setState($state);
+    }
   }
 
   /**
@@ -327,6 +436,10 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       );
     }
 
+    // Network table auto-increment ids follow copy order, so process directories in the blog's
+    // own table id order to keep the network ids aligned with the blog's.
+    $library_directories = $this->orderLibraryDirectories($library_directories);
+
     foreach ($library_directories as $library_directory_name) {
       $result = $this->processLibraryDirectory(
         $libraries_directory,
@@ -346,6 +459,44 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
       $network_libraries_installed[$result['versioned_machine_name']] = $result;
     }
+  }
+
+  /**
+   * Order library directory names so directories with a row in the blog's h5p_libraries
+   * table come first, in that table's id order; the remaining directories follow.
+   *
+   * Must run in the blog's context, since the table name resolves from the current blog.
+   *
+   * @param array $directory_names Directory names as returned by scandir().
+   * @return array Ordered directory names.
+   */
+  protected function orderLibraryDirectories($directory_names) {
+    $table = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
+
+    if (!H5PCommons::table_exists($table)) {
+      return $directory_names;
+    }
+
+    global $wpdb;
+
+    $rows = $wpdb->get_results("SELECT name, major_version, minor_version FROM {$table} ORDER BY id");
+    if ($rows === null) {
+      return $directory_names;
+    }
+
+    $present = array_flip($directory_names);
+    $ordered = array();
+
+    foreach ($rows as $row) {
+      $name = $row->name . '-' . (int) $row->major_version . '.' . (int) $row->minor_version;
+
+      if (isset($present[$name])) {
+        $ordered[] = $name;
+        unset($present[$name]);
+      }
+    }
+
+    return array_merge($ordered, array_keys($present));
   }
 
   /**
@@ -545,54 +696,62 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Build lookup table mapping blog-level library IDs to network-level library IDs.
+   * Build map of library version key to library id for the network-level libraries.
    *
-   * Cached: network libraries are written once before first call, and nothing later changes their
-   * name or version, so repeated calls return same mapping.
+   * Cached: network libraries are written once before first lookup, and nothing later changes
+   * their name or version, so the map holds for the rest of the migration.
    *
-   * @return array Keyed by blog_id, each value is associative array mapping blog library_id to network library_id.
+   * @return array Map of library version key to network library id.
    */
-  public function buildIdLookupTable() {
-    if ($this->id_lookup_table !== null) {
-      return $this->id_lookup_table;
+  protected function buildNetworkLibraryIdMap() {
+    if ($this->network_library_ids !== null) {
+      return $this->network_library_ids;
     }
 
     global $wpdb;
 
-    // Network table is same for every blog, so read it once and match
-    // in PHP instead of querying it per blog library.
     $network_table_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries');
     $network_ids = array();
     foreach ($wpdb->get_results("SELECT id, name, major_version, minor_version FROM {$network_table_libraries}") as $entry) {
       $network_ids[$this->buildLibraryVersionKey($entry->name, $entry->major_version, $entry->minor_version)] = $entry->id;
     }
 
-    $lookup = array();
+    $this->network_library_ids = $network_ids;
 
-    H5PCommons::for_each_blog(function ($blog_id) use (&$lookup, $network_ids) {
+    return $network_ids;
+  }
+
+  /**
+   * Build map of one blog's library ids to their network-level library ids.
+   *
+   * @param int $blog_id Blog id.
+   * @return array Map of old library id to network library id. Empty for a blog without H5P
+   *   library tables, which is a blog that never used H5P or whose tables were already dropped.
+   */
+  protected function buildBlogIdLookup($blog_id) {
+    return H5PCommons::in_blog($blog_id, function () {
+      $blog_table_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
+
+      if (!H5PCommons::table_exists($blog_table_libraries)) {
+        return array();
+      }
+
       global $wpdb;
 
-      $blog_table_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
-      $blog_libraries = $wpdb->get_results(
-        "SELECT id, name, major_version, minor_version FROM {$blog_table_libraries}"
-      );
-
-      foreach ($blog_libraries as $blog_library_entry) {
-        $key = $this->buildLibraryVersionKey(
-          $blog_library_entry->name,
-          $blog_library_entry->major_version,
-          $blog_library_entry->minor_version
-        );
+      // Network table is the same for every blog, so read it once and match in PHP instead of
+      // querying it per blog library.
+      $network_ids = $this->buildNetworkLibraryIdMap();
+      $mappings = array();
+      foreach ($wpdb->get_results("SELECT id, name, major_version, minor_version FROM {$blog_table_libraries}") as $entry) {
+        $key = $this->buildLibraryVersionKey($entry->name, $entry->major_version, $entry->minor_version);
 
         if (isset($network_ids[$key])) {
-          $lookup[$blog_id][$blog_library_entry->id] = $network_ids[$key];
+          $mappings[$entry->id] = $network_ids[$key];
         }
       }
+
+      return $mappings;
     });
-
-    $this->id_lookup_table = $lookup;
-
-    return $lookup;
   }
 
   /**
@@ -619,22 +778,27 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   protected function copyLibraryDependenciesToNetwork() {
     $network_table_libraries_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries_libraries');
 
-    $lookup = $this->buildIdLookupTable();
-
-    H5PCommons::for_each_blog(function ($blog_id) use ($network_table_libraries_libraries, $lookup) {
+    H5PCommons::for_each_blog(function ($blog_id) use ($network_table_libraries_libraries) {
       global $wpdb;
 
       $blog_table_libraries_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_libraries');
+
+      if (!H5PCommons::table_exists($blog_table_libraries_libraries)) {
+        return;
+      }
+
       $dependencies = $wpdb->get_results(
         "SELECT library_id, required_library_id, dependency_type FROM {$blog_table_libraries_libraries}"
       );
+
+      $lookup = $this->buildBlogIdLookup($blog_id);
 
       $values = array();
       $placeholders = array();
 
       foreach ($dependencies as $dependency) {
-        $new_library_id = $lookup[$blog_id][$dependency->library_id] ?? null;
-        $new_required_id = $lookup[$blog_id][$dependency->required_library_id] ?? null;
+        $new_library_id = $lookup[$dependency->library_id] ?? null;
+        $new_required_id = $lookup[$dependency->required_library_id] ?? null;
 
         if ($new_library_id === null || $new_required_id === null) {
           continue;
@@ -682,36 +846,24 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Update library_id references in blog-level h5p_contents tables.
+   * Pass 1 of the two-pass library id remap for one blog-level table: move the old ids to a
+   * temporary range.
    *
-   * Replaces blog-level library ids with network-level ids from buildIdLookupTable().
-   */
-  protected function updateBlogsLibraryIds() {
-    $lookup = $this->buildIdLookupTable();
-
-    H5PCommons::for_each_blog(function ($blog_id) use ($lookup) {
-      $this->updateBlogContentsLibraryIds($blog_id, $lookup);
-      $this->updateBlogContentsLibrariesLibraryIds($blog_id, $lookup);
-    });
-  }
-
-  /**
-   * Update library_id references in blog-level table.
-   *
-   * Two phases, one statement each. One statement is not enough: mapping can move one library onto
-   * some id another row still holds (e.g. 18 => 4 with 10 => 18), and h5p_contents_libraries has
+   * Two statements are required per table: a mapping can move one library onto an id another row
+   * still holds (e.g. 18 => 4 while 10 => 18), and h5p_contents_libraries has
    * PRIMARY KEY (content_id, library_id, dependency_type). Uniqueness is checked row by row while
-   * updating, not at end, so moving onto taken ids collides. Temporary range avoids that.
+   * updating, not at end, so moving onto taken ids collides. The temporary range avoids that.
    *
-   * @param string $table    Table name (without prefix).
-   * @param array  $mappings Mapping of old_id => new_id.
+   * Re-running this is a no-op: rows already moved hold temporary ids, not old ids, so they no
+   * longer match the WHERE.
    *
-   * @throws Exception If update fails.
+   * @param string $blog_table Full name of the blog-level table.
+   * @param array  $mappings   Map of old id to new id.
+   *
+   * @throws Exception If the update fails.
    */
-  protected function updateLibraryIdsInBlogTable($table, $mappings) {
+  protected function remapLibraryIdsPass1($blog_table, $mappings) {
     global $wpdb;
-
-    $blog_table = H5PCommons::build_full_db_table_name_singlesite($table);
 
     $cases = array();
     $values = array();
@@ -723,7 +875,6 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
     $old_ids = array_map('intval', array_keys($mappings));
 
-    // Phase 1: old id -> new id inside temporary range.
     $result = $wpdb->query(
       $wpdb->prepare(
         "UPDATE {$blog_table} SET library_id = CASE library_id "
@@ -733,17 +884,6 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         array_merge($values, $old_ids)
       )
     );
-
-    if ($result !== false) {
-      // Phase 2: temporary range -> final new ID.
-      $result = $wpdb->query(
-        $wpdb->prepare(
-          "UPDATE {$blog_table} SET library_id = library_id - %d WHERE library_id >= %d",
-          self::REMAP_TEMP_OFFSET,
-          self::REMAP_TEMP_OFFSET
-        )
-      );
-    }
 
     if ($result === false) {
       throw new Exception(
@@ -757,53 +897,60 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Update library_id references in blog-level h5p_contents table.
+   * Pass 2 of the two-pass library id remap for one blog-level table: move the temporary range to
+   * the final network ids.
    *
-   * Replaces blog-level library ids with network-level ids from lookup table.
+   * Re-running this is a no-op: no rows in the temporary range remain.
    *
-   * @param int   $blog_id Blog ID.
-   * @param array $lookup  Lookup table mapping blog_id → (old_id → new_id).
+   * @param string $blog_table Full name of the blog-level table.
+   *
+   * @throws Exception If the update fails.
    */
-  protected function updateBlogContentsLibraryIds($blog_id, $lookup) {
-    $mappings = $lookup[$blog_id] ?? [];
-    if (empty($mappings)) {
-      return;
+  protected function remapLibraryIdsPass2($blog_table) {
+    global $wpdb;
+
+    $result = $wpdb->query(
+      $wpdb->prepare(
+        "UPDATE {$blog_table} SET library_id = library_id - %d WHERE library_id >= %d",
+        self::REMAP_TEMP_OFFSET,
+        self::REMAP_TEMP_OFFSET
+      )
+    );
+
+    if ($result === false) {
+      throw new Exception(
+        sprintf(
+          /* translators: %s: blog table name */
+          __('Failed to update library IDs in "%s".', 'h5p'),
+          $blog_table
+        )
+      );
     }
-
-    $this->updateLibraryIdsInBlogTable('h5p_contents', $mappings);
   }
 
   /**
-   * Update library_id references in blog-level h5p_contents_libraries table.
+   * Drop one blog's H5P library tables, which the network-level tables replace.
    *
-   * @param int   $blog_id Blog ID.
-   * @param array $lookup  Lookup table mapping blog_id → (old_id → new_id).
+   * @param int $blog_id Blog id.
+   *
+   * @throws Exception If a table cannot be dropped.
    */
-  protected function updateBlogContentsLibrariesLibraryIds($blog_id, $lookup) {
-    $mappings = $lookup[$blog_id] ?? [];
-    if (empty($mappings)) {
-      return;
-    }
-    $this->updateLibraryIdsInBlogTable('h5p_contents_libraries', $mappings);
-  }
-
-  /**
-   * Update blog-level library_id references and drop obsolete tables.
-   */
-  protected function updateBlogsDatabase() {
-    $this->updateBlogsLibraryIds();
-    $this->dropBlogsTables();
-  }
-
-  /**
-   * Drop all blog-level H5P tables that are not needed on every site.
-   */
-  protected function dropBlogsTables() {
-    H5PCommons::for_each_blog(function () {
+  protected function dropBlogLibraryTables($blog_id) {
+    H5PCommons::in_blog($blog_id, function () {
       global $wpdb;
 
       foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
-        $wpdb->query("DROP TABLE IF EXISTS " . H5PCommons::build_full_db_table_name_singlesite($table_name));
+        $blog_table = H5PCommons::build_full_db_table_name_singlesite($table_name);
+
+        if ($wpdb->query("DROP TABLE IF EXISTS {$blog_table}") === false) {
+          throw new Exception(
+            sprintf(
+              /* translators: %s: blog table name */
+              __('Failed to drop table "%s".', 'h5p'),
+              $blog_table
+            )
+          );
+        }
       }
     });
   }

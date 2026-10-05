@@ -1100,6 +1100,20 @@ class H5P_Plugin {
   }
 
   /**
+   * Invalidate the per-blog H5P core and interface instances.
+   *
+   * The storage a core uses is resolved when it is constructed, so after the
+   * network mode changes, cores built for the previous mode must not be
+   * reused.
+   *
+   * @since 1.18.0
+   */
+  public static function clear_core_instances() {
+    self::$interface = array();
+    self::$core = array();
+  }
+
+  /**
    * Get content with given id.
    *
    * @since 1.0.0
