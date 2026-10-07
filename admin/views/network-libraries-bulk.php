@@ -17,30 +17,11 @@
 ?>
 
 <?php
-// The same conditions as the row buttons of the installed and available grids.
-$updates = 0;
-$upgrades = 0;
-$deletions = 0;
-foreach ($overview['installed'] as $library) {
-  if (!empty($library['runnable']) && $overview['hubIsEnabled'] && !empty($library['update'])) {
-    $updates += 1;
-  }
-  if (!empty($library['runnable']) && $library['contentCount'] > 0 && !empty($library['upgradeTarget'])) {
-    $upgrades += 1;
-  }
-  if (!empty($library['deletable'])) {
-    $deletions += 1;
-  }
-}
-// The available grid, and with it the install buttons, is not rendered with the hub disabled.
-$installs = 0;
-if ($overview['hubIsEnabled']) {
-  foreach ($overview['available'] as $library) {
-    if (!empty($library['canInstall'])) {
-      $installs += 1;
-    }
-  }
-}
+// The counts come with the overview, under the same conditions as the row buttons of the grids.
+$updates = $overview['bulkCounts']['updates'];
+$installs = $overview['bulkCounts']['installs'];
+$deletions = $overview['bulkCounts']['deletions'];
+$upgrades = $overview['bulkCounts']['upgrades'];
 $bulk_actions = array(
   array(
     'count' => $updates,

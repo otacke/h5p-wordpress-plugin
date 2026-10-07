@@ -53,8 +53,9 @@ class H5P_Network_Library_Deletion {
   }
 
   /**
-   * Collect what the delete action needs to decide with: every installed version,
-   * the content counts across all blogs, and the indexed dependencies.
+   * Collect what the delete action needs to decide with, and what the overview needs from the
+   * same rows (icons): every installed version, the content counts across all blogs, and the
+   * indexed dependencies.
    *
    * @param array|null $content_counts From H5P_Network_Library_Helpers::get_content_counts(); reloaded when null.
    *
@@ -67,7 +68,7 @@ class H5P_Network_Library_Deletion {
 
     $libraries = array();
     foreach ((array) $wpdb->get_results(
-      "SELECT id, name, major_version, minor_version, patch_version, add_to FROM {$table_libraries}"
+      "SELECT id, name, major_version, minor_version, patch_version, add_to, has_icon AS hasIcon FROM {$table_libraries}"
     ) as $row) {
       $libraries[(int) $row->id] = array(
         'id' => (int) $row->id,
@@ -75,6 +76,7 @@ class H5P_Network_Library_Deletion {
         'majorVersion' => (int) $row->major_version,
         'minorVersion' => (int) $row->minor_version,
         'patchVersion' => (int) $row->patch_version,
+        'hasIcon' => (bool) $row->hasIcon,
         'addTo' => (string) $row->add_to,
       );
     }

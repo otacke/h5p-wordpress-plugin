@@ -14,6 +14,13 @@
 class H5P_Network_Admin {
 
   /**
+   * Seconds reserved for the batched bulk operations, like H5PLibraryAdmin::UPGRADE_BATCH_TIMEOUT.
+   *
+   * @since 1.19.0
+   */
+  const BATCH_TIMEOUT = H5PLibraryAdmin::UPGRADE_BATCH_TIMEOUT;
+
+  /**
    * Decides which library versions can be deleted, and deletes them.
    *
    * @var H5P_Network_Library_Deletion
@@ -155,7 +162,7 @@ class H5P_Network_Admin {
     $content_type_cache_updated_at = (int) $interface->getOption('content_type_cache_updated_at', 0);
     // Contents on all blogs whose cache is missing; the rebuild box is shown only while there are any.
     $not_cached = (int) $interface->getNumNotFiltered();
-    include 'views/network-management.php';
+    include __DIR__ . '/views/network-management.php';
 
     H5P_Plugin_Admin::add_script('h5p-jquery', 'h5p-php-library/js/jquery.js');
     wp_enqueue_script(
@@ -191,21 +198,14 @@ class H5P_Network_Admin {
     // Read back the stored state, so the form always shows what is in effect.
     $enabled = H5PCommons::is_network_enabled();
 
-    include 'views/network-settings.php';
+    include __DIR__ . '/views/network-settings.php';
   }
 
   /**
    * Handle AJAX request to migrate libraries to network level.
    */
   public function handle_migrate_to_network() {
-    $this->verifyNetworkNonce();
-
-    if (!current_user_can('manage_network')) {
-      wp_send_json_error(
-        array('message' => __('Permission denied.', 'h5p')),
-        H5PCommons::HTTP_FORBIDDEN
-      );
-    }
+    $this->verify_request(false);
 
     // Migrates copies and deletes every library file of every blog, which can
     // take longer than the configured limit. Not honoured by every host.
@@ -293,14 +293,7 @@ class H5P_Network_Admin {
    * Handle AJAX request to migrate libraries back to local (blog) level.
    */
   public function handle_migrate_to_local() {
-    $this->verifyNetworkNonce();
-
-    if (!current_user_can('manage_network')) {
-      wp_send_json_error(
-        array('message' => __('Permission denied.', 'h5p')),
-        H5PCommons::HTTP_FORBIDDEN
-      );
-    }
+    $this->verify_request(false);
 
     // Migrating copies and deletes every library file of every blog, which can
     // take longer than the configured limit. Not honoured by every host.
@@ -357,14 +350,7 @@ class H5P_Network_Admin {
    * Handle AJAX request to delete an installed library version.
    */
   public function handle_delete_library() {
-    $this->verifyNetworkNonce();
-
-    if (!current_user_can('manage_network') || !H5PCommons::current_user_can_manage_libraries()) {
-      wp_send_json_error(
-        array('message' => __('Permission denied.', 'h5p')),
-        H5PCommons::HTTP_FORBIDDEN
-      );
-    }
+    $this->verify_request(true);
 
     $id = isset($_POST['id']) ? (int) $_POST['id'] : 0;
 
@@ -417,10 +403,10 @@ class H5P_Network_Admin {
    * Answers 'more' while the page should repeat the request.
    */
   public function handle_delete_all_libraries() {
-    $this->verify_library_management_request();
+    $this->verify_request(true);
 
     wp_send_json_success(
-      $this->delete_deletable_libraries(microtime(TRUE) + H5PLibraryAdmin::UPGRADE_BATCH_TIMEOUT)
+      $this->delete_deletable_libraries(microtime(TRUE) + self::BATCH_TIMEOUT)
     );
   }
 
@@ -428,18 +414,14 @@ class H5P_Network_Admin {
    * Handle AJAX request to install or update libraries from an uploaded .h5p package.
    */
   public function handle_library_upload() {
-    $this->verify_library_management_request();
+    $this->verify_request(true);
 
-    $result = $this->installer->upload_library_package(
-      isset($_FILES['h5p_file']) ? (int) $_FILES['h5p_file']['error'] : UPLOAD_ERR_NO_FILE,
-      filter_input(INPUT_POST, 'h5p_upgrade_only') ? TRUE : FALSE
+    $this->send_result(
+      $this->installer->upload_library_package(
+        isset($_FILES['h5p_file']) ? (int) $_FILES['h5p_file']['error'] : UPLOAD_ERR_NO_FILE,
+        filter_input(INPUT_POST, 'h5p_upgrade_only') ? TRUE : FALSE
+      )
     );
-
-    if (!$result['success']) {
-      wp_send_json_error(array('messages' => $result['messages']));
-    }
-
-    wp_send_json_success(array('messages' => $result['messages']));
   }
 
   /**
@@ -462,7 +444,7 @@ class H5P_Network_Admin {
    * not a fatal error.
    */
   public function handle_library_install() {
-    $this->verify_library_management_request();
+    $this->verify_request(true);
 
     // Hub downloads are slow, like core's.
     @set_time_limit(0);
@@ -476,42 +458,57 @@ class H5P_Network_Admin {
    * Handle AJAX request to update the content type cache from the H5P Hub.
    */
   public function handle_update_content_type_cache() {
-    $this->verify_library_management_request();
+    $this->verify_request(true);
 
-    $result = $this->installer->update_content_type_cache();
-
-    if (!$result['success']) {
-      wp_send_json_error(array('messages' => $result['messages']));
-    }
-
-    wp_send_json_success(array('messages' => $result['messages']));
+    $this->send_result($this->installer->update_content_type_cache());
   }
 
   /**
    * Handle AJAX request to rebuild the content caches (filtered parameters) of all blogs, one batch at a time.
    */
   public function handle_rebuild_cache() {
-    $this->verify_library_management_request();
+    $this->verify_request(true);
 
-    $left = (new H5P_Network_Content_Cache())->rebuild(microtime(TRUE) + H5PLibraryAdmin::UPGRADE_BATCH_TIMEOUT);
+    $left = (new H5P_Network_Content_Cache())->rebuild(microtime(TRUE) + self::BATCH_TIMEOUT);
 
     wp_send_json_success(array('left' => $left));
   }
 
   /**
-   * Verify that an AJAX request may manage the network libraries, or end it with an error.
+   * Verify that the AJAX request may manage the network libraries, or end it with an error.
    *
-   * Same checks as handle_delete_library(): the nonce, and the capabilities for the network libraries.
+   * The migrate requests need only manage_network; the library management ones also need
+   * H5PCommons::current_user_can_manage_libraries().
+   *
+   * @param bool $library_caps Whether the library management capabilities are required.
+   *
+   * @throws Exception If the nonce is invalid.
    */
-  private function verify_library_management_request() {
-    $this->verifyNetworkNonce();
+  private function verify_request($library_caps) {
+    check_ajax_referer('h5p_network_ajax', 'nonce', true);
 
-    if (!current_user_can('manage_network') || !H5PCommons::current_user_can_manage_libraries()) {
+    $has_permission = current_user_can('manage_network')
+      && (!$library_caps || H5PCommons::current_user_can_manage_libraries());
+
+    if (!$has_permission) {
       wp_send_json_error(
         array('message' => __('Permission denied.', 'h5p')),
         H5PCommons::HTTP_FORBIDDEN
       );
     }
+  }
+
+  /**
+   * Send the result of a library upload or a content type cache update as JSON.
+   *
+   * @param array $result From H5P_Network_Library_Installer, with 'success' and 'messages'.
+   */
+  private function send_result($result) {
+    if (!$result['success']) {
+      wp_send_json_error(array('messages' => $result['messages']));
+    }
+
+    wp_send_json_success(array('messages' => $result['messages']));
   }
 
   /**
@@ -525,14 +522,5 @@ class H5P_Network_Admin {
     // Cores built for the previous mode resolve their storage at construction,
     // so drop them and let them rebuild for the new mode.
     H5P_Plugin::clear_core_instances();
-  }
-
-  /**
-   * Verify the AJAX request nonce.
-   *
-   * @throws Exception If the nonce is invalid.
-   */
-  protected function verifyNetworkNonce() {
-    check_ajax_referer('h5p_network_ajax', 'nonce', true);
   }
 }

@@ -11,6 +11,13 @@
 class H5P_Network_Library_Overview {
 
   /**
+   * A content type cache older than this is refreshed when the overview is built.
+   *
+   * @since 1.19.0
+   */
+  const CONTENT_TYPE_CACHE_MAX_AGE = 60 * 60 * 24 * 7;
+
+  /**
    * Decides the deletability of the installed libraries.
    *
    * @var H5P_Network_Library_Deletion
@@ -48,7 +55,7 @@ class H5P_Network_Library_Overview {
     $hub_is_enabled = H5PCommons::is_hub_enabled();
 
     // Keep the hub cache fresh, like H5PEditorAjax::isContentTypeCacheUpdated() does.
-    if ($hub_is_enabled && $interface->getOption('content_type_cache_updated_at', 0) + 60 * 60 * 24 * 7 < time()) {
+    if ($hub_is_enabled && $interface->getOption('content_type_cache_updated_at', 0) + self::CONTENT_TYPE_CACHE_MAX_AGE < time()) {
       try {
         $core->updateContentTypeCache();
       }
@@ -58,18 +65,14 @@ class H5P_Network_Library_Overview {
       }
     }
 
-    $hub = array();
-    foreach ((array) H5P_Network_Library_Helpers::get_hub_cache() as $cached) {
-      if (!isset($hub[$cached->machine_name])
-          || H5P_Network_Library_Helpers::compare_library_versions($cached, $hub[$cached->machine_name]) > 0) {
-        $hub[$cached->machine_name] = $cached;
-      }
-    }
+    $hub = H5P_Network_Hub_Cache::newest_by_name();
 
     // Content counts per library version across all blogs, for the upgrade and delete actions.
     $content_counts = H5P_Network_Library_Helpers::get_content_counts();
 
-    $metadata = $this->load_library_metadata();
+    // loadLibraries() does not return has_icon, so the installed rows come from the deletion model instead.
+    $deletion_model = $this->deletion->get_deletion_model($content_counts);
+
     $installed = array();
     $installed_names = array();
     foreach ($interface->loadLibraries() as $name => $versions) {
@@ -92,7 +95,7 @@ class H5P_Network_Library_Overview {
           'minorVersion' => (int) $version->minor_version,
           'patchVersion' => (int) $version->patch_version,
           'runnable' => (bool) $version->runnable,
-          'icon' => $this->get_library_icon($version, $metadata, $hub, $interface),
+          'icon' => $this->get_library_icon($version, $deletion_model, $hub, $interface),
           // Only the newest installed version of a library can offer an update.
           'update' => ($version === $newest) ? $this->get_available_update($version, $hub) : NULL,
           // Contents that use this version as their main library, across all blogs.
@@ -106,19 +109,10 @@ class H5P_Network_Library_Overview {
     }
 
     // Deletability of a row depends on every other row, so decide it in a second pass.
-    $deletion_model = array(
-      'libraries' => array(),
-      'contentCounts' => $content_counts,
-      'dependencies' => $this->deletion->get_dependency_indexes(),
-    );
+    // The delete confirm messages name the partner version that is deleted along.
+    $installed_names_by_id = array();
     foreach ($installed as $row) {
-      $deletion_model['libraries'][$row['id']] = array(
-        'id' => $row['id'],
-        'name' => $row['machineName'],
-        'majorVersion' => $row['majorVersion'],
-        'minorVersion' => $row['minorVersion'],
-        'addTo' => isset($metadata[$row['id']]) ? $metadata[$row['id']]['addTo'] : '',
-      );
+      $installed_names_by_id[$row['id']] = H5P_Network_Library_Helpers::format_library_name($row);
     }
     foreach ($installed as $index => $row) {
       $deletion = $this->deletion->is_library_deletable(
@@ -127,6 +121,12 @@ class H5P_Network_Library_Overview {
       );
       $installed[$index]['deletable'] = $deletion['deletable'];
       $installed[$index]['alsoDelete'] = $deletion['alsoDelete'];
+      // The partner's name for the delete messages; null when there is no partner.
+      $installed[$index]['alsoDeleteName'] = $deletion['alsoDelete'] === null
+        ? null
+        : (isset($installed_names_by_id[$deletion['alsoDelete']])
+          ? $installed_names_by_id[$deletion['alsoDelete']]
+          : '');
       $installed[$index]['infoMessageHtml'] = $this->build_library_info_html(
         $row,
         isset($hub[$row['machineName']]) ? $hub[$row['machineName']] : null,
@@ -162,7 +162,51 @@ class H5P_Network_Library_Overview {
     return array(
       'installed' => $installed,
       'available' => $available,
+      'bulkCounts' => $this->get_bulk_counts($installed, $available, $hub_is_enabled),
       'hubIsEnabled' => $hub_is_enabled,
+    );
+  }
+
+  /**
+   * The counts of the bulk action buttons, with the same conditions as the row buttons of the grids.
+   *
+   * @param array $installed
+   * @param array $available
+   * @param bool $hub_is_enabled
+   *
+   * @return array
+   */
+  private function get_bulk_counts($installed, $available, $hub_is_enabled) {
+    $updates = 0;
+    $upgrades = 0;
+    $deletions = 0;
+    foreach ($installed as $library) {
+      if (!empty($library['runnable']) && $hub_is_enabled && !empty($library['update'])) {
+        $updates += 1;
+      }
+      if (!empty($library['runnable']) && $library['contentCount'] > 0 && !empty($library['upgradeTarget'])) {
+        $upgrades += 1;
+      }
+      if (!empty($library['deletable'])) {
+        $deletions += 1;
+      }
+    }
+
+    // The available grid, and with it the install buttons, is not rendered with the hub disabled.
+    $installs = 0;
+    if ($hub_is_enabled) {
+      foreach ($available as $library) {
+        if (!empty($library['canInstall'])) {
+          $installs += 1;
+        }
+      }
+    }
+
+    return array(
+      'updates' => $updates,
+      'installs' => $installs,
+      'deletions' => $deletions,
+      'upgrades' => $upgrades,
     );
   }
 
@@ -204,36 +248,17 @@ class H5P_Network_Library_Overview {
   }
 
   /**
-   * loadLibraries() does not return has_icon or add_to, so the values are loaded separately.
-   *
-   * @return array Map of library id to an array with 'hasIcon' and 'addTo'.
-   */
-  private function load_library_metadata() {
-    global $wpdb;
-
-    $table = H5PCommons::build_full_db_table_name('h5p_libraries');
-    $metadata = array();
-    foreach ((array) $wpdb->get_results("SELECT id, has_icon, add_to FROM {$table}") as $row) {
-      $metadata[(int) $row->id] = array(
-        'hasIcon' => (bool) $row->has_icon,
-        'addTo' => (string) $row->add_to,
-      );
-    }
-    return $metadata;
-  }
-
-  /**
    * Get the icon of an installed library: local icon, hub icon or none.
    *
    * @param object $library
-   * @param array $metadata
+   * @param array $model From H5P_Network_Library_Deletion::get_deletion_model().
    * @param array $hub
    * @param object $interface
    *
    * @return string|null
    */
-  private function get_library_icon($library, $metadata, $hub, $interface) {
-    if (!empty($metadata[(int) $library->id]['hasIcon'])) {
+  private function get_library_icon($library, $model, $hub, $interface) {
+    if (!empty($model['libraries'][(int) $library->id]['hasIcon'])) {
       $folder = H5PCore::libraryToFolderName(array(
         'machineName' => $library->name,
         'majorVersion' => (int) $library->major_version,

@@ -4,7 +4,7 @@
  * H5P_Network_Library_Helpers
  *
  * Helpers shared by the network level library management classes and their views: content counts,
- * hub cache, version comparison and formatting, and H5P core messages.
+ * version comparison and formatting, and H5P core messages.
  * @package H5P
  * @since 1.19.0
  */
@@ -43,10 +43,15 @@ class H5P_Network_Library_Helpers {
   }
 
   /**
+   * Build the 'messages' shape of the installer results.
+   *
+   * @param array $info List of info messages.
+   * @param array $error List of error messages.
+   *
    * @return array
    */
-  public static function get_hub_cache() {
-    return (array) (new H5PEditorWordPressAjax())->getContentTypeCache();
+  public static function messages($info = array(), $error = array()) {
+    return array('info' => $info, 'error' => $error);
   }
 
   /**

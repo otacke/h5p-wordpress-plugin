@@ -33,13 +33,6 @@
       </div>
     </div>
 
-    <?php
-    // The confirm message for a circular deletion names the editor that is deleted as well.
-    $installed_names_by_id = array();
-    foreach ($overview['installed'] as $installed) {
-      $installed_names_by_id[$installed['id']] = H5P_Network_Library_Helpers::format_library_name($installed);
-    }
-    ?>
     <?php foreach ($overview['installed'] as $library): ?>
       <?php
       $name = H5P_Network_Library_Helpers::format_library_name($library);
@@ -143,19 +136,17 @@
             $confirm_message = sprintf(__('Delete %1$s %2$s?', 'h5p'), $version, $name);
             $success_message = sprintf(__('%1$s was deleted.', 'h5p'), $name);
             if (!empty($library['alsoDelete'])) {
-              $partner = isset($installed_names_by_id[$library['alsoDelete']])
-                ? $installed_names_by_id[$library['alsoDelete']]
-                : '';
+              // The confirm message for a circular deletion names the editor that is deleted as well.
               $confirm_message = sprintf(
                 __('Delete %1$s %2$s? Its editor %3$s will be deleted as well.', 'h5p'),
                 $version,
                 $name,
-                $partner
+                $library['alsoDeleteName']
               );
               $success_message = sprintf(
                 __('%1$s and %2$s were deleted.', 'h5p'),
                 $name,
-                $partner
+                $library['alsoDeleteName']
               );
             }
             $button = array(

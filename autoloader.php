@@ -42,6 +42,7 @@ function h5p_autoloader($class) {
       'H5P_Plugin_Admin' => 'admin/class-h5p-plugin-admin.php',
       'H5P_Network_Admin' => 'admin/class-h5p-network-admin.php',
       'H5P_Network_Admin_Base' => 'admin/h5p-network-admin/h5p-network-admin-base.php',
+      'H5P_Network_Hub_Cache' => 'admin/h5p-network-admin/h5p-network-hub-cache.php',
       'H5P_Network_Migrate_To_Network' => 'admin/h5p-network-admin/h5p-network-migrate-to-network.php',
       'H5P_Network_Migrate_To_Local' => 'admin/h5p-network-admin/h5p-network-migrate-to-local.php',
       'H5P_Network_Library_Helpers' => 'admin/h5p-network-admin/h5p-network-library-helpers.php',

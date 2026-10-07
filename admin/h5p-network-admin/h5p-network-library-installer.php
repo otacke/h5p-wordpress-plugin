@@ -49,32 +49,24 @@ class H5P_Network_Library_Installer {
     if (!H5PCommons::is_hub_enabled()) {
       return array(
         'status' => 'error',
-        'messages' => array(
-          'info' => array(),
-          // Same msgid as update_content_type_cache(), so the translations stay in sync.
-          'error' => array(__('The H5P Hub is disabled. Enable it in the H5P settings to install content types.', 'h5p')),
+        // Same msgid as update_content_type_cache(), so the translations stay in sync.
+        'messages' => H5P_Network_Library_Helpers::messages(
+          array(),
+          array(__('The H5P Hub is disabled. Enable it in the H5P settings to install content types.', 'h5p'))
         ),
       );
     }
 
-    $cached = null;
-    // getContentTypeCache($name) returns no version columns, so reduce the whole cache to the newest
-    // version of this name, like H5P_Network_Library_Overview::get_library_overview() does.
-    foreach ((array) H5P_Network_Library_Helpers::get_hub_cache() as $row) {
-      if ($row->machine_name !== $machine_name) {
-        continue;
-      }
-      if ($cached === null || H5P_Network_Library_Helpers::compare_library_versions($row, $cached) > 0) {
-        $cached = $row;
-      }
-    }
+    // The cache is reduced to the newest version of each content type, and this name is looked up in it.
+    $newest = H5P_Network_Hub_Cache::newest_by_name();
+    $cached = isset($newest[$machine_name]) ? $newest[$machine_name] : null;
     if ($cached === null) {
       // Same msgid as core's H5PEditorAjax::libraryInstall(), so the translations stay in sync.
       return array(
         'status' => 'error',
-        'messages' => array(
-          'info' => array(),
-          'error' => array(__('The chosen content type is invalid.', 'h5p')),
+        'messages' => H5P_Network_Library_Helpers::messages(
+          array(),
+          array(__('The chosen content type is invalid.', 'h5p'))
         ),
       );
     }
@@ -83,9 +75,9 @@ class H5P_Network_Library_Installer {
       // Same msgid as core's H5PEditorAjax::libraryInstall(), so the translations stay in sync.
       return array(
         'status' => 'error',
-        'messages' => array(
-          'info' => array(),
-          'error' => array(__('You do not have permission to install content types. Contact the administrator of your site.', 'h5p')),
+        'messages' => H5P_Network_Library_Helpers::messages(
+          array(),
+          array(__('You do not have permission to install content types. Contact the administrator of your site.', 'h5p'))
         ),
       );
     }
@@ -100,10 +92,7 @@ class H5P_Network_Library_Installer {
         if (H5P_Network_Library_Helpers::compare_library_versions($version, $cached) >= 0) {
           return array(
             'status' => 'skipped',
-            'messages' => array(
-              'info' => array(),
-              'error' => array(),
-            ),
+            'messages' => H5P_Network_Library_Helpers::messages(),
           );
         }
       }
@@ -173,13 +162,13 @@ class H5P_Network_Library_Installer {
 
       return array(
         'success' => FALSE,
-        'messages' => array(
-          'info' => array(),
-          'error' => array(
+        'messages' => H5P_Network_Library_Helpers::messages(
+          array(),
+          array(
             isset($upload_errors[$upload_error])
               ? $upload_errors[$upload_error]
               : __('The library package could not be uploaded. Please try again.', 'h5p')
-          ),
+          )
         ),
       );
     }
@@ -212,9 +201,9 @@ class H5P_Network_Library_Installer {
     if (!H5PCommons::is_hub_enabled()) {
       return array(
         'success' => FALSE,
-        'messages' => array(
-          'info' => array(),
-          'error' => array(__('The H5P Hub is disabled. Enable it in the H5P settings to install content types.', 'h5p')),
+        'messages' => H5P_Network_Library_Helpers::messages(
+          array(),
+          array(__('The H5P Hub is disabled. Enable it in the H5P settings to install content types.', 'h5p'))
         ),
       );
     }
