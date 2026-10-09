@@ -178,9 +178,15 @@ class H5P_Network_Admin {
       H5P_Plugin::VERSION
     );
     wp_enqueue_script(
+      $plugin->asset_handle('network-content-upgrade'),
+      plugins_url('h5p/admin/scripts/h5p-network-content-upgrade.js'),
+      array(),
+      H5P_Plugin::VERSION
+    );
+    wp_enqueue_script(
       $plugin->asset_handle('network-libraries'),
       plugins_url('h5p/admin/scripts/h5p-network-libraries.js'),
-      array($plugin->asset_handle('editor')),
+      array($plugin->asset_handle('editor'), $plugin->asset_handle('plugin-confirmation-dialog'), $plugin->asset_handle('network-content-upgrade')),
       H5P_Plugin::VERSION
     );
     wp_enqueue_style(

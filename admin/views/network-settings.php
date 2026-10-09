@@ -29,10 +29,9 @@
     );
     $plugin->print_settings($networkSettingsProperties, 'H5PNetworkSettingsProperties');
 
-    \H5P_Plugin_Admin::add_script( 'confirmation-dialog', 'admin/scripts/h5p-confirmation-dialog.js' );
-    \H5P_Plugin_Admin::add_style( 'confirmation-dialog', 'admin/styles/h5p-confirmation-dialog.css' );
-
-    \H5P_Plugin_Admin::add_script( 'network-settings', 'admin/scripts/h5p-network-settings.js' );
+    wp_enqueue_script( $plugin->asset_handle('plugin-confirmation-dialog'), plugins_url('h5p/admin/scripts/h5p-confirmation-dialog.js'), array(), H5P_Plugin::VERSION );
+    wp_enqueue_style( $plugin->asset_handle('plugin-confirmation-dialog'), plugins_url('h5p/admin/styles/h5p-confirmation-dialog.css'), array(), H5P_Plugin::VERSION );
+    wp_enqueue_script( $plugin->asset_handle('network-settings'), plugins_url('h5p/admin/scripts/h5p-network-settings.js'), array($plugin->asset_handle('plugin-confirmation-dialog')), H5P_Plugin::VERSION );
     \H5P_Plugin_Admin::print_messages();
     ?>
   <h2><?php print esc_html(get_admin_page_title()); ?></h2>

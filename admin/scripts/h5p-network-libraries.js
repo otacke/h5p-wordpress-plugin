@@ -24,19 +24,63 @@
     const l10n = settings.l10n || {};
     const upgradeSettings = settings.upgrade || {};
 
-    const noticesRegion = container.querySelector('.h5p-network-libraries-notices');
     /**
-     * Find the notices region of a tools section, as the library tools show their notices next to themselves.
+     * Build the notices of the page: the grids' region, the per-tools regions and the show function.
      *
-     * @param {string} tools Name of the section (data-h5p-tools), e.g. 'caches' or 'upload'.
-     *
-     * @return {HTMLElement} The section's notices region, or the grids' region if the section is not rendered.
+     * @return {{region: HTMLElement, toolsRegion: function(string): HTMLElement, show: function(string, (string|string[]), HTMLElement)}}
      */
-    const toolsNoticesRegion = (tools) => {
-      const section = [...container.querySelectorAll('.h5p-network-libraries-tools')]
-        .find(candidate => candidate.dataset.h5pTools === tools);
-      return (section && section.querySelector('.h5p-network-libraries-tools-notices')) || noticesRegion;
+    const makeNotices = () => {
+      const region = container.querySelector('.h5p-network-libraries-notices');
+
+      /**
+       * Find the notices region of a tools section, as the library tools show their notices next to themselves.
+       *
+       * @param {string} tools Name of the section (data-h5p-tools), e.g. 'caches' or 'upload'.
+       *
+       * @return {HTMLElement} The section's notices region, or the grids' region if the section is not rendered.
+       */
+      const toolsRegion = (tools) => {
+        const section = [...container.querySelectorAll('.h5p-network-libraries-tools')]
+          .find(candidate => candidate.dataset.h5pTools === tools);
+        return (section && section.querySelector('.h5p-network-libraries-tools-notices')) || region;
+      };
+
+      /**
+       * Append a dismissible admin notice.
+       *
+       * @param {string} type 'success' or 'error'
+       * @param {string|string[]} message One line, or several.
+       * @param {HTMLElement} [target] Where to show the notice, by default the grids' region.
+       */
+      const show = (type, message, target = region) => {
+        const notice = document.createElement('div');
+        notice.className =
+          `notice ${type === 'error' ? 'notice-error' : 'notice-success'} is-dismissible`;
+
+        (Array.isArray(message) ? message : [message]).forEach(line => {
+          const text = document.createElement('p');
+          text.textContent = line;
+          notice.append(text);
+        });
+
+        // The WordPress default dismiss button; the x is drawn by .notice-dismiss::before.
+        const dismiss = document.createElement('button');
+        dismiss.type = 'button';
+        dismiss.className = 'notice-dismiss';
+        const srText = document.createElement('span');
+        srText.className = 'screen-reader-text';
+        srText.textContent = l10n.dismiss;
+        dismiss.append(srText);
+        dismiss.addEventListener('click', () => notice.remove());
+        notice.append(dismiss);
+
+        target.append(notice);
+      };
+
+      return {region, toolsRegion, show};
     };
+
+    const {noticesRegion, toolsNoticesRegion, showNotice} = makeNotices();
 
     /**
      * Name the tools section that holds a tool's button.
@@ -52,8 +96,39 @@
     const installedGrid = container.querySelector('.h5p-network-libraries-installed [role="grid"]');
     const availableGrid = container.querySelector('.h5p-network-libraries-available [role="grid"]');
 
-    // One request at a time: core installs share the temporary upload folder.
-    let busy = false;
+    /**
+     * One request at a time: core installs share the temporary upload folder.
+     *
+     * @return {{setBusy: function, isBusy: function}}
+     */
+    const makeBusy = () => {
+      let busy = false;
+
+      const setBusy = (value) => {
+        busy = value;
+        container.querySelectorAll('[data-h5p-library-action]').forEach(button => {
+          // Info does not change state, so it stays usable while something runs.
+          if (button.dataset.h5pLibraryAction === 'info') {
+            return;
+          }
+
+          if (value) {
+            button.classList.add('h5p-icon-button-disabled');
+            button.setAttribute('aria-disabled', 'true');
+          }
+          else {
+            button.classList.remove('h5p-icon-button-disabled');
+            button.removeAttribute('aria-disabled');
+          }
+        });
+      };
+
+      const isBusy = () => busy;
+
+      return {setBusy, isBusy};
+    };
+
+    const {setBusy, isBusy} = makeBusy();
 
     /**
      * Add APG grid keyboard navigation with a roving tabindex.
@@ -135,62 +210,32 @@
       };
     };
 
-    /**
-     * Append a dismissible admin notice below the grids.
-     *
-     * @param {string} type 'success' or 'error'
-     * @param {string|string[]} message One line, or several.
-     * @param {HTMLElement} [region] Where to show the notice, by default the grids' region.
-     */
-    const showNotice = (type, message, region = noticesRegion) => {
-      const notice = document.createElement('div');
-      notice.className =
-        `notice ${type === 'error' ? 'notice-error' : 'notice-success'} is-dismissible`;
-
-      (Array.isArray(message) ? message : [message]).forEach(line => {
-        const text = document.createElement('p');
-        text.textContent = line;
-        notice.append(text);
-      });
-
-      // The WordPress default dismiss button; the x is drawn by .notice-dismiss::before.
-      const dismiss = document.createElement('button');
-      dismiss.type = 'button';
-      dismiss.className = 'notice-dismiss';
-      const srText = document.createElement('span');
-      srText.className = 'screen-reader-text';
-      srText.textContent = l10n.dismiss;
-      dismiss.append(srText);
-      dismiss.addEventListener('click', () => notice.remove());
-      notice.append(dismiss);
-
-      region.append(notice);
-    };
-
-    const setBusy = (value) => {
-      busy = value;
-      container.querySelectorAll('[data-h5p-library-action]').forEach(button => {
-        // Info does not change state, so it stays usable while something runs.
-        if (button.dataset.h5pLibraryAction === 'info') {
-          return;
-        }
-
-        if (value) {
-          button.classList.add('h5p-icon-button-disabled');
-          button.setAttribute('aria-disabled', 'true');
-        }
-        else {
-          button.classList.remove('h5p-icon-button-disabled');
-          button.removeAttribute('aria-disabled');
-        }
-      });
-    };
-
     const fail = (message) => {
       const error = new Error(message);
       error.requestError = true;
       return error;
     };
+
+    /**
+     * The l10n line for a count, from its singular or plural template.
+     *
+     * @param {string} key The l10n prefix without the variant suffix, e.g. "bulkUpdated".
+     * @param {number} n The count.
+     * @return {string} The template, with %d replaced by the count, if it has one.
+     */
+    const plural = (key, n) => {
+      const template = l10n[key + (n === 1 ? 'Singular' : 'Plural')] || '';
+      return template.replace('%d', String(n));
+    };
+
+    /**
+     * The confirmation text of a bulk button, from the count on it.
+     *
+     * @param {string} keyPrefix The l10n prefix, e.g. "bulkConfirmUpdate".
+     * @param {HTMLButtonElement} button The clicked bulk button.
+     * @return {string} The confirmation message.
+     */
+    const bulkConfirm = (keyPrefix, button) => plural(keyPrefix, Number(button.dataset.count) || 0);
 
     /**
      * Replace the button of a cell with a spinner while an action runs.
@@ -244,26 +289,6 @@
     };
 
     /**
-     * Disable the buttons while a bulk action runs; the progress line below them shows what it does.
-     *
-     * @param {HTMLButtonElement} button The clicked bulk button, which stays in place.
-     * @param {HTMLElement|null} progress The progress line of the bulk actions.
-     *
-     * @return {function} Enables the buttons again, clears the progress line and refocuses the clicked button.
-     */
-    const startBulkAction = (button, progress) => {
-      setBusy(true);
-
-      return () => {
-        if (progress) {
-          progress.textContent = '';
-        }
-        setBusy(false);
-        button.focus();
-      };
-    };
-
-    /**
      * Store a notice to show after the page reload, then reload it.
      *
      * The page reloads, so sessionStorage is the bridge for the success notice
@@ -308,9 +333,7 @@
         }
       }
       catch (error) {
-        console.error('H5P network libraries:', error);
-        restore();
-        showNotice('error', error.requestError ? error.message : l10n.requestFailed);
+        failWith(error, restore, l10n.requestFailed);
         return;
       }
 
@@ -325,35 +348,11 @@
 
       try {
         const body = new FormData();
-        body.append('action', 'h5p_network_library_delete');
-        body.append('nonce', settings.nonce);
         body.append('id', button.dataset.libraryId);
-
-        const response = await fetch(settings.ajaxUrl, {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' },
-          body
-        });
-
-        let result;
-        try {
-          result = await response.json();
-        }
-        catch {
-          throw fail(`Unexpected status ${response.status}`);
-        }
-
-        if (!response.ok || !result || result.success !== true) {
-          // wp_send_json_error() puts the message into data. A failed nonce check answers -1, so there may be none.
-          const data = (result && result.data) || {};
-          throw fail(data.message || l10n.deleteFailed);
-        }
+        await postAction('h5p_network_library_delete', body, l10n.deleteFailed);
       }
       catch (error) {
-        console.error('H5P network libraries:', error);
-        restore();
-        showNotice('error', error.requestError ? error.message : l10n.deleteFailed);
+        failWith(error, restore, l10n.deleteFailed);
         return;
       }
 
@@ -362,7 +361,7 @@
     };
 
     /**
-     * Post to a network endpoint of the library tools.
+     * Post to a network endpoint.
      *
      * @param {string} action The wp_ajax action.
      * @param {FormData} body Form fields to send along.
@@ -370,7 +369,7 @@
      *
      * @return {Promise<Object>} The data of the successful response.
      */
-    const postToolAction = async (action, body, fallback) => {
+    const postAction = async (action, body, fallback) => {
       body.append('action', action);
       body.append('nonce', settings.nonce);
 
@@ -404,17 +403,17 @@
     };
 
     /**
-     * Put a tool's button back and show why its action failed.
+     * Put the action's button back and show why it failed.
      *
      * @param {Error} error What went wrong.
      * @param {function} restore Puts the button back, from startAction().
      * @param {string} fallback Message for errors that did not come from the server.
-     * @param {string} tools Name of the tools section to show the notice in.
+     * @param {HTMLElement} [region] Where to show the notice, by default the grids' region.
      */
-    const failToolAction = (error, restore, fallback, tools) => {
+    const failWith = (error, restore, fallback, region = noticesRegion) => {
       console.error('H5P network libraries:', error);
       restore();
-      showNotice('error', error.requestError ? (error.lines || error.message) : fallback, toolsNoticesRegion(tools));
+      showNotice('error', error.requestError ? (error.lines || error.message) : fallback, region);
     };
 
     const updateContentTypeCache = async (button) => {
@@ -422,14 +421,14 @@
 
       let data;
       try {
-        data = await postToolAction(
+        data = await postAction(
           'h5p_network_update_content_type_cache',
           new FormData(),
           l10n.contentTypeCacheFailed
         );
       }
       catch (error) {
-        failToolAction(error, restore, l10n.contentTypeCacheFailed, toolsOf(button));
+        failWith(error, restore, l10n.contentTypeCacheFailed, toolsNoticesRegion(toolsOf(button)));
         return;
       }
 
@@ -449,18 +448,16 @@
       try {
         let left;
         do {
-          const data = await postToolAction('h5p_network_rebuild_cache', new FormData(), l10n.rebuildFailed);
+          const data = await postAction('h5p_network_rebuild_cache', new FormData(), l10n.rebuildFailed);
           left = Number(data.left) || 0;
 
           if (left > 0 && progress) {
-            progress.textContent = left === 1
-              ? l10n.notCachedSingular
-              : l10n.notCachedPlural.replace('%d', left);
+            progress.textContent = plural('notCached', left);
           }
         } while (left > 0);
       }
       catch (error) {
-        failToolAction(error, restore, l10n.rebuildFailed, toolsOf(button));
+        failWith(error, restore, l10n.rebuildFailed, toolsNoticesRegion(toolsOf(button)));
         return;
       }
 
@@ -481,10 +478,10 @@
 
       let data;
       try {
-        data = await postToolAction('h5p_network_library_upload', new FormData(form), l10n.uploadFailed);
+        data = await postAction('h5p_network_library_upload', new FormData(form), l10n.uploadFailed);
       }
       catch (error) {
-        failToolAction(error, restore, l10n.uploadFailed, toolsOf(button));
+        failWith(error, restore, l10n.uploadFailed, toolsNoticesRegion(toolsOf(button)));
         return;
       }
 
@@ -493,79 +490,106 @@
     };
 
     /**
-     * Build the confirmation text of a bulk button from its count.
+     * Build the bulk runner: the shared finish handling of the bulk actions and their sequential run.
      *
-     * @param {string} keyPrefix The l10n prefix, e.g. "bulkConfirmUpdate".
-     * @param {HTMLButtonElement} button The clicked bulk button.
-     * @return {string} The confirmation message.
+     * @return {{startBulkAction: function, runBulk: function, failBulk: function}}
      */
-    const bulkConfirm = (keyPrefix, button) => {
-      const count = Number(button.dataset.count) || 0;
-      const template = l10n[keyPrefix + (count === 1 ? 'Singular' : 'Plural')] || '';
-      return template.replace('%d', String(count));
-    };
+    const makeBulkRunner = () => {
+      /**
+       * Disable the buttons while a bulk action runs; the progress line below them shows what it does.
+       *
+       * @param {HTMLButtonElement} button The clicked bulk button, which stays in place.
+       * @param {HTMLElement|null} progress The progress line of the bulk actions.
+       *
+       * @return {function} Enables the buttons again, clears the progress line and refocuses the clicked button.
+       */
+      const startBulkAction = (button, progress) => {
+        setBusy(true);
 
-    /**
-     * Run all the items of a bulk action sequentially, then reload once with a summary.
-     *
-     * An item error does not stop the run; only a fatal error (nonce, permission, transport) does.
-     *
-     * @param {HTMLButtonElement} button The clicked bulk button.
-     * @param {object} options
-     * @param {Array} options.items What the action runs over.
-     * @param {function} options.runItem Runs one item, resolving to {status, lines}.
-     * @param {function} options.describe Progress line for an item, by index.
-     * @param {function} options.summarize Summary lines from the done, skipped and failed counts.
-     */
-    const runBulk = async (button, options) => {
-      const {items, runItem, describe, summarize} = options;
-      const tools = toolsOf(button);
-      const progress = button.closest('.postbox').querySelector('.h5p-network-libraries-bulk-progress');
-      const restore = startBulkAction(button, progress);
-      const done = [];
-      const skipped = [];
-      const failed = [];
-      try {
-        for (let index = 0; index < items.length; index += 1) {
-          const item = items[index];
+        return () => {
           if (progress) {
-            progress.textContent = describe(index, item);
+            progress.textContent = '';
           }
-          const outcome = await runItem(item);
-          if (outcome.status === 'done') {
-            done.push(item);
-          }
-          else if (outcome.status === 'skipped') {
-            skipped.push(item);
-          }
-          else {
-            failed.push({item, lines: outcome.lines});
-          }
-        }
-      }
-      catch (error) {
-        // A fatal error (nonce, permission, transport) stops the run.
+          setBusy(false);
+          button.focus();
+        };
+      };
+
+      /**
+       * Finish a bulk run that failed with a fatal error.
+       *
+       * @param {Error} error What went wrong.
+       * @param {string|undefined} tools Name of the tools section the button lives in.
+       * @param {function} restore Enables the buttons again, clears the progress line and refocuses.
+       * @param {boolean} ran Whether any item already ran.
+       * @param {function} summarize Zero-arg summary lines of what ran.
+       */
+      const failBulk = (error, tools, restore, ran, summarize) => {
         console.error('H5P network libraries:', error);
-        if (done.length + skipped.length + failed.length > 0) {
-          // Some items already ran, so reload once to show what happened.
-          finishWithReload({
-            tools,
-            type: 'error',
-            message: [l10n.bulkFailed].concat(summarize(done.length, skipped.length, failed))
-          });
+        if (ran) {
+          finishWithReload({tools, type: 'error', message: [l10n.bulkFailed].concat(summarize())});
         }
         else {
           restore();
           showNotice('error', error.requestError ? (error.lines || error.message) : l10n.bulkFailed, toolsNoticesRegion(tools));
         }
-        return;
-      }
-      finishWithReload({
-        tools,
-        type: failed.length ? 'error' : 'success',
-        message: summarize(done.length, skipped.length, failed)
-      });
+      };
+
+      /**
+       * Run all the items of a bulk action sequentially, then reload once with a summary.
+       *
+       * An item error does not stop the run; only a fatal error (nonce, permission, transport) does.
+       *
+       * @param {HTMLButtonElement} button The clicked bulk button.
+       * @param {object} options
+       * @param {Array} options.items What the action runs over.
+       * @param {function} options.runItem Runs one item, resolving to {status, lines}.
+       * @param {function} options.describe Progress line for an item, by index.
+       * @param {function} options.summarize Summary lines from the done, skipped and failed counts.
+       */
+      const runBulk = async (button, options) => {
+        const {items, runItem, describe, summarize} = options;
+        const tools = toolsOf(button);
+        const progress = button.closest('.postbox').querySelector('.h5p-network-libraries-bulk-progress');
+        const restore = startBulkAction(button, progress);
+        const done = [];
+        const skipped = [];
+        const failed = [];
+        try {
+          for (let index = 0; index < items.length; index += 1) {
+            const item = items[index];
+            if (progress) {
+              progress.textContent = describe(index, item);
+            }
+            const outcome = await runItem(item);
+            if (outcome.status === 'done') {
+              done.push(item);
+            }
+            else if (outcome.status === 'skipped') {
+              skipped.push(item);
+            }
+            else {
+              failed.push({item, lines: outcome.lines});
+            }
+          }
+        }
+        catch (error) {
+          // A fatal error (nonce, permission, transport) stops the run.
+          failBulk(error, tools, restore, done.length + skipped.length + failed.length > 0,
+            () => summarize(done.length, skipped.length, failed));
+          return;
+        }
+        finishWithReload({
+          tools,
+          type: failed.length ? 'error' : 'success',
+          message: summarize(done.length, skipped.length, failed)
+        });
+      };
+
+      return {startBulkAction, runBulk, failBulk};
     };
+
+    const {startBulkAction, runBulk, failBulk} = makeBulkRunner();
 
     /**
      * Install or update one content type from the hub, via the network endpoint.
@@ -578,7 +602,7 @@
     const runHubInstall = async (machineName) => {
       const body = new FormData();
       body.append('machineName', machineName);
-      const data = await postToolAction('h5p_network_library_install', body, l10n.requestFailed);
+      const data = await postAction('h5p_network_library_install', body, l10n.requestFailed);
       const lines = (data.messages && data.messages.error && data.messages.error.length)
         ? data.messages.error : [];
       if (data.status === 'installed') {
@@ -591,29 +615,32 @@
     };
 
     /**
-     * Update all the installed libraries that have an update, via the network endpoint.
+     * Build a bulk runner for a hub action over one grid.
      *
-     * @param {HTMLButtonElement} button The clicked bulk button.
+     * @param {object} config
+     * @param {HTMLElement} config.grid The grid whose rows the action runs over.
+     * @param {string} config.action The row action name, data-h5p-library-action.
+     * @param {string} config.progressKey The l10n key of the progress line.
+     * @param {string} config.doneKey The l10n prefix of the done line.
+     * @param {string} config.failedKey The l10n prefix of the failed line.
+     *
+     * @return {function(HTMLButtonElement)} The bulk action for the clicked button.
      */
-    const updateAll = (button) => {
-      const items = [...installedGrid.querySelectorAll('[data-h5p-library-action="update"]')]
+    const makeHubBulk = ({grid, action, progressKey, doneKey, failedKey}) => (button) => {
+      const items = [...grid.querySelectorAll('[data-h5p-library-action="' + action + '"]')]
         .filter(rowButton => rowButton.dataset.machineName)
         .map(rowButton => rowButton.dataset.machineName);
       runBulk(button, {
         items,
         runItem: runHubInstall,
-        describe: (index, machineName) => l10n.bulkProgressUpdate
-          .replace('%lib', machineName).replace('%i', String(index + 1)).replace('%n', String(items.length)),
+        describe: (index, machineName) => l10n[progressKey].replace('%lib', machineName)
+          .replace('%i', String(index + 1)).replace('%n', String(items.length)),
         summarize: (doneCount, skippedCount, failures) => {
           const lines = [];
-          if (doneCount > 0) {
-            lines.push(doneCount === 1 ? l10n.bulkUpdatedSingular : l10n.bulkUpdatedPlural.replace('%d', String(doneCount)));
-          }
-          if (skippedCount > 0) {
-            lines.push(skippedCount === 1 ? l10n.bulkSkippedSingular : l10n.bulkSkippedPlural.replace('%d', String(skippedCount)));
-          }
+          if (doneCount > 0) { lines.push(plural(doneKey, doneCount)); }
+          if (skippedCount > 0) { lines.push(plural('bulkSkipped', skippedCount)); }
           if (failures.length > 0) {
-            lines.push(failures.length === 1 ? l10n.bulkUpdateFailedSingular : l10n.bulkUpdateFailedPlural.replace('%d', String(failures.length)));
+            lines.push(plural(failedKey, failures.length));
             failures.forEach(failure => failure.lines.forEach(line => lines.push(failure.item + ': ' + line)));
           }
           return lines;
@@ -622,37 +649,20 @@
     };
 
     /**
+     * Update all the installed libraries that have an update, via the network endpoint.
+     *
+     * @param {HTMLButtonElement} button The clicked bulk button.
+     */
+    const updateAll = makeHubBulk({grid: installedGrid, action: 'update', progressKey: 'bulkProgressUpdate', doneKey: 'bulkUpdated', failedKey: 'bulkUpdateFailed'});
+
+    /**
      * Install all the available content types, via the network endpoint.
      *
      * The endpoint skips a content type an earlier install already pulled in as a dependency.
      *
      * @param {HTMLButtonElement} button The clicked bulk button.
      */
-    const installAll = (button) => {
-      const items = [...availableGrid.querySelectorAll('[data-h5p-library-action="install"]')]
-        .filter(rowButton => rowButton.dataset.machineName)
-        .map(rowButton => rowButton.dataset.machineName);
-      runBulk(button, {
-        items,
-        runItem: runHubInstall,
-        describe: (index, machineName) => l10n.bulkProgressInstall
-          .replace('%lib', machineName).replace('%i', String(index + 1)).replace('%n', String(items.length)),
-        summarize: (doneCount, skippedCount, failures) => {
-          const lines = [];
-          if (doneCount > 0) {
-            lines.push(doneCount === 1 ? l10n.bulkInstalledSingular : l10n.bulkInstalledPlural.replace('%d', String(doneCount)));
-          }
-          if (skippedCount > 0) {
-            lines.push(skippedCount === 1 ? l10n.bulkSkippedSingular : l10n.bulkSkippedPlural.replace('%d', String(skippedCount)));
-          }
-          if (failures.length > 0) {
-            lines.push(failures.length === 1 ? l10n.bulkInstallFailedSingular : l10n.bulkInstallFailedPlural.replace('%d', String(failures.length)));
-            failures.forEach(failure => failure.lines.forEach(line => lines.push(failure.item + ': ' + line)));
-          }
-          return lines;
-        }
-      });
-    };
+    const installAll = makeHubBulk({grid: availableGrid, action: 'install', progressKey: 'bulkProgressInstall', doneKey: 'bulkInstalled', failedKey: 'bulkInstallFailed'});
 
     /**
      * Delete all the deletable libraries, and those that become deletable by that, via the network endpoint.
@@ -667,7 +677,7 @@
       const restore = startBulkAction(button, progress);
       const deleted = [];
       const summarize = () => [
-        deleted.length === 1 ? l10n.bulkDeletedSingular : l10n.bulkDeletedPlural.replace('%d', String(deleted.length))
+        plural('bulkDeleted', deleted.length)
       ].concat(deleted);
       try {
         let more = true;
@@ -675,30 +685,37 @@
           if (progress) {
             progress.textContent = l10n.bulkProgressDelete.replace('%d', String(deleted.length));
           }
-          const data = await postToolAction('h5p_network_library_delete_all', new FormData(), l10n.deleteFailed);
+          const data = await postAction('h5p_network_library_delete_all', new FormData(), l10n.deleteFailed);
           deleted.push(...(data.deleted || []));
           more = data.more === true;
         }
       }
       catch (error) {
         // A fatal error (nonce, permission, transport) stops the run.
-        console.error('H5P network libraries:', error);
-        if (deleted.length > 0) {
-          // Some libraries are already gone, so reload once to show what happened.
-          finishWithReload({tools, type: 'error', message: [l10n.bulkFailed].concat(summarize())});
-        }
-        else {
-          restore();
-          showNotice('error', error.requestError ? (error.lines || error.message) : l10n.bulkFailed, toolsNoticesRegion(tools));
-        }
+        failBulk(error, tools, restore, deleted.length > 0, summarize);
         return;
       }
       finishWithReload({tools, type: 'success', message: summarize()});
     };
 
-    // One dialog instance, since the dialog DOM stays in the document after it
-    // is closed and a fresh instance per click would accumulate closed dialogs.
-    let confirmDialog;
+    // Show a dialog: the first use creates one instance, later uses update and
+    // re-show it. The dialog DOM stays in the document after it is closed, so a
+    // fresh instance per click would accumulate closed dialogs.
+    const makeLazyDialog = () => {
+      let dialog;
+
+      return (params, callbacks) => {
+        if (!dialog) {
+          dialog = new H5PPluginConfirmationDialog(params, callbacks);
+        }
+        else {
+          dialog.update(params, callbacks);
+        }
+        dialog.show();
+      };
+    };
+
+    const confirmDialog = makeLazyDialog();
 
     /**
      * Ask the user to confirm before a state-changing action is run.
@@ -715,17 +732,10 @@
           confirm: label || l10n.confirm
         }
       };
-      const callbacks = {
-        onConfirm
-      };
 
-      if (!confirmDialog) {
-        confirmDialog = new H5PPluginConfirmationDialog(params, callbacks);
-      }
-      else {
-        confirmDialog.update(params, callbacks);
-      }
-      confirmDialog.show();
+      confirmDialog(params, {
+        onConfirm
+      });
     };
 
     /**
@@ -738,9 +748,7 @@
       confirmWith(button.dataset.confirmMessage, button.dataset.confirmLabel, onConfirm);
     };
 
-    // One dialog instance, since the dialog DOM stays in the document after it
-    // is closed and a fresh instance per click would accumulate closed dialogs.
-    let infoDialog;
+    const infoDialog = makeLazyDialog();
 
     /**
      * Show the hub information and usage statistics of a library.
@@ -753,475 +761,16 @@
      * @param {HTMLButtonElement} button
      */
     const showInfo = (button) => {
-      const params = {
+      infoDialog({
         l10n: {
           messageHtml: button.dataset.infoMessageHtml,
           cancel: '',
           confirm: l10n.close
         }
-      };
-
-      if (!infoDialog) {
-        infoDialog = new H5PPluginConfirmationDialog(params);
-      }
-      else {
-        infoDialog.update(params);
-      }
-      infoDialog.show();
+      });
     };
 
-    const loadedScripts = Object.create(null);
-
-    /**
-     * Load a plain script from core's h5p-php-library once.
-     *
-     * @param {string} url
-     *
-     * @return {Promise<void>}
-     */
-    const loadScriptOnce = (url) => new Promise((resolve, reject) => {
-      if (loadedScripts[url]) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = url;
-      script.onload = () => {
-        loadedScripts[url] = true;
-        resolve();
-      };
-      script.onerror = () => reject(fail(l10n.requestFailed));
-      document.head.append(script);
-    });
-
-    /**
-     * Load a library's upgrades script as a plain tag, like core's loadScript.
-     *
-     * @param {string} url
-     * @param {function(boolean)} next
-     */
-    const loadUpgradeScript = (url, next) => {
-      if (loadedScripts[url]) {
-        next();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = url;
-      script.onload = () => {
-        loadedScripts[url] = true;
-        next();
-      };
-      script.onerror = () => next(true);
-      document.head.append(script);
-    };
-
-    // Library data for the upgrades, shared by all runs of the page, as it does not change until the reload.
-    const libraryCache = Object.create(null);
-    const libraryWaiters = Object.create(null);
-
-    /**
-     * Fetch the library data an upgrade runs against, shared by all workers.
-     *
-     * @param {string} name
-     * @param {{major: number, minor: number}} version
-     * @param {function(?string, ?Object)} next
-     */
-    const loadLibrary = (name, version, next) => {
-      const key = name + '/' + version.major + '/' + version.minor;
-
-      if (libraryCache[key] === true) {
-        libraryWaiters[key].push(next);
-        return;
-      }
-
-      if (typeof libraryCache[key] === 'object') {
-        next(null, libraryCache[key]);
-        return;
-      }
-
-      libraryCache[key] = true;
-      libraryWaiters[key] = [];
-
-      fetch(upgradeSettings.libraryBaseUrl + '/' + key, {
-        credentials: 'same-origin',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      })
-        .then(response => (response.ok ? response.json() : Promise.reject(response)))
-        .then(library => {
-          libraryCache[key] = library;
-          const waiters = libraryWaiters[key];
-          delete libraryWaiters[key];
-          next(null, library);
-          waiters.forEach(waiter => waiter(null, library));
-        })
-        .catch(() => {
-          // The failure is not cached, so a later request can retry.
-          delete libraryCache[key];
-          const waiters = libraryWaiters[key];
-          delete libraryWaiters[key];
-          const message = l10n.errorData.replace('%lib', name + ' ' + version.major + '.' + version.minor);
-          next(message);
-          waiters.forEach(waiter => waiter(message));
-        });
-    };
-
-    /**
-     * Upgrade the contents that use a library version to another installed version of it.
-     *
-     * Reimplements the batch loop of core's h5p-content-upgrade.js on top of the
-     * existing network-aware endpoints; that script is a closed IIFE, so it can
-     * neither be enqueued nor stopped, and it is replaced instead.
-     *
-     * Creates its own workers and terminates them when done. Contents upgraded in
-     * earlier batches stay saved on the server if the run fails later.
-     *
-     * @param {Object} job
-     * @param {string} job.sourceId Id of the library version the contents use now.
-     * @param {string} job.targetId Id of the library version to upgrade to.
-     * @param {string} job.machineName
-     * @param {string} job.oldVersion major.minor of the source.
-     * @param {string} job.newVersion major.minor of the target.
-     * @param {number} job.total Number of contents to upgrade, for the progress.
-     * @param {function(number)} onProgress Called with the percentage done.
-     *
-     * @return {Promise<{assigned: number, failed: number, errors: string[]}>} Rejects on a fatal error.
-     */
-    const runContentUpgrade = (job, onProgress) => new Promise((resolve, reject) => {
-      const {machineName, oldVersion, newVersion, total} = job;
-
-      // Counts the contents assigned so far; upgraded and skipped go back to the server per batch.
-      const state = {
-        left: 0,
-        token: upgradeSettings.token,
-        assigned: 0,
-        ids: [],
-        parameters: {},
-        current: -1,
-        working: 0,
-        skipped: [],
-        upgraded: {}
-      };
-
-      const errors = [];
-
-      /**
-       * Record a failed content with core's error message for its type.
-       *
-       * @param {Object|string} error
-       */
-      const collectError = (error) => {
-        if (!error) {
-          return;
-        }
-
-        let message;
-
-        if (typeof error === 'object') {
-          switch (error.type) {
-            case 'errorParamsBroken':
-              message = l10n.errorContent.replace('%id', error.id) + ' ' + l10n.errorParamsBroken;
-              break;
-            case 'libraryMissing':
-              message = l10n.errorLibrary.replace('%lib', error.library);
-              break;
-            case 'scriptMissing':
-              message = l10n.errorScript.replace('%lib', error.library);
-              break;
-            case 'errorTooHighVersion':
-              message = l10n.errorContent.replace('%id', error.id) + ' '
-                + l10n.errorTooHighVersion.replace('%used', error.used).replace('%supported', error.supported);
-              break;
-            case 'errorNotSupported':
-              message = l10n.errorContent.replace('%id', error.id) + ' '
-                + l10n.errorNotSupported.replace('%used', error.used);
-              break;
-            default:
-              message = error.message || String(error);
-              break;
-          }
-        }
-        else {
-          // String errors pass through unchanged, as in core.
-          message = error;
-        }
-
-        errors.push(l10n.error + ' ' + message);
-      };
-
-      const workers = [];
-      const terminate = () => workers.forEach(worker => worker.terminate());
-
-      let failedYet = false;
-
-      /**
-       * Stop the run with a fatal error.
-       *
-       * @param {Error} error
-       */
-      const handleFailure = (error) => {
-        if (failedYet) {
-          return;
-        }
-        failedYet = true;
-
-        terminate();
-        reject(error);
-      };
-
-      /**
-       * Stop the run with its outcome.
-       */
-      const finish = () => {
-        terminate();
-        resolve({assigned: state.assigned, failed: state.skipped.length, errors});
-      };
-
-      /**
-       * Fetch the next batch of contents from the server, or finish if none are left.
-       *
-       * @return {Promise<void>}
-       */
-      const requestNextBatch = async () => {
-        // The first request carries no skipped or params; the server sends none back yet.
-        const body = new URLSearchParams({
-          libraryId: job.targetId,
-          token: state.token
-        });
-
-        if (state.assigned > 0) {
-          body.set('skipped', JSON.stringify(state.skipped));
-          body.set('params', JSON.stringify(state.upgraded));
-        }
-
-        const response = await fetch(upgradeSettings.progressUrl + job.sourceId, {
-          method: 'POST',
-          credentials: 'same-origin',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' },
-          body
-        });
-
-        // The server answers plain text on errors (e.g. an invalid token), so parse leniently.
-        const text = await response.text();
-        let inData;
-
-        try {
-          inData = JSON.parse(text);
-        }
-        catch {
-          inData = text;
-        }
-
-        if (typeof inData !== 'object' || inData === null) {
-          throw fail(inData || l10n.requestFailed);
-        }
-
-        if (inData.left === 0) {
-          finish();
-          return;
-        }
-
-        state.left = inData.left;
-        state.token = inData.token;
-        processBatch(inData.params, inData.skipped);
-      };
-
-      /**
-       * Distribute one fetched batch over the workers, or run it on the main thread.
-       *
-       * @param {Object} parameters
-       * @param {string[]} skipped
-       */
-      const processBatch = (parameters, skipped) => {
-        state.upgraded = {};
-        state.skipped = Array.isArray(skipped) ? skipped : [];
-        state.parameters = parameters || {};
-        state.ids = Object.keys(state.parameters);
-        state.current = -1;
-        state.assigned += state.ids.length;
-
-        if (workers.length > 0) {
-          workers.forEach(worker => assignWork(worker));
-        }
-        else {
-          assignWork();
-        }
-      };
-
-      /**
-       * Give a worker (or the main thread) the next content of the current batch.
-       *
-       * @param {Worker} [worker]
-       *
-       * @return {boolean} Whether a job was assigned.
-       */
-      const assignWork = (worker) => {
-        const id = state.ids[state.current + 1];
-
-        if (id === undefined) {
-          return false;
-        }
-
-        state.current += 1;
-        state.working += 1;
-
-        if (worker) {
-          worker.postMessage({
-            action: 'newJob',
-            id,
-            name: machineName,
-            oldVersion,
-            newVersion,
-            params: state.parameters[id]
-          });
-        }
-        else {
-          runMainJob(id);
-        }
-
-        return true;
-      };
-
-      /**
-       * Run one content upgrade on the main thread when Web Workers are unavailable.
-       *
-       * @param {string} id
-       */
-      const runMainJob = (id) => {
-        new window.H5P.ContentUpgradeProcess(
-          machineName,
-          new window.H5P.Version(oldVersion),
-          new window.H5P.Version(newVersion),
-          state.parameters[id],
-          id,
-          (name, version, next) => {
-            loadLibrary(name, version, (err, library) => {
-              if (err) {
-                next(err);
-                return;
-              }
-
-              if (library.upgradesScript) {
-                loadUpgradeScript(library.upgradesScript, (scriptError) => {
-                  if (scriptError) {
-                    next(l10n.errorScript.replace('%lib', name + ' ' + version.major + '.' + version.minor));
-                  }
-                  else {
-                    next(null, library);
-                  }
-                });
-              }
-              else {
-                next(null, library);
-              }
-            });
-          },
-          (err, result) => {
-            if (err) {
-              collectError(err);
-              workDone(id, null);
-            }
-            else {
-              workDone(id, result);
-            }
-          }
-        );
-      };
-
-      /**
-       * Account for a finished content and feed the next job if one is left.
-       *
-       * @param {string} id
-       * @param {string|null} result
-       * @param {Worker} [worker]
-       */
-      const workDone = (id, result, worker) => {
-        state.working -= 1;
-
-        if (result === null) {
-          state.skipped.push(id);
-        }
-        else {
-          state.upgraded[id] = result;
-        }
-
-        if (total > 0) {
-          // state.left still counts the batch just returned, so current compensates.
-          onProgress(Math.round((total - state.left + state.current) / (total / 100)));
-        }
-
-        if (assignWork(worker) === false && state.working === 0) {
-          requestNextBatch().catch(handleFailure);
-        }
-      };
-
-      /**
-       * Create the workers, or load the scripts for the main thread, and fetch the first batch.
-       *
-       * @return {Promise<void>}
-       */
-      const start = async () => {
-        if (window.Worker !== undefined) {
-          const numWorkers = (window.navigator !== undefined && window.navigator.hardwareConcurrency)
-            ? window.navigator.hardwareConcurrency
-            : 4;
-
-          for (let index = 0; index < numWorkers; index += 1) {
-            const worker = new Worker(upgradeSettings.scriptBaseUrl + '/h5p-content-upgrade-worker.js'
-              + upgradeSettings.buster);
-
-            worker.onmessage = (event) => {
-              const data = event.data;
-
-              switch (data.action) {
-                case 'done':
-                  workDone(data.id, data.params, worker);
-                  break;
-                case 'error':
-                  collectError(data.err);
-                  workDone(data.id, null, worker);
-                  break;
-                case 'loadLibrary': {
-                  const [major, minor] = data.version.split('.').map(Number);
-
-                  loadLibrary(data.name, {major, minor}, (err, library) => {
-                    if (err) {
-                      // A worker cannot be told the load failed; a library with null semantics
-                      // makes the process report a missing library and free the worker.
-                      worker.postMessage({
-                        action: 'libraryLoaded',
-                        library: {
-                          name: data.name,
-                          version: {major, minor},
-                          semantics: null
-                        }
-                      });
-                      return;
-                    }
-                    worker.postMessage({action: 'libraryLoaded', library});
-                  });
-                  break;
-                }
-              }
-            };
-
-            workers.push(worker);
-          }
-        }
-        else {
-          // The core scripts assign bare H5P members, so the global must exist first.
-          window.H5P = window.H5P || {};
-          await loadScriptOnce(upgradeSettings.scriptBaseUrl + '/h5p-version.js' + upgradeSettings.buster);
-          await loadScriptOnce(upgradeSettings.scriptBaseUrl + '/h5p-content-upgrade-process.js'
-            + upgradeSettings.buster);
-        }
-
-        await requestNextBatch();
-      };
-
-      start().catch(handleFailure);
-    });
+    const runContentUpgrade = window.H5PNetworkContentUpgrade.create({upgradeSettings, l10n, fail});
 
     /**
      * The upgrade job of a row upgrade button.
@@ -1249,11 +798,11 @@
     const upgradeCountLines = (result) => {
       const succeeded = result.assigned - result.failed;
       const lines = [
-        succeeded === 1 ? l10n.upgradedSingular : l10n.upgradedPlural.replace('%d', String(succeeded))
+        plural('upgraded', succeeded)
       ];
 
       if (result.failed > 0) {
-        lines.push(result.failed === 1 ? l10n.failedSingular : l10n.failedPlural.replace('%d', String(result.failed)));
+        lines.push(plural('failed', result.failed));
       }
 
       return lines;
@@ -1278,9 +827,7 @@
         });
       }
       catch (error) {
-        console.error('H5P network libraries:', error);
-        restore();
-        showNotice('error', error.requestError ? error.message : l10n.requestFailed);
+        failWith(error, restore, l10n.requestFailed);
         return;
       }
 
@@ -1343,7 +890,7 @@
         const action = button.dataset.h5pLibraryAction;
 
         // Info does not change state, so it stays usable while something runs.
-        if (busy && action !== 'info') {
+        if (isBusy() && action !== 'info') {
           return;
         }
 

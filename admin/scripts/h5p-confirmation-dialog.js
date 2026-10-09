@@ -4,7 +4,7 @@
    * @param {HTMLElement} element HTML element to set inner text of.
    * @param {string|undefined} text Inner text to set.
    */
-  setInnerText = (element, text) => {
+  const setInnerText = (element, text) => {
     if (!(element instanceof HTMLElement)) {
       return;
     }
@@ -27,7 +27,7 @@
    * @param {HTMLElement} element HTML element to set HTML of.
    * @param {string|undefined} html HTML to set, purified by the caller.
    */
-  setHTMLDangerously = (element, html) => {
+  const setHTMLDangerously = (element, html) => {
     if (!(element instanceof HTMLElement)) {
       return;
     }
@@ -46,7 +46,7 @@
    * @param {object} params Parameters.
    * @returns {object} Dom elements.
    */
-  buildDOM = (params = {}) => {
+  const buildDOM = (params = {}) => {
     const dom = document.createElement('dialog');
     dom.setAttribute('closedby', 'any');
     dom.classList.add('h5p-plugin-confirmation-dialog');
@@ -68,11 +68,11 @@
     buttonsWrapper.classList.add('h5p-plugin-confirmation-dialog-buttons-wrapper');
     body.append(buttonsWrapper);
 
-    buttonCancel = document.createElement('button');
+    const buttonCancel = document.createElement('button');
     buttonCancel.classList.add('h5p-plugin-confirmation-dialog-button', 'cancel');
     buttonsWrapper.append(buttonCancel);
 
-    buttonConfirm = document.createElement('button');
+    const buttonConfirm = document.createElement('button');
     buttonConfirm.classList.add('h5p-plugin-confirmation-dialog-button', 'confirm');
     buttonsWrapper.append(buttonConfirm);
 
@@ -145,10 +145,10 @@
 
       this.parentDOM = params.parentDOM ?? this.parentDOM ?? document.body;
 
-      this.l10n = params.l10n ?? this.l10n ?? {};
-      this.l10n.message = params.l10n?.message ?? this.l10n.message ?? '';
-      this.l10n.cancel = params.l10n?.cancel ?? this.l10n.cancel ?? '';
-      this.l10n.confirm = params.l10n?.confirm ?? this.l10n.confirm ?? 'OK';
+      this.l10n = {...(this.l10n ?? {}), ...(params.l10n ?? {})};
+      this.l10n.message = this.l10n.message ?? '';
+      this.l10n.cancel = this.l10n.cancel ?? '';
+      this.l10n.confirm = this.l10n.confirm ?? 'OK';
 
       this.callbacks = callbacks ?? this.callbacks ?? {};
       this.callbacks.onCancel = this.callbacks.onCancel ?? (() => {});
