@@ -79,38 +79,46 @@
     return { dom, message, buttonCancel, buttonConfirm };
   }
 
-  /**
-   * Constructor.
-   * @param {object} params Parameters.
-   * @param {HTMLElement} [params.parentDOM] DOM element to attach dialog to. Falls back to document.body.
-   * @param {object} [params.l10n] Localization.
-   * @param {string} [params.l10n.message] Message to show.
-   * @param {string} [params.l10n.messageHtml] HTML message, in place of l10n.message. Must be purified server-side.
-   * @param {string} [params.l10n.cancel] Label of cancel button. If empty, not cancel button.
-   * @param {string} [params.l10n.confirm] Label of confirm button. Falls back to 'OK'.
-   * @param {object} [callbacks] Callbacks.
-   * @param {function} [callbacks.onCancel] Callback to be called when user cancelled or closed dialog.
-   * @param {function} [callbacks.onConfirm] Callback to be called when user confirmed.
-   */
-  window.H5PPluginConfirmationDialog = function (params = {}, callbacks = {}) {
+  class H5PPluginConfirmationDialog {
+    /**
+     * Constructor.
+     * @param {object} params Parameters.
+     * @param {HTMLElement} [params.parentDOM] DOM element to attach dialog to. Falls back to document.body.
+     * @param {object} [params.l10n] Localization.
+     * @param {string} [params.l10n.message] Message to show.
+     * @param {string} [params.l10n.messageHtml] HTML message, in place of l10n.message. Must be purified server-side.
+     * @param {string} [params.l10n.cancel] Label of cancel button. If empty, not cancel button.
+     * @param {string} [params.l10n.confirm] Label of confirm button. Falls back to 'OK'.
+     * @param {object} [callbacks] Callbacks.
+     * @param {function} [callbacks.onCancel] Callback to be called when user cancelled or closed dialog.
+     * @param {function} [callbacks.onConfirm] Callback to be called when user confirmed.
+     */
+    constructor(params = {}, callbacks = {}) {
+      // Bound once, so the add/removeEventListener pairs in update() and destroy() always match.
+      this.handleCancel = this.handleCancel.bind(this);
+      this.handleConfirm = this.handleConfirm.bind(this);
+
+      this.update(params, callbacks);
+    }
+
     /**
      * Close dialog.
      */
-    this.close = () => {
+    close() {
       this.dom.close();
     }
 
     /**
      * Show dialog (as modal).
      */
-    this.show = () => {
+    show() {
       this.dom.showModal();
-    };
+    }
 
     /**
      * Handle user canceled or closed dialog.
      */
-    this.handleCancel = () => {
+    handleCancel() {
       this.close();
 
       this.callbacks.onCancel();
@@ -119,7 +127,7 @@
     /**
      * Handle user confirmed.
      */
-    this.handleConfirm = () => {
+    handleConfirm() {
       this.close();
       this.callbacks.onConfirm();
     }
@@ -137,7 +145,7 @@
      * @param {function} [callbacks.onCancel] Callback to be called when user cancelled or closed dialog.
      * @param {function} [callbacks.onConfirm] Callback to be called when user confirmed.
      */
-    this.update = (params = {}, callbacks = {}) => {
+    update(params = {}, callbacks = {}) {
       if (this.parentDOM && this.parentDOM.contains(this.dom)) {
         this.dom.removeEventListener('cancel', this.handleCancel);
         this.parentDOM.removeChild(this.dom);
@@ -170,12 +178,12 @@
       }
       setInnerText(this.buttonCancel, this.l10n.cancel);
       setInnerText(this.buttonConfirm, this.l10n.confirm);
-    };
+    }
 
     /**
      * Destroy dialog and remove from DOM.
      */
-    this.destroy = () => {
+    destroy() {
       if (this.parentDOM && this.parentDOM.contains(this.dom)) {
         this.parentDOM.removeChild(this.dom);
       }
@@ -191,8 +199,8 @@
       this.buttonCancel = null;
       this.buttonConfirm = null;
       this.parentDOM = null;
-    };
+    }
+  }
 
-    this.update(params, callbacks);
-  };
+  window.H5PPluginConfirmationDialog = H5PPluginConfirmationDialog;
 })();

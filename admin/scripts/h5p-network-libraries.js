@@ -224,7 +224,7 @@
      * @return {string} The template, with %d replaced by the count, if it has one.
      */
     const plural = (key, n) => {
-      const template = l10n[key + (n === 1 ? 'Singular' : 'Plural')] || '';
+      const template = l10n[`${key}${n === 1 ? 'Singular' : 'Plural'}`] || '';
       return template.replace('%d', String(n));
     };
 
@@ -627,7 +627,7 @@
      * @return {function(HTMLButtonElement)} The bulk action for the clicked button.
      */
     const makeHubBulk = ({grid, action, progressKey, doneKey, failedKey}) => (button) => {
-      const items = [...grid.querySelectorAll('[data-h5p-library-action="' + action + '"]')]
+      const items = [...grid.querySelectorAll(`[data-h5p-library-action="${action}"]`)]
         .filter(rowButton => rowButton.dataset.machineName)
         .map(rowButton => rowButton.dataset.machineName);
       runBulk(button, {
@@ -641,7 +641,7 @@
           if (skippedCount > 0) { lines.push(plural('bulkSkipped', skippedCount)); }
           if (failures.length > 0) {
             lines.push(plural(failedKey, failures.length));
-            failures.forEach(failure => failure.lines.forEach(line => lines.push(failure.item + ': ' + line)));
+            failures.forEach(failure => failure.lines.forEach(line => lines.push(`${failure.item}: ${line}`)));
           }
           return lines;
         }
@@ -823,7 +823,7 @@
       let result;
       try {
         result = await runContentUpgrade(job, (percent) => {
-          status.textContent = progressMessage + ' ' + percent + ' %';
+          status.textContent = `${progressMessage} ${percent} %`;
         });
       }
       catch (error) {
@@ -865,17 +865,17 @@
           try {
             const result = await runContentUpgrade(job, (percent) => {
               if (progress) {
-                progress.textContent = describe(index, job) + ' ' + percent + ' %';
+                progress.textContent = `${describe(index, job)} ${percent} %`;
               }
             });
-            summaries.push([job.machineName + ': ' + upgradeCountLines(result).join(', ')].concat(result.errors));
+            summaries.push([`${job.machineName}: ${upgradeCountLines(result).join(', ')}`].concat(result.errors));
             return {status: result.failed > 0 ? 'failed' : 'done', lines: result.errors};
           }
           catch (error) {
             // A failed run of one library does not stop the others.
             console.error('H5P network libraries:', error);
             const message = error.requestError ? error.message : l10n.requestFailed;
-            summaries.push([job.machineName + ': ' + message]);
+            summaries.push([`${job.machineName}: ${message}`]);
             return {status: 'failed', lines: [message]};
           }
         },

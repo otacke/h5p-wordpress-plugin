@@ -66,7 +66,7 @@ window.H5PNetworkContentUpgrade = {
      * @param {function(?string, ?Object)} next
      */
     const loadLibrary = (name, version, next) => {
-      const key = name + '/' + version.major + '/' + version.minor;
+      const key = `${name}/${version.major}/${version.minor}`;
 
       if (libraryCache[key] === true) {
         libraryWaiters[key].push(next);
@@ -81,7 +81,7 @@ window.H5PNetworkContentUpgrade = {
       libraryCache[key] = true;
       libraryWaiters[key] = [];
 
-      fetch(upgradeSettings.libraryBaseUrl + '/' + key, {
+      fetch(`${upgradeSettings.libraryBaseUrl}/${key}`, {
         credentials: 'same-origin',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       })
@@ -98,7 +98,7 @@ window.H5PNetworkContentUpgrade = {
           delete libraryCache[key];
           const waiters = libraryWaiters[key];
           delete libraryWaiters[key];
-          const message = l10n.errorData.replace('%lib', name + ' ' + version.major + '.' + version.minor);
+          const message = l10n.errorData.replace('%lib', `${name} ${version.major}.${version.minor}`);
           next(message);
           waiters.forEach(waiter => waiter(message));
         });
@@ -158,7 +158,7 @@ window.H5PNetworkContentUpgrade = {
         if (typeof error === 'object') {
           switch (error.type) {
             case 'errorParamsBroken':
-              message = l10n.errorContent.replace('%id', error.id) + ' ' + l10n.errorParamsBroken;
+              message = `${l10n.errorContent.replace('%id', error.id)} ${l10n.errorParamsBroken}`;
               break;
             case 'libraryMissing':
               message = l10n.errorLibrary.replace('%lib', error.library);
@@ -166,14 +166,16 @@ window.H5PNetworkContentUpgrade = {
             case 'scriptMissing':
               message = l10n.errorScript.replace('%lib', error.library);
               break;
-            case 'errorTooHighVersion':
-              message = l10n.errorContent.replace('%id', error.id) + ' '
-                + l10n.errorTooHighVersion.replace('%used', error.used).replace('%supported', error.supported);
+            case 'errorTooHighVersion': {
+              const detail = l10n.errorTooHighVersion.replace('%used', error.used).replace('%supported', error.supported);
+              message = `${l10n.errorContent.replace('%id', error.id)} ${detail}`;
               break;
-            case 'errorNotSupported':
-              message = l10n.errorContent.replace('%id', error.id) + ' '
-                + l10n.errorNotSupported.replace('%used', error.used);
+            }
+            case 'errorNotSupported': {
+              const detail = l10n.errorNotSupported.replace('%used', error.used);
+              message = `${l10n.errorContent.replace('%id', error.id)} ${detail}`;
               break;
+            }
             default:
               message = error.message || String(error);
               break;
@@ -184,7 +186,7 @@ window.H5PNetworkContentUpgrade = {
           message = error;
         }
 
-        errors.push(l10n.error + ' ' + message);
+        errors.push(`${l10n.error} ${message}`);
       };
 
       const workers = [];
@@ -232,7 +234,7 @@ window.H5PNetworkContentUpgrade = {
           body.set('params', JSON.stringify(state.upgraded));
         }
 
-        const response = await fetch(upgradeSettings.progressUrl + job.sourceId, {
+        const response = await fetch(`${upgradeSettings.progressUrl}${job.sourceId}`, {
           method: 'POST',
           credentials: 'same-origin',
           headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -342,7 +344,7 @@ window.H5PNetworkContentUpgrade = {
               if (library.upgradesScript) {
                 loadScript(library.upgradesScript).then(
                   () => next(null, library),
-                  () => next(l10n.errorScript.replace('%lib', name + ' ' + version.major + '.' + version.minor))
+                  () => next(l10n.errorScript.replace('%lib', `${name} ${version.major}.${version.minor}`))
                 );
               }
               else {
@@ -401,8 +403,7 @@ window.H5PNetworkContentUpgrade = {
             : 4;
 
           for (let index = 0; index < numWorkers; index += 1) {
-            const worker = new Worker(upgradeSettings.scriptBaseUrl + '/h5p-content-upgrade-worker.js'
-              + upgradeSettings.buster);
+            const worker = new Worker(`${upgradeSettings.scriptBaseUrl}/h5p-content-upgrade-worker.js${upgradeSettings.buster}`);
 
             worker.onmessage = (event) => {
               const data = event.data;
@@ -445,9 +446,8 @@ window.H5PNetworkContentUpgrade = {
         else {
           // The core scripts assign bare H5P members, so the global must exist first.
           window.H5P = window.H5P || {};
-          await loadScript(upgradeSettings.scriptBaseUrl + '/h5p-version.js' + upgradeSettings.buster);
-          await loadScript(upgradeSettings.scriptBaseUrl + '/h5p-content-upgrade-process.js'
-            + upgradeSettings.buster);
+          await loadScript(`${upgradeSettings.scriptBaseUrl}/h5p-version.js${upgradeSettings.buster}`);
+          await loadScript(`${upgradeSettings.scriptBaseUrl}/h5p-content-upgrade-process.js${upgradeSettings.buster}`);
         }
 
         await requestNextBatch();
