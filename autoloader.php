@@ -11,6 +11,10 @@ function h5p_autoloader($class) {
     $classmap = array(
       // Plugin
       'H5PCommons' => 'h5p-common.php',
+      'H5P_Network_Mode' => 'common/class-h5p-network-mode.php',
+      'H5P_Tables' => 'common/class-h5p-tables.php',
+      'H5P_Network_Paths' => 'common/class-h5p-network-paths.php',
+      'H5P_Blogs' => 'common/class-h5p-blogs.php',
 
       // Core
       'H5PCore' => 'h5p-php-library/h5p.classes.php',

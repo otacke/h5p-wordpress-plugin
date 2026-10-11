@@ -4,6 +4,10 @@
  *
  * Shared constants and helper functions for H5P plugin.
  *
+ * Facade: every method is a one-line delegate to the class in common/ that owns it, and the
+ * non-HTTP constants are aliases of the owning class's constants. Call sites keep using this
+ * class unchanged.
+ *
  * @package   H5P
  * @license   MIT
  * @link      http://h5p.org
@@ -11,414 +15,240 @@
  */
 class H5PCommons {
 
-	/** HTTP 403 Forbidden response code. */
-	const HTTP_FORBIDDEN = 403;
+  /** HTTP 403 Forbidden response code. */
+  const HTTP_FORBIDDEN = 403;
 
-	/** HTTP 200 OK response code. */
-	const HTTP_OK = 200;
+  /** HTTP 200 OK response code. */
+  const HTTP_OK = 200;
 
-	/** Network database table prefix. */
-	const NETWORK_DB_TABLE_PREFIX = 'h5p_network_';
+  /** Network database table prefix. */
+  const NETWORK_DB_TABLE_PREFIX = H5P_Tables::NETWORK_DB_TABLE_PREFIX;
 
-	/** Name of network level H5P files directory, relative to uploads root. */
-	const NETWORK_DIRECTORY_NAME = 'h5p_network';
+  /** Name of network level H5P files directory, relative to uploads root. */
+  const NETWORK_DIRECTORY_NAME = H5P_Network_Paths::NETWORK_DIRECTORY_NAME;
 
-	/**
-	 * Database tables managed at network level in multisite installation.
-	 *
-	 * @var string[]
-	 */
-	const NETWORK_DATABASE_TABLE_NAMES = [
-		'h5p_libraries',
-		'h5p_libraries_cachedassets',
-		'h5p_libraries_languages',
-		'h5p_libraries_libraries'
-	];
+  /**
+   * Database tables managed at network level in multisite installation.
+   *
+   * @var string[]
+   */
+  const NETWORK_DATABASE_TABLE_NAMES = H5P_Tables::NETWORK_DATABASE_TABLE_NAMES;
 
-	/** Value a for_each_blog() callback returns to stop iteration over the remaining blogs. */
-	const STOP_ITERATION = 'h5p_stop_iteration';
+  /** Value a for_each_blog() callback returns to stop iteration over the remaining blogs. */
+  const STOP_ITERATION = H5P_Blogs::STOP_ITERATION;
 
-	/**
-	 * Cached network enable flag to avoid repeated database calls.
-	 *
-	 * @var bool|null
-	 */
-	private static $is_network_enabled = null;
+  /**
+   * Whether network mode is enabled.
+   *
+   * @since 1.19.0
+   * @return bool
+   */
+  public static function is_network_enabled() {
+    return H5P_Network_Mode::is_network_enabled();
+  }
 
-	public static function is_network_enabled() {
-		if (null === self::$is_network_enabled) {
-			self::$is_network_enabled = get_site_option('h5p_network_enabled', false);
-		}
+  /**
+   * Turn network mode on or off.
+   *
+   * @param bool $enabled Whether network mode should be enabled.
+   */
+  public static function set_network_enabled($enabled) {
+    H5P_Network_Mode::set_network_enabled($enabled);
+  }
 
-		return self::$is_network_enabled;
-	}
+  /**
+   * Whether H5P Hub access is enabled on the current blog.
+   *
+   * @since 1.19.0
+   * @return bool
+   */
+  public static function is_hub_enabled() {
+    return H5P_Network_Mode::is_hub_enabled();
+  }
 
-	/**
-	 * Turn network mode on or off, keeping cached flag in step so same request sees new state.
-	 *
-	 *
-	 * @param bool $enabled Whether network mode should be enabled.
-	 */
-	public static function set_network_enabled($enabled) {
-		$enabled = (bool) $enabled;
+  /**
+   * Whether current user may manage libraries.
+   *
+   * @return bool
+   */
+  public static function current_user_can_manage_libraries() {
+    return H5P_Network_Mode::current_user_can_manage_libraries();
+  }
 
-		update_site_option('h5p_network_enabled', $enabled);
-		self::$is_network_enabled = $enabled;
-	}
+  /**
+   * Whether current user may install recommended libraries.
+   *
+   * @return bool
+   */
+  public static function current_user_can_install_recommended_libraries() {
+    return H5P_Network_Mode::current_user_can_install_recommended_libraries();
+  }
 
-	/**
-	 * Whether H5P Hub access is enabled on the current blog.
-	 *
-	 * @since 1.19.0
-	 * @return bool
-	 */
-	public static function is_hub_enabled() {
-		return get_option('h5p_hub_is_enabled', TRUE) == TRUE;
-	}
+  /**
+   * Get path to network level H5P files folder.
+   *
+   * @return string
+   */
+  public static function get_h5p_network_path() {
+    return H5P_Network_Paths::get_h5p_network_path();
+  }
 
-	/**
-	 * Whether current user may manage libraries.
-	 *
-	 * @return bool
-	 */
-	public static function current_user_can_manage_libraries() {
-		return self::current_user_can_library_capability('manage_h5p_libraries');
-	}
+  /**
+   * Get URL for network level H5P files folder.
+   *
+   * @return string
+   */
+  public static function get_h5p_network_url() {
+    return H5P_Network_Paths::get_h5p_network_url();
+  }
 
-	/**
-	 * Whether current user may install recommended libraries.
-	 *
-	 * @return bool
-	 */
-	public static function current_user_can_install_recommended_libraries() {
-		return self::current_user_can_library_capability('install_recommended_h5p_libraries');
-	}
+  /**
+   * Update protocol of an absolute URL to HTTPS when the request is served over SSL.
+   *
+   * @since 1.19.0
+   * @param string $url Absolute URL.
+   * @return string URL with HTTPS protocol when served over SSL, otherwise unchanged.
+   */
+  public static function ensure_https($url) {
+    return H5P_Network_Paths::ensure_https($url);
+  }
 
-	/**
-	 * Whether current user holds capability that writes to libraries.
-	 *
-	 * In network mode, libraries folder is shared by every blog, so only network admins may write.
-	 * assign_capabilities() revokes this from blog roles, but roles are per blog and capabilities can
-	 * be granted straight to users, so request state is checked here too.
-	 *
-	 * @param string $capability Capability to check.
-	 * @return bool
-	 */
-	private static function current_user_can_library_capability($capability) {
-		if (self::is_network_enabled() && !current_user_can('manage_network')) {
-			return false;
-		}
+  /**
+   * Get path to the libraries folder, wherever the current mode stores them.
+   *
+   * @since 1.19.0
+   * @return string
+   */
+  public static function get_libraries_path() {
+    return H5P_Network_Paths::get_libraries_path();
+  }
 
-		return current_user_can($capability);
-	}
+  /**
+   * Get URL to the libraries folder, wherever the current mode stores them.
+   *
+   * @since 1.19.0
+   * @return string
+   */
+  public static function get_libraries_url() {
+    return H5P_Network_Paths::get_libraries_url();
+  }
 
-	/**
-	 * Get path to network level H5P files folder.
-	 *
-	 * Unlike wp_upload_dir(), always resolves to network wide uploads root, whichever blog is current.
-	 *
-	 * @return string
-	 */
-	public static function get_h5p_network_path() {
-		$upload_dir = wp_upload_dir();
-		$base = self::strip_blog_from_uploads_base($upload_dir['basedir']);
+  /**
+   * Build full database table name, including correct prefix.
+   *
+   * @param string $table_name Table name without prefix (e.g. 'h5p_libraries').
+   * @return string Full table name.
+   */
+  public static function build_full_db_table_name($table_name) {
+    return H5P_Tables::build_full_db_table_name($table_name);
+  }
 
-		return $base . '/' . self::NETWORK_DIRECTORY_NAME;
-	}
+  /**
+   * Return full table name using site local prefix.
+   *
+   * @param string $table_name Table name without prefix.
+   * @return string Full table name.
+   */
+  public static function build_full_db_table_name_singlesite($table_name) {
+    return H5P_Tables::build_full_db_table_name_singlesite($table_name);
+  }
 
-	/**
-	 * Get URL for network level H5P files folder.
-	 *
-	 * Always absolute, since H5P core and editor only leave asset paths untouched when they carry
-	 * scheme. Applies the shared HTTPS fixup, so SSL pages never load plain HTTP.
-	 *
-	 * @return string
-	 */
-	public static function get_h5p_network_url() {
-		$upload_dir = wp_upload_dir();
-		$base = self::strip_blog_from_uploads_base($upload_dir['baseurl']);
-		$url = $base . '/' . self::NETWORK_DIRECTORY_NAME;
+  /**
+   * Return full table name for multisite installation.
+   *
+   * @param string $table_name Table name without prefix.
+   * @return string Full table name.
+   */
+  public static function build_full_db_table_name_multisite($table_name) {
+    return H5P_Tables::build_full_db_table_name_multisite($table_name);
+  }
 
-		return self::ensure_https($url);
-	}
+  /**
+   * Determine whether given database table exists on current blog.
+   *
+   * @since 1.19.0
+   * @param string $table Full table name.
+   * @return bool
+   */
+  public static function table_exists($table) {
+    return H5P_Tables::table_exists($table);
+  }
 
-	/**
-	 * Update protocol of an absolute URL to HTTPS when the request is served over SSL.
-	 *
-	 * @since 1.19.0
-	 * @param string $url Absolute URL.
-	 * @return string URL with HTTPS protocol when served over SSL, otherwise unchanged.
-	 */
-	public static function ensure_https($url) {
-		if (is_ssl() && substr($url, 0, 5) !== 'https') {
-			// Update protocol
-			return 'https' . substr($url, 4);
-		}
+  /**
+   * Build a comma separated list of %d placeholders for $wpdb->prepare().
+   *
+   * @since 1.19.0
+   * @param int[] $ids Values the placeholders stand in for.
+   * @return string One %d per id, separated by commas, for interpolation in a query.
+   */
+  public static function int_placeholders(array $ids) {
+    return H5P_Tables::int_placeholders($ids);
+  }
 
-		return $url;
-	}
+  /**
+   * Get ids of all blogs in network.
+   *
+   * @since 1.19.0
+   * @return int[] Blog ids, ordered by id.
+   */
+  public static function get_all_blog_ids() {
+    return H5P_Blogs::get_all_blog_ids();
+  }
 
-	/**
-	 * Get path to the libraries folder, wherever the current mode stores them.
-	 *
-	 * In network mode libraries are shared by all blogs, so they live in the network folder;
-	 * otherwise they live in the current blog's h5p folder.
-	 *
-	 * @since 1.19.0
-	 * @return string
-	 */
-	public static function get_libraries_path() {
-		$base = self::is_network_enabled()
-			? self::get_h5p_network_path()
-			: H5P_Plugin::get_instance()->get_h5p_path();
+  /**
+   * Get number of blogs in network.
+   *
+   * @since 1.19.0
+   * @return int Number of blogs.
+   */
+  public static function count_blogs() {
+    return H5P_Blogs::count_blogs();
+  }
 
-		return $base . '/libraries';
-	}
+  /**
+   * Get ids of one page of blogs in network.
+   *
+   * @since 1.19.0
+   * @param int $offset Number of blogs to skip.
+   * @param int $number Maximum number of blogs to return.
+   * @return int[] Blog ids, ordered by id.
+   */
+  public static function get_blog_ids_page($offset, $number) {
+    return H5P_Blogs::get_blog_ids_page($offset, $number);
+  }
 
-	/**
-	 * Get URL to the libraries folder, wherever the current mode stores them.
-	 *
-	 * @since 1.19.0
-	 * @return string
-	 */
-	public static function get_libraries_url() {
-		$base = self::is_network_enabled()
-			? self::get_h5p_network_url()
-			: H5P_Plugin::get_instance()->get_h5p_url();
+  /**
+   * Run callback in context of one blog.
+   *
+   * @since 1.19.0
+   * @param int      $blog_id Blog to switch to for the duration of the callback.
+   * @param callable $callback
+   * @return mixed Result of the callback.
+   */
+  public static function in_blog($blog_id, callable $callback) {
+    return H5P_Blogs::in_blog($blog_id, $callback);
+  }
 
-		return $base . '/libraries';
-	}
+  /**
+   * Run callback once per blog.
+   *
+   * @since 1.19.0
+   * @param callable $callback Receives current blog id. Returning self::STOP_ITERATION stops.
+   */
+  public static function for_each_blog(callable $callback) {
+    H5P_Blogs::for_each_blog($callback);
+  }
 
-	/**
-	 * Strip per blog segment from uploads base path or URL.
-	 *
-	 * On subsites wp_upload_dir() points inside "sites/<blog id>"; network directory sits beside it.
-	 *
-	 * @param string $base Uploads base path or URL.
-	 * @return string Base without trailing per blog segment.
-	 */
-	private static function strip_blog_from_uploads_base($base) {
-		return preg_replace('#/sites/\d+$#', '', $base);
-	}
-
-	/**
-	 * Build full database table name, including correct prefix.
-	 *
-	 * @param string $table_name Table name without prefix (e.g. 'h5p_libraries').
-	 * @return string Full table name.
-	 */
-	public static function build_full_db_table_name($table_name) {
-		return (self::is_network_enabled())
-			? H5PCommons::build_full_db_table_name_multisite($table_name)
-			: H5PCommons::build_full_db_table_name_singlesite($table_name);
-	}
-
-	/**
-	 * Return full table name using site local prefix.
-	 *
-	 * @param string $table_name Table name without prefix.
-	 * @return string Full table name.
-	 */
-	public static function build_full_db_table_name_singlesite($table_name) {
-		global $wpdb;
-
-		return "{$wpdb->prefix}{$table_name}";
-	}
-
-	/**
-	 * Return full table name for multisite installation.
-	 *
-	 * @param string $table_name Table name without prefix.
-	 * @return string Full table name.
-	 */
-	public static function build_full_db_table_name_multisite($table_name) {
-		global $wpdb;
-
-		$is_table_network_table = in_array($table_name, self::NETWORK_DATABASE_TABLE_NAMES, true);
-		if (!$is_table_network_table) {
-			return H5PCommons::build_full_db_table_name_singlesite($table_name);
-		}
-
-		return $wpdb->base_prefix . self::NETWORK_DB_TABLE_PREFIX . $table_name;
-	}
-
-	/**
-	 * Determine whether given database table exists on current blog.
-	 *
-	 * Not memoized, because update_database() creates tables within a request.
-	 *
-	 * @since 1.19.0
-	 * @param string $table Full table name.
-	 * @return bool
-	 */
-	public static function table_exists($table) {
-		global $wpdb;
-
-		return $wpdb->get_var(
-			$wpdb->prepare('SHOW TABLES LIKE %s', $wpdb->esc_like($table))
-		) === $table;
-	}
-
-	/**
-	 * Build a comma separated list of %d placeholders for $wpdb->prepare().
-	 *
-	 * @since 1.19.0
-	 * @param int[] $ids Values the placeholders stand in for.
-	 * @return string One %d per id, separated by commas, for interpolation in a query.
-	 */
-	public static function int_placeholders(array $ids) {
-		return implode(',', array_fill(0, count($ids), '%d'));
-	}
-
-	/**
-	 * Get ids of all blogs in network.
-	 *
-	 * get_sites() defaults to 'number' => 100, so it must be 0 to get every blog. Without that,
-	 * networks above 100 blogs are silently truncated and network wide operations skip rest.
-	 *
-	 * @since 1.19.0
-	 * @return int[] Blog ids, ordered by id.
-	 */
-	public static function get_all_blog_ids() {
-		return get_sites(
-			array(
-				'fields'  => 'ids',
-				'number'  => 0,
-				'orderby' => 'id',
-				'order'   => 'ASC',
-			)
-		);
-	}
-
-	/**
-	 * Get number of blogs in network.
-	 *
-	 * @since 1.19.0
-	 * @return int Number of blogs.
-	 */
-	public static function count_blogs() {
-		if (!is_multisite()) {
-			return 1;
-		}
-
-		return count(self::get_all_blog_ids());
-	}
-
-	/**
-	 * Get ids of one page of blogs in network.
-	 *
-	 * Ordered by id, so paging by offset stays stable unless blogs are created or deleted meanwhile.
-	 *
-	 * @since 1.19.0
-	 * @param int $offset Number of blogs to skip.
-	 * @param int $number Maximum number of blogs to return.
-	 * @return int[] Blog ids, ordered by id.
-	 */
-	public static function get_blog_ids_page($offset, $number) {
-		return get_sites(
-			array(
-				'fields'  => 'ids',
-				'number'  => (int) $number,
-				'offset'  => (int) $offset,
-				'orderby' => 'id',
-				'order'   => 'ASC',
-			)
-		);
-	}
-
-	/**
-	 * Run callback in context of one blog.
-	 *
-	 * @since 1.19.0
-	 * @param int      $blog_id Blog to switch to for the duration of the callback.
-	 * @param callable $callback
-	 * @return mixed Result of the callback.
-	 */
-	public static function in_blog($blog_id, callable $callback) {
-		switch_to_blog($blog_id);
-
-		try {
-			return $callback();
-		}
-		finally {
-			restore_current_blog();
-		}
-	}
-
-	/**
-	 * Run callback once per blog.
-	 *
-	 * @since 1.19.0
-	 * @param callable $callback Receives current blog id. Returning self::STOP_ITERATION stops.
-	 */
-	public static function for_each_blog(callable $callback) {
-		if (!is_multisite()) {
-			$callback(get_current_blog_id());
-			return;
-		}
-
-		self::switch_through_blogs(self::get_all_blog_ids(), $callback, 0, self::STOP_ITERATION);
-	}
-
-	/**
-	 * Run callback once per blog of one page of blogs.
-	 *
-	 * Lets long running operations work through network in several requests. Callback may stop early,
-	 * so it receives position of blog within whole network as second argument.
-	 *
-	 * @since 1.19.0
-	 * @param int      $offset   Number of blogs to skip.
-	 * @param int      $number   Maximum number of blogs to visit.
-	 * @param callable $callback Receives current blog id and its offset. Returning false stops.
-	 * @return int Offset after last visited blog.
-	 */
-	public static function for_each_blog_page($offset, $number, callable $callback) {
-		$offset = (int) $offset;
-
-		if (!is_multisite()) {
-			if ($offset === 0 && $number > 0) {
-				$callback(get_current_blog_id(), $offset);
-				return 1;
-			}
-
-			return $offset;
-		}
-
-		return self::switch_through_blogs(
-			self::get_blog_ids_page($offset, $number),
-			$callback,
-			$offset
-		);
-	}
-
-	/**
-	 * Run callback for each given blog, in blog context.
-	 *
-	 * @since 1.19.0
-	 * @param int[]    $blog_ids   Blog ids to visit.
-	 * @param callable $callback   Receives current blog id and its offset. Returning $stop_value stops.
-	 * @param int      $offset     Offset of first blog in list.
-	 * @param mixed    $stop_value Callback result that stops iteration.
-	 * @return int Offset after last visited blog.
-	 */
-	private static function switch_through_blogs($blog_ids, callable $callback, $offset = 0, $stop_value = false) {
-		foreach ($blog_ids as $blog_id) {
-			switch_to_blog($blog_id);
-
-			try {
-				$result = $callback((int) $blog_id, $offset);
-			}
-			finally {
-				restore_current_blog();
-			}
-
-			$offset++;
-
-			if ($result === $stop_value) {
-				break;
-			}
-		}
-
-		return $offset;
-	}
+  /**
+   * Run callback once per blog of one page of blogs.
+   *
+   * @since 1.19.0
+   * @param int      $offset   Number of blogs to skip.
+   * @param int      $number   Maximum number of blogs to visit.
+   * @param callable $callback Receives current blog id and its offset. Returning false stops.
+   * @return int Offset after last visited blog.
+   */
+  public static function for_each_blog_page($offset, $number, callable $callback) {
+    return H5P_Blogs::for_each_blog_page($offset, $number, $callback);
+  }
 }
