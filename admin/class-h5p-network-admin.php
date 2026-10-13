@@ -186,15 +186,10 @@ class H5P_Network_Admin {
     include __DIR__ . '/views/network-management.php';
 
     H5P_Plugin_Admin::add_script('h5p-jquery', 'h5p-php-library/js/jquery.js');
+    $shared = $this->enqueue_shared_assets();
     wp_enqueue_script(
-      $plugin->asset_handle('plugin-confirmation-dialog'),
-      plugins_url('h5p/admin/scripts/h5p-confirmation-dialog.js'),
-      array(),
-      H5P_Plugin::VERSION
-    );
-    wp_enqueue_style(
-      $plugin->asset_handle('plugin-confirmation-dialog'),
-      plugins_url('h5p/admin/styles/h5p-confirmation-dialog.css'),
+      $plugin->asset_handle('network-grid'),
+      plugins_url('h5p/admin/scripts/h5p-network-grid.js'),
       array(),
       H5P_Plugin::VERSION
     );
@@ -207,7 +202,7 @@ class H5P_Network_Admin {
     wp_enqueue_script(
       $plugin->asset_handle('network-libraries'),
       plugins_url('h5p/admin/scripts/h5p-network-libraries.js'),
-      array('wp-i18n', $plugin->asset_handle('editor'), $plugin->asset_handle('plugin-confirmation-dialog'), $plugin->asset_handle('network-content-upgrade')),
+      array_merge($shared, array('wp-i18n', $plugin->asset_handle('editor'), $plugin->asset_handle('network-grid'), $plugin->asset_handle('network-content-upgrade'))),
       H5P_Plugin::VERSION
     );
     wp_enqueue_style(
@@ -244,6 +239,29 @@ class H5P_Network_Admin {
     $model = $this->restrictions->get_page_model($_GET);
     include __DIR__ . '/views/network-restrictions.php';
 
+    $shared = $this->enqueue_shared_assets();
+    wp_enqueue_script(
+      $plugin->asset_handle('network-restrictions'),
+      plugins_url('h5p/admin/scripts/h5p-network-restrictions.js'),
+      $shared,
+      H5P_Plugin::VERSION
+    );
+    wp_enqueue_style(
+      $plugin->asset_handle('network-restrictions'),
+      plugins_url('h5p/admin/styles/h5p-network-restrictions.css'),
+      array(),
+      H5P_Plugin::VERSION
+    );
+  }
+
+  /**
+   * Enqueue the assets every network H5P admin page shares: the confirmation dialog and the common helpers.
+   *
+   * @return string[] Script handles, for the page script's dependencies.
+   */
+  private function enqueue_shared_assets() {
+    $plugin = H5P_Plugin::get_instance();
+
     wp_enqueue_script(
       $plugin->asset_handle('plugin-confirmation-dialog'),
       plugins_url('h5p/admin/scripts/h5p-confirmation-dialog.js'),
@@ -257,17 +275,13 @@ class H5P_Network_Admin {
       H5P_Plugin::VERSION
     );
     wp_enqueue_script(
-      $plugin->asset_handle('network-restrictions'),
-      plugins_url('h5p/admin/scripts/h5p-network-restrictions.js'),
-      array($plugin->asset_handle('plugin-confirmation-dialog')),
-      H5P_Plugin::VERSION
-    );
-    wp_enqueue_style(
-      $plugin->asset_handle('network-restrictions'),
-      plugins_url('h5p/admin/styles/h5p-network-restrictions.css'),
+      $plugin->asset_handle('network-common'),
+      plugins_url('h5p/admin/scripts/h5p-network-common.js'),
       array(),
       H5P_Plugin::VERSION
     );
+
+    return array($plugin->asset_handle('plugin-confirmation-dialog'), $plugin->asset_handle('network-common'));
   }
 
   /**

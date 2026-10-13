@@ -29,9 +29,9 @@
     );
     $plugin->print_settings($networkSettingsProperties, 'H5PNetworkSettingsProperties');
 
-    wp_enqueue_script( $plugin->asset_handle('plugin-confirmation-dialog'), plugins_url('h5p/admin/scripts/h5p-confirmation-dialog.js'), array(), H5P_Plugin::VERSION );
-    wp_enqueue_style( $plugin->asset_handle('plugin-confirmation-dialog'), plugins_url('h5p/admin/styles/h5p-confirmation-dialog.css'), array(), H5P_Plugin::VERSION );
-    wp_enqueue_script( $plugin->asset_handle('network-settings'), plugins_url('h5p/admin/scripts/h5p-network-settings.js'), array($plugin->asset_handle('plugin-confirmation-dialog')), H5P_Plugin::VERSION );
+    // Included by H5P_Network_Admin::render_settings_page(), hence $this.
+    $shared = $this->enqueue_shared_assets();
+    wp_enqueue_script( $plugin->asset_handle('network-settings'), plugins_url('h5p/admin/scripts/h5p-network-settings.js'), $shared, H5P_Plugin::VERSION );
     \H5P_Plugin_Admin::print_messages();
     ?>
   <h2><?php print esc_html(get_admin_page_title()); ?></h2>

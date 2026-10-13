@@ -1,11 +1,11 @@
+/* global H5PNetworkSettingsProperties */
 (() => {
   /**
-   * Build confirmation dialog.
-   * @params {boolean} enabled True if network mode is currently enabled, ense false.
-   * @params {HTMLButtonElement} button Toggle button to keep in sync.
-   * @returns {H5PPluginConfirmationDialog} Confirmation Dialog instance.
+   * Ask for confirmation before switching the network mode.
+   * @param {boolean} enabled True if network mode is currently enabled, else false.
+   * @param {HTMLButtonElement} button Toggle button to keep in sync.
    */
-  const buildConfirmationDialog = (enabled, button) => {
+  const confirmToggle = (enabled, button) => {
     const props = window.H5PNetworkSettingsProperties;
 
     const dialogParams = {
@@ -25,7 +25,7 @@
       },
     };
 
-    return new window.H5PPluginConfirmationDialog(dialogParams, dialogCallbacks);
+    window.H5PPluginConfirmationDialog.ask(dialogParams, dialogCallbacks);
   };
 
   /**
@@ -118,49 +118,46 @@
     // The migration works through the blogs in batches, so keep calling until
     // the server reports it is done. The first call says so, so a new run
     // never resumes an abandoned one.
-    const runBatch = (nonce, start = false) => {
+    const runBatch = async (nonce, start = false) => {
       const formData = new FormData();
-      formData.append('action', action);
-      formData.append('nonce', nonce);
       if (start) {
         formData.append('start', '1');
       }
 
-      fetch(props.ajaxPath, {
-        method: 'POST',
-        body: formData,
-      })
-        .then(response => response.json())
-        .then(result => {
-          if (result.success) {
-            const progress = result.data || {};
+      let progress;
+      try {
+        progress = await window.H5PNetworkCommon.postAjax(
+          {ajaxUrl: props.ajaxPath, nonce},
+          action,
+          formData,
+          props.migrationRequestFailed
+        );
+      }
+      catch (error) {
+        setButtonBusy(button, false);
 
-            if (progress.done === false) {
-              setButtonProgress(button, progress);
-              // A fresh nonce comes back with every batch, so a long
-              // migration cannot fail on an expired one.
-              runBatch(progress.nonce || nonce);
-              return;
-            }
-
-            window.location.reload();
-            return;
-          }
-
-          const data = result.data || {};
-          const summary = data.rolledBack ?
-            props.migrationFailedRolledBack :
-            props.migrationFailedNotRolledBack;
-
-          setButtonBusy(button, false);
-          showErrorNotice(data.message ? `${summary} ${data.message}` : summary);
-        })
-        .catch(error => {
+        if (!error.requestError) {
           console.error('Migration request failed:', error);
-
-          setButtonBusy(button, false);
           showErrorNotice(props.migrationRequestFailed);
-        });
+          return;
+        }
+
+        const summary = error.data.rolledBack ?
+          props.migrationFailedRolledBack :
+          props.migrationFailedNotRolledBack;
+        showErrorNotice(error.data.message ? `${summary} ${error.data.message}` : summary);
+        return;
+      }
+
+      if (progress.done === false) {
+        setButtonProgress(button, progress);
+        // A fresh nonce comes back with every batch, so a long
+        // migration cannot fail on an expired one.
+        runBatch(progress.nonce || nonce);
+        return;
+      }
+
+      window.location.reload();
     };
 
     runBatch(props.nonce, true);
@@ -196,22 +193,19 @@
     }
   };
 
-  const h5pNetworkToggleInput = document.querySelector('#h5p_network_toggle_input');
-  if (!(h5pNetworkToggleInput instanceof HTMLInputElement)) {
-    return;
-  }
+  window.H5PNetworkCommon.mount(() => {
+    const h5pNetworkToggleInput = document.querySelector('#h5p_network_toggle_input');
+    if (!(h5pNetworkToggleInput instanceof HTMLInputElement)) {
+      return;
+    }
 
-  const h5pNetworkToggleButton = document.querySelector('#h5p_network_toggle_button');
-  if (!(h5pNetworkToggleButton instanceof HTMLButtonElement)) {
-    return;
-  }
+    const h5pNetworkToggleButton = document.querySelector('#h5p_network_toggle_button');
+    if (!(h5pNetworkToggleButton instanceof HTMLButtonElement)) {
+      return;
+    }
 
-  const confirmationDialog = buildConfirmationDialog(
-    h5pNetworkToggleInput.checked,
-    h5pNetworkToggleButton
-  );
-
-  h5pNetworkToggleButton.addEventListener('click', () => {
-    confirmationDialog.show();
+    h5pNetworkToggleButton.addEventListener('click', () => {
+      confirmToggle(h5pNetworkToggleInput.checked, h5pNetworkToggleButton);
+    });
   });
-})()
+})();

@@ -153,14 +153,17 @@
 
       this.parentDOM = params.parentDOM ?? this.parentDOM ?? document.body;
 
-      this.l10n = {...(this.l10n ?? {}), ...(params.l10n ?? {})};
+      // Replaced, not merged: a reused dialog must not keep e.g. the messageHtml of an earlier use.
+      this.l10n = {...(params.l10n ?? this.l10n ?? {})};
       this.l10n.message = this.l10n.message ?? '';
       this.l10n.cancel = this.l10n.cancel ?? '';
       this.l10n.confirm = this.l10n.confirm ?? 'OK';
 
-      this.callbacks = callbacks ?? this.callbacks ?? {};
-      this.callbacks.onCancel = this.callbacks.onCancel ?? (() => {});
-      this.callbacks.onConfirm = this.callbacks.onConfirm ?? (() => {});
+      // A copy, so the caller's object is left alone.
+      this.callbacks = {
+        onCancel: callbacks.onCancel ?? (() => {}),
+        onConfirm: callbacks.onConfirm ?? (() => {}),
+      };
 
       Object.assign(this, buildDOM({
         handleCancel: this.handleCancel,
@@ -201,6 +204,24 @@
       this.parentDOM = null;
     }
   }
+
+  /**
+   * Show a dialog with the given parameters and callbacks, reusing one dialog for all calls on the page.
+   *
+   * The dialog DOM stays in the document after it is closed, so a fresh instance per question would accumulate
+   * closed dialogs.
+   * @param {object} params Parameters, as for the constructor.
+   * @param {object} [callbacks] Callbacks, as for the constructor.
+   */
+  H5PPluginConfirmationDialog.ask = (params, callbacks = {}) => {
+    if (!H5PPluginConfirmationDialog.shared) {
+      H5PPluginConfirmationDialog.shared = new H5PPluginConfirmationDialog(params, callbacks);
+    }
+    else {
+      H5PPluginConfirmationDialog.shared.update(params, callbacks);
+    }
+    H5PPluginConfirmationDialog.shared.show();
+  };
 
   window.H5PPluginConfirmationDialog = H5PPluginConfirmationDialog;
 })();

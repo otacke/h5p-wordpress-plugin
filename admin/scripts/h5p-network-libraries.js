@@ -53,28 +53,7 @@
        * @param {HTMLElement} [target] Where to show the notice, by default the grids' region.
        */
       const show = (type, message, target = region) => {
-        const notice = document.createElement('div');
-        notice.className =
-          `notice ${type === 'error' ? 'notice-error' : 'notice-success'} is-dismissible`;
-
-        (Array.isArray(message) ? message : [message]).forEach(line => {
-          const text = document.createElement('p');
-          text.textContent = line;
-          notice.append(text);
-        });
-
-        // The WordPress default dismiss button; the x is drawn by .notice-dismiss::before.
-        const dismiss = document.createElement('button');
-        dismiss.type = 'button';
-        dismiss.className = 'notice-dismiss';
-        const srText = document.createElement('span');
-        srText.className = 'screen-reader-text';
-        srText.textContent = l10n.dismiss;
-        dismiss.append(srText);
-        dismiss.addEventListener('click', () => notice.remove());
-        notice.append(dismiss);
-
-        target.append(notice);
+        window.H5PNetworkCommon.showNotice(target, type, message, l10n.dismiss);
       };
 
       return {region, toolsRegion, show};
@@ -130,91 +109,7 @@
 
     const {setBusy, isBusy} = makeBusy();
 
-    /**
-     * Add APG grid keyboard navigation with a roving tabindex.
-     *
-     * Cells holding a button delegate focus and keys to the button, the only
-     * focusable child a cell can have.
-     *
-     * @param {HTMLElement} grid
-     *
-     * @return {function(HTMLElement)} Focus a data cell of the grid.
-     */
-    const makeGridNavigable = (grid) => {
-      // The first row is the header and stays out of navigation.
-      const cells = [...grid.querySelectorAll('[role="row"]')]
-        .slice(1)
-        .flatMap(row => [...row.children]);
-      const columns = cells.length ? cells[0].parentElement.children.length : 0;
-      const targets = cells.map(cell => cell.querySelector('button') || cell);
-
-      const focusTarget = (index) => {
-        targets.forEach((target, i) => target.setAttribute('tabindex', i === index ? '0' : '-1'));
-        targets[index].focus();
-      };
-
-      targets.forEach((target, index) => {
-        target.addEventListener('keydown', (event) => {
-          let next;
-
-          switch (event.key) {
-            case 'ArrowLeft':
-              next = index - 1;
-              break;
-            case 'ArrowRight':
-              next = index + 1;
-              break;
-            case 'ArrowUp':
-              next = index - columns;
-              break;
-            case 'ArrowDown':
-              next = index + columns;
-              break;
-            case 'PageUp':
-              next = index - 10 * columns;
-              break;
-            case 'PageDown':
-              next = index + 10 * columns;
-              break;
-            case 'Home':
-              next = event.ctrlKey || event.metaKey
-                ? 0
-                : Math.floor(index / columns) * columns;
-              break;
-            case 'End':
-              next = event.ctrlKey || event.metaKey
-                ? cells.length - 1
-                : Math.floor(index / columns) * columns + columns - 1;
-              break;
-            default:
-              return;
-          }
-
-          if (next < 0 || next >= cells.length) {
-            return;
-          }
-
-          event.preventDefault();
-          focusTarget(next);
-        });
-      });
-
-      // Buttons are in the tab sequence by default, so all but the first target are taken out.
-      targets.forEach((target, i) => target.setAttribute('tabindex', i === 0 ? '0' : '-1'));
-
-      return (cell) => {
-        const index = cells.indexOf(cell);
-        if (index !== -1) {
-          focusTarget(index);
-        }
-      };
-    };
-
-    const fail = (message) => {
-      const error = new Error(message);
-      error.requestError = true;
-      return error;
-    };
+    const fail = (message) => window.H5PNetworkCommon.requestError(message);
 
     // Private instance, so the plural forms of this page do not change the h5p domain for other scripts.
     const i18n = wp.i18n.createI18n(settings.pluralLocaleData || {}, 'h5p');
@@ -305,15 +200,7 @@
      * @param {Object} entry What to show and where to return focus.
      */
     const finishWithReload = (entry) => {
-      try {
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
-      }
-      catch (error) {
-        // Without storage the notice is lost with the reload, but the grids rebuild correctly.
-        console.error('H5P network libraries:', error);
-      }
-
-      window.location.reload();
+      window.H5PNetworkCommon.storeNoticeAndReload(STORAGE_KEY, entry);
     };
 
     const install = async (button) => {
@@ -377,38 +264,7 @@
      *
      * @return {Promise<Object>} The data of the successful response.
      */
-    const postAction = async (action, body, fallback) => {
-      body.append('action', action);
-      body.append('nonce', settings.nonce);
-
-      const response = await fetch(settings.ajaxUrl, {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body
-      });
-
-      let result;
-      try {
-        result = await response.json();
-      }
-      catch {
-        throw fail(`Unexpected status ${response.status}`);
-      }
-
-      if (!response.ok || !result || result.success !== true) {
-        // A failed nonce check answers -1, so the data may be missing altogether.
-        const data = (result && result.data) || {};
-        const errors = data.messages && data.messages.error && data.messages.error.length
-          ? data.messages.error
-          : [data.message || fallback];
-        const error = fail(errors.join(' '));
-        error.lines = errors;
-        throw error;
-      }
-
-      return result.data || {};
-    };
+    const postAction = (action, body, fallback) => window.H5PNetworkCommon.postAjax(settings, action, body, fallback);
 
     /**
      * Put the action's button back and show why it failed.
@@ -706,24 +562,6 @@
       finishWithReload({tools, type: 'success', message: summarize()});
     };
 
-    // Show a dialog: the first use creates one instance, later uses update and
-    // re-show it. The dialog DOM stays in the document after it is closed, so a
-    // fresh instance per click would accumulate closed dialogs.
-    const makeLazyDialog = () => {
-      let dialog;
-
-      return (params, callbacks) => {
-        if (!dialog) {
-          dialog = new H5PPluginConfirmationDialog(params, callbacks);
-        }
-        else {
-          dialog.update(params, callbacks);
-        }
-        dialog.show();
-      };
-    };
-
-    const confirmDialog = makeLazyDialog();
 
     /**
      * Ask the user to confirm before a state-changing action is run.
@@ -741,7 +579,7 @@
         }
       };
 
-      confirmDialog(params, {
+      H5PPluginConfirmationDialog.ask(params, {
         onConfirm
       });
     };
@@ -756,8 +594,6 @@
       confirmWith(button.dataset.confirmMessage, button.dataset.confirmLabel, onConfirm);
     };
 
-    const infoDialog = makeLazyDialog();
-
     /**
      * Show the hub information and usage statistics of a library.
      *
@@ -769,7 +605,7 @@
      * @param {HTMLButtonElement} button
      */
     const showInfo = (button) => {
-      infoDialog({
+      H5PPluginConfirmationDialog.ask({
         l10n: {
           messageHtml: button.dataset.infoMessageHtml,
           cancel: '',
@@ -948,9 +784,9 @@
       form.addEventListener('submit', event => event.preventDefault());
     });
 
-    const focusInstalled = installedGrid ? makeGridNavigable(installedGrid) : null;
+    const focusInstalled = installedGrid ? window.H5PNetworkGrid.makeNavigable(installedGrid) : null;
     if (availableGrid) {
-      makeGridNavigable(availableGrid);
+      window.H5PNetworkGrid.makeNavigable(availableGrid);
     }
 
     // A successful install or update reloaded the page; the stored notice and
@@ -958,27 +794,14 @@
     let pendingFocus = null;
     let hadStoredNotice = false;
     let fromTools = false;
-    try {
-      const stored = sessionStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        hadStoredNotice = true;
-        const storedNotice = JSON.parse(stored);
-        const lines = (Array.isArray(storedNotice.message) ? storedNotice.message : [storedNotice.message])
-          .filter(Boolean);
-        fromTools = typeof storedNotice.tools === 'string';
-        showNotice(storedNotice.type || 'success', lines, fromTools ? toolsNoticesRegion(storedNotice.tools) : noticesRegion);
-        pendingFocus = storedNotice.machineName || null;
-      }
-    }
-    catch {
-      // sessionStorage unavailable (e.g. private mode); the grids still work.
-    }
-    try {
-      // Remove even if reading failed, so a stale entry cannot resurface later.
-      sessionStorage.removeItem(STORAGE_KEY);
-    }
-    catch {
-      // Nothing to do; the entry, if any, stays harmlessly stored.
+    const storedNotice = window.H5PNetworkCommon.consumeStoredNotice(STORAGE_KEY);
+    if (storedNotice) {
+      hadStoredNotice = true;
+      const lines = (Array.isArray(storedNotice.message) ? storedNotice.message : [storedNotice.message])
+        .filter(Boolean);
+      fromTools = typeof storedNotice.tools === 'string';
+      showNotice(storedNotice.type || 'success', lines, fromTools ? toolsNoticesRegion(storedNotice.tools) : noticesRegion);
+      pendingFocus = storedNotice.machineName || null;
     }
 
     if (focusInstalled) {
@@ -1001,11 +824,5 @@
     }
   };
 
-  // Script is enqueued while page body renders, so DOMContentLoaded may already have fired.
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mount);
-  }
-  else {
-    mount();
-  }
+  window.H5PNetworkCommon.mount(mount);
 })(H5PEditor);

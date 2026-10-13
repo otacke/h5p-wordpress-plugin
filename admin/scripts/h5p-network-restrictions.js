@@ -31,25 +31,7 @@
      * @param {string} message
      */
     const show = (type, message) => {
-      const notice = document.createElement('div');
-      notice.className = `notice ${type === 'error' ? 'notice-error' : 'notice-success'} is-dismissible`;
-
-      const text = document.createElement('p');
-      text.textContent = message;
-      notice.append(text);
-
-      // The WordPress default dismiss button; the x is drawn by .notice-dismiss::before.
-      const dismiss = document.createElement('button');
-      dismiss.type = 'button';
-      dismiss.className = 'notice-dismiss';
-      const srText = document.createElement('span');
-      srText.className = 'screen-reader-text';
-      srText.textContent = l10n.dismiss;
-      dismiss.append(srText);
-      dismiss.addEventListener('click', () => notice.remove());
-      notice.append(dismiss);
-
-      region.append(notice);
+      window.H5PNetworkCommon.showNotice(region, type, message, l10n.dismiss);
     };
 
     /**
@@ -76,30 +58,7 @@
      *
      * @return {Promise<Object>} The data of a successful response.
      */
-    const post = async (action, body) => {
-      body.set('action', action);
-      body.set('nonce', settings.nonce);
-
-      const response = await fetch(settings.ajaxUrl, {
-        method: 'POST',
-        credentials: 'same-origin',
-        body
-      });
-
-      let json;
-      try {
-        json = await response.json();
-      }
-      catch {
-        throw new Error(l10n.requestFailed);
-      }
-
-      if (!response.ok || !json.success) {
-        throw new Error((json.data && json.data.message) || l10n.requestFailed);
-      }
-
-      return json.data;
-    };
+    const post = (action, body) => window.H5PNetworkCommon.postAjax(settings, action, body, l10n.requestFailed);
 
     /**
      * Run a request, then reload with a success notice, or show its error.
@@ -123,19 +82,11 @@
         return;
       }
 
-      try {
-        sessionStorage.setItem(STORAGE_KEY, l10n.saved);
-      }
-      catch (error) {
-        // Without storage the notice is lost with the reload, but the page rebuilds correctly.
-        console.error('H5P network restrictions:', error);
-      }
-
       // Nothing is unsaved anymore, so leaving must not warn.
       checkboxes.forEach(checkbox => {
         checkbox.defaultChecked = checkbox.checked;
       });
-      window.location.reload();
+      window.H5PNetworkCommon.storeNoticeAndReload(STORAGE_KEY, {type: 'success', message: l10n.saved});
     };
 
     const save = () => {
@@ -154,39 +105,25 @@
       });
     };
 
-    let dialog;
-
     /**
      * Ask the user to confirm a bulk action, then run it.
-     *
-     * The first use creates the dialog, later uses update and re-show it, so
-     * closed dialogs do not accumulate in the document.
      *
      * @param {HTMLButtonElement} button
      */
     const apply = (button) => {
-      const params = {
+      H5PPluginConfirmationDialog.ask({
         l10n: {
           message: button.dataset.confirmMessage,
           cancel: l10n.cancel,
           confirm: button.dataset.confirmLabel
         }
-      };
-      const callbacks = {
+      }, {
         onConfirm: () => run(() => post('h5p_network_restrictions_apply', new URLSearchParams({
           library: button.dataset.library,
           s: button.dataset.search,
           restricted: button.dataset.h5pRestrictionsApply
         })))
-      };
-
-      if (!dialog) {
-        dialog = new H5PPluginConfirmationDialog(params, callbacks);
-      }
-      else {
-        dialog.update(params, callbacks);
-      }
-      dialog.show();
+      });
     };
 
     container.addEventListener('click', (event) => {
@@ -221,23 +158,11 @@
       }
     });
 
-    let stored = null;
-    try {
-      stored = sessionStorage.getItem(STORAGE_KEY);
-      sessionStorage.removeItem(STORAGE_KEY);
-    }
-    catch {
-      // Without storage there is no notice to restore.
-    }
+    const stored = window.H5PNetworkCommon.consumeStoredNotice(STORAGE_KEY);
     if (stored) {
-      show('success', stored);
+      show(stored.type || 'success', stored.message);
     }
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mount);
-  }
-  else {
-    mount();
-  }
+  window.H5PNetworkCommon.mount(mount);
 })();
