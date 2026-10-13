@@ -437,7 +437,11 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     $library_directories = scandir($libraries_directory);
     if ($library_directories === false) {
       throw new Exception(
-        "Failed to scan libraries directory: {$libraries_directory}"
+        sprintf(
+          /* translators: %s: directory path */
+          __('Failed to scan libraries directory: %s', 'h5p'),
+          $libraries_directory
+        )
       );
     }
 
@@ -539,7 +543,13 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         }
 
         if (!$deleted) {
-          throw new Exception("Failed to delete: {$entry_path}");
+          throw new Exception(
+            sprintf(
+              /* translators: %s: file or directory path */
+              __('Failed to delete: %s', 'h5p'),
+              $entry_path
+            )
+          );
         }
       }
     }
@@ -621,7 +631,11 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     $library_data = $this->readVersionedInfoFromLibraryJson($library_json_path);
     if ($library_data === null) {
       throw new Exception(
-        "Failed to parse library.json from {$library_path}"
+        sprintf(
+          /* translators: %s: library directory path */
+          __('Failed to parse library.json from %s', 'h5p'),
+          $library_path
+        )
       );
     }
 
@@ -630,7 +644,14 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     $versioned_machine_name = "{$machine_name}-{$library_data['majorVersion']}.{$library_data['minorVersion']}";
 
     if (!$this->copyDirectory($library_path, $network_libraries_path)) {
-      throw new Exception("Failed to copy library {$versioned_machine_name} from {$library_path}");
+      throw new Exception(
+        sprintf(
+          /* translators: 1: library name and version, 2: library directory path */
+          __('Failed to copy library %1$s from %2$s', 'h5p'),
+          $versioned_machine_name,
+          $library_path
+        )
+      );
     }
 
     return array(
@@ -655,8 +676,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY) as $table_name) {
       $this->createTableFromExisting(
         H5PCommons::build_full_db_table_name_singlesite($table_name),
-        H5PCommons::build_full_db_table_name_multisite($table_name),
-        true
+        H5PCommons::build_full_db_table_name_multisite($table_name)
       );
     }
 
@@ -888,25 +908,20 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
           count($placeholders_chunk) * 3
         );
 
-        $result = $wpdb->query(
+        $this->query_or_throw(
           $wpdb->prepare(
             "INSERT INTO {$network_table_libraries_libraries} (library_id, required_library_id, dependency_type)"
             . ' VALUES ' . implode(', ', $placeholders_chunk)
             . ' ON DUPLICATE KEY UPDATE dependency_type = VALUES(dependency_type)',
             $values_chunk
+          ),
+          sprintf(
+            /* translators: 1: blog id, 2: network table name */
+            __('Failed to copy library dependencies of blog %1$d into "%2$s".', 'h5p'),
+            $blog_id,
+            $network_table_libraries_libraries
           )
         );
-
-        if ($result === false) {
-          throw new Exception(
-            sprintf(
-              /* translators: 1: blog id, 2: network table name */
-              __('Failed to copy library dependencies of blog %1$d into "%2$s".', 'h5p'),
-              $blog_id,
-              $network_table_libraries_libraries
-            )
-          );
-        }
       }
     });
   }
@@ -941,25 +956,20 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
     $old_ids = array_map('intval', array_keys($mappings));
 
-    $result = $wpdb->query(
+    $this->query_or_throw(
       $wpdb->prepare(
         "UPDATE {$blog_table} SET library_id = CASE library_id "
         . implode(' ', $cases)
         . ' ELSE library_id END WHERE library_id IN ('
         . implode(', ', array_fill(0, count($old_ids), '%d')) . ')',
         array_merge($values, $old_ids)
+      ),
+      sprintf(
+        /* translators: %s: blog table name */
+        __('Failed to update library IDs in "%s".', 'h5p'),
+        $blog_table
       )
     );
-
-    if ($result === false) {
-      throw new Exception(
-        sprintf(
-          /* translators: %s: blog table name */
-          __('Failed to update library IDs in "%s".', 'h5p'),
-          $blog_table
-        )
-      );
-    }
   }
 
   /**
@@ -975,23 +985,18 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   protected function remapLibraryIdsPass2($blog_table) {
     global $wpdb;
 
-    $result = $wpdb->query(
+    $this->query_or_throw(
       $wpdb->prepare(
         "UPDATE {$blog_table} SET library_id = library_id - %d WHERE library_id >= %d",
         self::REMAP_TEMP_OFFSET,
         self::REMAP_TEMP_OFFSET
+      ),
+      sprintf(
+        /* translators: %s: blog table name */
+        __('Failed to update library IDs in "%s".', 'h5p'),
+        $blog_table
       )
     );
-
-    if ($result === false) {
-      throw new Exception(
-        sprintf(
-          /* translators: %s: blog table name */
-          __('Failed to update library IDs in "%s".', 'h5p'),
-          $blog_table
-        )
-      );
-    }
   }
 
   /**
@@ -1008,15 +1013,14 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY) as $table_name) {
         $blog_table = H5PCommons::build_full_db_table_name_singlesite($table_name);
 
-        if ($wpdb->query("DROP TABLE IF EXISTS {$blog_table}") === false) {
-          throw new Exception(
-            sprintf(
-              /* translators: %s: blog table name */
-              __('Failed to drop table "%s".', 'h5p'),
-              $blog_table
-            )
-          );
-        }
+        $this->query_or_throw(
+          "DROP TABLE IF EXISTS {$blog_table}",
+          sprintf(
+            /* translators: %s: blog table name */
+            __('Failed to drop table "%s".', 'h5p'),
+            $blog_table
+          )
+        );
       }
     });
   }
@@ -1121,25 +1125,20 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     $blog_table_libraries_languages = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_languages');
     $network_table_libraries_languages = H5PCommons::build_full_db_table_name_multisite('h5p_libraries_languages');
 
-    $result = $wpdb->query(
+    $this->query_or_throw(
       $wpdb->prepare(
         "INSERT INTO {$network_table_libraries_languages} (library_id, language_code, translation)"
         . " SELECT %d, language_code, translation"
         . " FROM {$blog_table_libraries_languages} WHERE library_id = %d",
         $network_library_id,
         $blog_library_id
+      ),
+      sprintf(
+        /* translators: 1: blog library id, 2: network table name */
+        __('Failed to copy translations for library %1$d into "%2$s".', 'h5p'),
+        $blog_library_id,
+        $network_table_libraries_languages
       )
     );
-
-    if ($result === false) {
-      throw new Exception(
-        sprintf(
-          /* translators: 1: blog library id, 2: network table name */
-          __('Failed to copy translations for library %1$d into "%2$s".', 'h5p'),
-          $blog_library_id,
-          $network_table_libraries_languages
-        )
-      );
-    }
   }
 }

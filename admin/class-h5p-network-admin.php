@@ -456,7 +456,12 @@ class H5P_Network_Admin {
       );
     }
 
-    $this->deletion->delete_library_version($id, $deletion['alsoDelete']);
+    try {
+      $this->deletion->delete_library_version($id, $deletion['alsoDelete']);
+    }
+    catch (Exception $exception) {
+      wp_send_json_error(array('message' => $exception->getMessage()));
+    }
 
     wp_send_json_success();
   }
@@ -469,9 +474,14 @@ class H5P_Network_Admin {
   public function handle_delete_all_libraries() {
     $this->verify_request(true);
 
-    wp_send_json_success(
-      $this->deletion->delete_deletable_libraries(microtime(TRUE) + self::BATCH_TIMEOUT)
-    );
+    try {
+      $result = $this->deletion->delete_deletable_libraries(microtime(TRUE) + self::BATCH_TIMEOUT);
+    }
+    catch (Exception $exception) {
+      wp_send_json_error(array('message' => $exception->getMessage()));
+    }
+
+    wp_send_json_success($result);
   }
 
   /**
@@ -570,9 +580,10 @@ class H5P_Network_Admin {
    * The migrate requests need only manage_network; the library management ones also need
    * H5PCommons::current_user_can_manage_libraries().
    *
-   * @param bool $library_caps Whether the library management capabilities are required.
+   * Ends the request itself: an invalid nonce via check_ajax_referer() (answering -1, 403), missing capabilities
+   * with a JSON error (403).
    *
-   * @throws Exception If the nonce is invalid.
+   * @param bool $library_caps Whether the library management capabilities are required.
    */
   private function verify_request($library_caps) {
     check_ajax_referer('h5p_network_ajax', 'nonce', true);

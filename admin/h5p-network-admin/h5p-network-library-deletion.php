@@ -328,6 +328,7 @@ class H5P_Network_Library_Deletion {
    *
    * @param int $id
    * @param int|null $also_delete Id of the circular partner, from is_library_deletable().
+   * @throws Exception If a version is still there afterwards.
    */
   public function delete_library_version($id, $also_delete) {
     global $wpdb;
@@ -352,8 +353,22 @@ class H5P_Network_Library_Deletion {
       $to_be_deleted = $wpdb->get_row(
         $wpdb->prepare("SELECT * FROM {$table_libraries} WHERE id = %d", $library_id)
       );
-      if ($to_be_deleted !== null) {
-        $interface->deleteLibrary($to_be_deleted);
+      if ($to_be_deleted === null) {
+        continue;
+      }
+
+      $interface->deleteLibrary($to_be_deleted);
+
+      // deleteLibrary() reports nothing, so check that the row is gone.
+      $still_there = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM {$table_libraries} WHERE id = %d", $library_id));
+      if ((int) $still_there !== 0) {
+        throw new Exception(
+          sprintf(
+            /* translators: %s: library name and version, e.g. H5P.Accordion 1.0 */
+            __('Failed to delete library %s.', 'h5p'),
+            "{$to_be_deleted->name} {$to_be_deleted->major_version}.{$to_be_deleted->minor_version}"
+          )
+        );
       }
     }
   }

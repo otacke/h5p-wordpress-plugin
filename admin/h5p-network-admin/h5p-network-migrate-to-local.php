@@ -53,15 +53,14 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
       // Rebuilt by createCachedAssets() after migration.
       $cachedassets_table = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_cachedassets');
 
-      if ($wpdb->query("TRUNCATE TABLE {$cachedassets_table}") === false) {
-        throw new Exception(
-          sprintf(
-            /* translators: %s: blog table name */
-            __('Failed to truncate "%s".', 'h5p'),
-            $cachedassets_table
-          )
-        );
-      }
+      $this->query_or_throw(
+        "TRUNCATE TABLE {$cachedassets_table}",
+        sprintf(
+          /* translators: %s: blog table name */
+          __('Failed to truncate "%s".', 'h5p'),
+          $cachedassets_table
+        )
+      );
     });
   }
 
@@ -80,21 +79,18 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
     $blog_table_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
     $restrictions_table = H5P_Library_Restrictions::get_table();
 
-    $result = $wpdb->query($wpdb->prepare(
-      "UPDATE {$blog_table_libraries} hl SET hl.restricted = EXISTS("
-      . "SELECT 1 FROM {$restrictions_table} hlr WHERE hlr.library_id = hl.id AND hlr.blog_id = %d)",
-      $blog_id
-    ));
-
-    if ($result === false) {
-      throw new Exception(
-        sprintf(
-          /* translators: %s: blog table name */
-          __('Failed to copy library restrictions into "%s".', 'h5p'),
-          $blog_table_libraries
-        )
-      );
-    }
+    $this->query_or_throw(
+      $wpdb->prepare(
+        "UPDATE {$blog_table_libraries} hl SET hl.restricted = EXISTS("
+        . "SELECT 1 FROM {$restrictions_table} hlr WHERE hlr.library_id = hl.id AND hlr.blog_id = %d)",
+        $blog_id
+      ),
+      sprintf(
+        /* translators: %s: blog table name */
+        __('Failed to copy library restrictions into "%s".', 'h5p'),
+        $blog_table_libraries
+      )
+    );
   }
 
   /**
@@ -107,33 +103,20 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   protected function copyTableFromNetwork($blog_table_name, $network_table_name) {
     global $wpdb;
 
-    if (!$this->createTableFromExisting($network_table_name, $blog_table_name, true)) {
-      throw new Exception(
-        sprintf(
-          /* translators: %s: blog table name */
-          __('Failed to create table "%s" from the network-level copy.', 'h5p'),
-          $blog_table_name
-        )
-      );
-    }
+    $this->createTableFromExisting($network_table_name, $blog_table_name);
 
     $columns = $wpdb->get_col("DESCRIBE `{$blog_table_name}`", 0);
     $column_list = implode(', ', $columns);
 
-    $result = $wpdb->query(
-      "INSERT INTO `{$blog_table_name}` ({$column_list}) SELECT {$column_list} FROM `{$network_table_name}`"
+    $this->query_or_throw(
+      "INSERT INTO `{$blog_table_name}` ({$column_list}) SELECT {$column_list} FROM `{$network_table_name}`",
+      sprintf(
+        /* translators: 1: blog table name, 2: network table name */
+        __('Failed to copy rows from "%2$s" into "%1$s".', 'h5p'),
+        $blog_table_name,
+        $network_table_name
+      )
     );
-
-    if ($result === false) {
-      throw new Exception(
-        sprintf(
-          /* translators: 1: blog table name, 2: network table name */
-          __('Failed to copy rows from "%2$s" into "%1$s".', 'h5p'),
-          $blog_table_name,
-          $network_table_name
-        )
-      );
-    }
   }
 
   /**
@@ -277,12 +260,20 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
 
   /**
    * Drop network-level database tables.
+   *
+   * @throws Exception If a table cannot be dropped.
    */
   public function dropNetworkTables() {
-    global $wpdb;
-
     foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY, H5PCommons::TABLE_SCOPE_NETWORK_ONLY) as $table_name) {
-      $wpdb->query("DROP TABLE IF EXISTS " . H5PCommons::build_full_db_table_name_multisite($table_name));
+      $table = H5PCommons::build_full_db_table_name_multisite($table_name);
+      $this->query_or_throw(
+        "DROP TABLE IF EXISTS {$table}",
+        sprintf(
+          /* translators: %s: network table name */
+          __('Failed to drop table "%s".', 'h5p'),
+          $table
+        )
+      );
     }
   }
 }

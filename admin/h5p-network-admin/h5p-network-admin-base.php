@@ -59,14 +59,32 @@ abstract class H5P_Network_Admin_Base {
   }
 
   /**
+   * Run a query, throwing if the database reports an error.
+   *
+   * @param string $query   SQL, prepared where it holds values.
+   * @param string $message Translated message of the exception.
+   * @return int|bool What $wpdb->query() returned.
+   * @throws Exception If the query fails.
+   */
+  protected function query_or_throw($query, $message) {
+    global $wpdb;
+
+    $result = $wpdb->query($query);
+    if ($result === false) {
+      throw new Exception($message);
+    }
+
+    return $result;
+  }
+
+  /**
    * Create table by copying schema from existing table. Drops destination first.
    *
    * @param string $source_table_name Source table name.
    * @param string $new_table_name    Destination table name.
-   * @param bool   $fail_on_error     Whether to throw on failure (default false).
-   * @return bool True on success, false on failure (when fail_on_error is false).
+   * @throws Exception If the source schema cannot be read or the table cannot be created.
    */
-  protected function createTableFromExisting($source_table_name, $new_table_name, $fail_on_error = false) {
+  protected function createTableFromExisting($source_table_name, $new_table_name) {
     global $wpdb;
 
     $row = $wpdb->get_row(
@@ -75,12 +93,13 @@ abstract class H5P_Network_Admin_Base {
     );
 
     if ($row === null || count($row) < 2) {
-      if ($fail_on_error) {
-        throw new Exception(
-          "Failed to retrieve schema for source table: {$source_table_name}"
-        );
-      }
-      return false;
+      throw new Exception(
+        sprintf(
+          /* translators: %s: table name */
+          __('Failed to read the schema of table "%s".', 'h5p'),
+          $source_table_name
+        )
+      );
     }
 
     $create_statement = $row[1];
@@ -95,6 +114,13 @@ abstract class H5P_Network_Admin_Base {
 
     $wpdb->query("DROP TABLE IF EXISTS `{$new_table_name}`");
 
-    return $wpdb->query($create_statement) !== false;
+    $this->query_or_throw(
+      $create_statement,
+      sprintf(
+        /* translators: %s: table name */
+        __('Failed to create table "%s".', 'h5p'),
+        $new_table_name
+      )
+    );
   }
 }
