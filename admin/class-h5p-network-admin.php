@@ -9,14 +9,14 @@
  * management to H5P_Network_Library_Overview, H5P_Network_Library_Deletion, H5P_Network_Library_Installer and
  * H5P_Network_Content_Cache, and per-blog library restrictions to H5P_Network_Library_Restrictions.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Admin {
 
   /**
    * Seconds reserved for the batched bulk operations, like H5PLibraryAdmin::UPGRADE_BATCH_TIMEOUT.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    */
   const BATCH_TIMEOUT = H5PLibraryAdmin::UPGRADE_BATCH_TIMEOUT;
 

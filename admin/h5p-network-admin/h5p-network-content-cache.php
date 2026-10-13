@@ -5,7 +5,7 @@
  *
  * Rebuilds the content caches (filtered parameters) of all blogs in network mode, one time budget at a time.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Content_Cache {
 

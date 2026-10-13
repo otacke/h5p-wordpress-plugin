@@ -7,7 +7,7 @@
  * @package   H5P
  * @license   MIT
  * @link      http://h5p.org
- * @since     1.19.0
+ * @since     1.18.0
  */
 class H5P_Network_Paths {
 
@@ -47,7 +47,7 @@ class H5P_Network_Paths {
   /**
    * Update protocol of an absolute URL to HTTPS when the request is served over SSL.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $url Absolute URL.
    * @return string URL with HTTPS protocol when served over SSL, otherwise unchanged.
    */
@@ -66,7 +66,7 @@ class H5P_Network_Paths {
    * In network mode libraries are shared by all blogs, so they live in the network folder;
    * otherwise they live in the current blog's h5p folder.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return string
    */
   public static function get_libraries_path() {
@@ -80,7 +80,7 @@ class H5P_Network_Paths {
   /**
    * Get URL to the libraries folder, wherever the current mode stores them.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return string
    */
   public static function get_libraries_url() {

@@ -5,7 +5,7 @@
  *
  * Migrates H5P libraries from network level back to blog level, then removes network files and tables.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
 

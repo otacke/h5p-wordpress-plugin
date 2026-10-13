@@ -6,7 +6,7 @@
  * Decides which network level library versions can be deleted, and deletes them: dependency indexes,
  * sub content references, circular editor dependencies and the delete all passes.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Library_Deletion {
 

@@ -20,7 +20,7 @@
  * @package   H5P
  * @license   MIT
  * @link      http://h5p.org
- * @since     1.19.0
+ * @since     1.18.0
  */
 class H5P_Network_File_Storage implements H5PFileStorage {
 

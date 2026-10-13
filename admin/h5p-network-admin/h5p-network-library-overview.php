@@ -6,14 +6,14 @@
  * Collects what the network level management page shows: the installed and available libraries with their
  * icons, updates, upgrade targets, deletability and info messages, and the settings of the page script.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Library_Overview {
 
   /**
    * A content type cache older than this is refreshed when the overview is built.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    */
   const CONTENT_TYPE_CACHE_MAX_AGE = 60 * 60 * 24 * 7;
 

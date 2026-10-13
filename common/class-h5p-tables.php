@@ -8,7 +8,7 @@
  * @package   H5P
  * @license   MIT
  * @link      http://h5p.org
- * @since     1.19.0
+ * @since     1.18.0
  */
 class H5P_Tables {
 
@@ -83,7 +83,7 @@ class H5P_Tables {
    *
    * Not memoized, because update_database() creates tables within a request.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $table Full table name.
    * @return bool
    */
@@ -98,7 +98,7 @@ class H5P_Tables {
   /**
    * Build a comma separated list of %d placeholders for $wpdb->prepare().
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int[] $ids Values the placeholders stand in for.
    * @return string One %d per id, separated by commas, for interpolation in a query.
    */

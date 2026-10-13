@@ -10,7 +10,7 @@
  * @package   H5P
  * @license   MIT
  * @link      http://h5p.org
- * @since     1.19.0
+ * @since     1.18.0
  */
 
 $page_url = network_admin_url('settings.php?page=h5p_restrictions');

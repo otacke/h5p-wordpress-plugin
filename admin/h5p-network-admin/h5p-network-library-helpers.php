@@ -6,7 +6,7 @@
  * Helpers shared by the network level library management classes and their views: content counts,
  * version comparison and formatting, and H5P core messages.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Library_Helpers {
 

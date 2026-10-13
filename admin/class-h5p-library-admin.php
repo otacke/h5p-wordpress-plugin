@@ -22,14 +22,14 @@ class H5PLibraryAdmin {
   /**
    * Number of contents the upgrade script processes per request.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    */
   const UPGRADE_BATCH_SIZE = 40;
 
   /**
    * Seconds reserved for each batch.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    */
   const UPGRADE_BATCH_TIMEOUT = 5;
 
@@ -59,7 +59,7 @@ class H5PLibraryAdmin {
   /**
    * Create library admin suited to current installation (network mode yes/no).
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $plugin_slug Plugin slug.
    * @return H5PLibraryAdmin Admin page instance.
    */
@@ -144,7 +144,7 @@ class H5PLibraryAdmin {
    * apply. In network mode libraries are shared by all blogs, and then only
    * network admins may act on them.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    */
   protected function require_manage_libraries() {
     if (H5PCommons::current_user_can_manage_libraries()) {
@@ -448,7 +448,7 @@ class H5PLibraryAdmin {
    * Each returned row is tagged with its blog id so callers can build URL that points at right site.
    * Single-site implementation only ever sees one blog; network variant overrides to fan out over every blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param object $library Library to list content for.
    * @return array Rows with id, title and blog_id.
    */
@@ -479,7 +479,7 @@ class H5PLibraryAdmin {
    *
    * The network variant overrides this to point at the network admin.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $query Admin page query string.
    * @return string
    */
@@ -492,7 +492,7 @@ class H5PLibraryAdmin {
    *
    * The network variant overrides this to point at the blog the content lives on.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param object $content Row with id and blog_id.
    * @return string
    */
@@ -505,7 +505,7 @@ class H5PLibraryAdmin {
    *
    * The network variant overrides this to point at the shared network folder.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $suffix Path fragment beginning at the h5p folder, e.g. /libraries/H5P.X-1.0/upgrades.js.
    * @return array{path: string, url: string}
    */
@@ -523,7 +523,7 @@ class H5PLibraryAdmin {
    *
    * Single-site implementation counts one blog; network variant overrides to sum over every blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int $library_id Library to count content for.
    * @param string|null $skipped Comma separated content ids to exclude, or NULL.
    * @return int
@@ -757,7 +757,7 @@ class H5PLibraryAdmin {
    * assume a valid library id and target library on return. Shared by single-site and
    * network implementations of ajax_upgrade_progress().
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return array{library_id: string, to_library: object}
    */
   protected function prepare_upgrade_progress() {
@@ -800,7 +800,7 @@ class H5PLibraryAdmin {
   /**
    * Persist upgraded parameters for single piece of content on current blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int $content_id Id of content to update.
    * @param object $upgraded Decoded upgrade result with params and optional metadata.
    * @param object $to_library Library that content is being upgraded to.
@@ -841,7 +841,7 @@ class H5PLibraryAdmin {
   /**
    * Fetch next batch of content on current blog that uses given library.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int $library_id If of library to fetch content for.
    * @param string $skip_query Optional " AND id NOT IN (...)" fragment to exclude content.
    * @param int $limit Maximum number of rows to return.

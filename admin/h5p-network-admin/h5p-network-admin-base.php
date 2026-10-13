@@ -5,7 +5,7 @@
  *
  * Shared base for network migration operations: path resolution, table creation.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 abstract class H5P_Network_Admin_Base {
   use H5PUtils;

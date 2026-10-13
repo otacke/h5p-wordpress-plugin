@@ -374,7 +374,7 @@ class H5P_Plugin {
    *
    * The same schema at blog level and at network level; the resolver picks the full table names.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param callable $table_name_builder Returns the full table name for a library table name.
    * @param string   $charset            Charset clause to append to each CREATE TABLE.
    */
@@ -440,7 +440,7 @@ class H5P_Plugin {
    * Shared by all blogs in network mode, so these run once per network, not once per blog
    * like the rest of update_database().
    *
-   * @since 1.19.0
+   * @since 1.18.0
    */
   public static function update_network_database() {
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -862,7 +862,7 @@ class H5P_Plugin {
    * has to be applied to each of them. Used when network mode is switched on or
    * off, which changes who may manage libraries.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    */
   public static function assign_capabilities_all_blogs() {
     if (!is_multisite()) {
@@ -911,7 +911,7 @@ class H5P_Plugin {
    * the library capability from all of them, while super admins keep it by way
    * of having every capability.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $local_cap Capability to map from when network mode is off.
    * @return string|array
    */
@@ -1000,7 +1000,7 @@ class H5P_Plugin {
    * needs a storage with two roots. Otherwise the plain h5p folder will do, and
    * H5PCore builds the default storage from it itself.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return string|\H5PFileStorage
    */
   public function get_h5p_storage() {
@@ -1402,7 +1402,7 @@ class H5P_Plugin {
    * H5peditor::getLibraryData() and self::enqueue_assets() all pass a path
    * through unchanged once it carries a scheme.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param array $files scripts & styles
    */
   private function network_asset_paths(&$files) {

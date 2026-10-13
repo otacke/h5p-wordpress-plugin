@@ -5,7 +5,7 @@
  *
  * The content type cache of the H5P Hub: its rows, and the newest version of each content type.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Hub_Cache {
 

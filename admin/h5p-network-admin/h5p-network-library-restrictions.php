@@ -7,7 +7,7 @@
  * versions are restricted on which blogs. The page has two views, one library version with a paged list of
  * blogs, and one blog with all runnable library versions, since the blogs may be too many for one matrix.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Library_Restrictions {
 

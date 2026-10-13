@@ -19,7 +19,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Libraries page lives in the network admin.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $query Admin page query string.
    * @return string
    */
@@ -30,7 +30,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Content URL points at the blog the content lives on.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param object $content Row with id and blog_id.
    * @return string
    */
@@ -41,7 +41,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Upgrades script lives in the shared network folder.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $suffix Path fragment beginning at the h5p folder, e.g. /libraries/H5P.X-1.0/upgrades.js.
    * @return array{path: string, url: string}
    */
@@ -55,7 +55,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * List content that uses given library, across all blogs.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param object $library Library to list content for.
    * @return array Rows with id, title and blog_id.
    */
@@ -96,7 +96,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
    * Counted once per request for every library at once, because the library admin list asks about each in
    * turn and switching blogs is not cheap. $skipped is ignored: ajax_upgrade_progress() skips per blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int $library_id Id of library to count content for.
    * @param string|null $skipped Comma separated content ids to exclude (cannot be handled in network mode), or NULL.
    * @return int
@@ -147,7 +147,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Apply upgraded params posted by upgrade script, grouped per blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param object $to_library Library that content is being upgraded to.
    */
   private function apply_upgraded_params_from_request($to_library) {
@@ -181,7 +181,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Parse skipped content posted by upgrade script.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return array{keys: array, by_blog: array} Composite keys to echo back unchanged, and a map of
    *         blog id to the list of content ids to exclude, ready for H5PCommons::int_placeholders().
    */
@@ -213,7 +213,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Count content that still needs upgrading, across all blogs.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int $library_id Id of library to count content for.
    * @param array $skip_by_blog Map of blog id to list of content ids to exclude.
    * @return int
@@ -247,7 +247,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Fill next upgrade batch from every blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param object $out Response being built; params are added under composite "blogId_contentId" keys.
    * @param int $library_id Id of library to fetch content for.
    * @param array $skip_by_blog Map of blog id to list of content ids to exclude.
@@ -299,7 +299,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   /**
    * Split a composite "blogId_contentId" key into its parts.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $key Composite content key from upgrade script.
    * @return array|null [blog id, content id], or NULL if key is malformed.
    */

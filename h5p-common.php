@@ -11,7 +11,7 @@
  * @package   H5P
  * @license   MIT
  * @link      http://h5p.org
- * @since     1.19.0
+ * @since     1.18.0
  */
 class H5PCommons {
 
@@ -47,7 +47,7 @@ class H5PCommons {
   /**
    * Whether network mode is enabled.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return bool
    */
   public static function is_network_enabled() {
@@ -66,7 +66,7 @@ class H5PCommons {
   /**
    * Whether H5P Hub access is enabled on the current blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return bool
    */
   public static function is_hub_enabled() {
@@ -112,7 +112,7 @@ class H5PCommons {
   /**
    * Update protocol of an absolute URL to HTTPS when the request is served over SSL.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $url Absolute URL.
    * @return string URL with HTTPS protocol when served over SSL, otherwise unchanged.
    */
@@ -123,7 +123,7 @@ class H5PCommons {
   /**
    * Get path to the libraries folder, wherever the current mode stores them.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return string
    */
   public static function get_libraries_path() {
@@ -133,7 +133,7 @@ class H5PCommons {
   /**
    * Get URL to the libraries folder, wherever the current mode stores them.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return string
    */
   public static function get_libraries_url() {
@@ -173,7 +173,7 @@ class H5PCommons {
   /**
    * Determine whether given database table exists on current blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param string $table Full table name.
    * @return bool
    */
@@ -184,7 +184,7 @@ class H5PCommons {
   /**
    * Build a comma separated list of %d placeholders for $wpdb->prepare().
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int[] $ids Values the placeholders stand in for.
    * @return string One %d per id, separated by commas, for interpolation in a query.
    */
@@ -195,7 +195,7 @@ class H5PCommons {
   /**
    * Get ids of all blogs in network.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return int[] Blog ids, ordered by id.
    */
   public static function get_all_blog_ids() {
@@ -205,7 +205,7 @@ class H5PCommons {
   /**
    * Get number of blogs in network.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return int Number of blogs.
    */
   public static function count_blogs() {
@@ -215,7 +215,7 @@ class H5PCommons {
   /**
    * Get ids of one page of blogs in network.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int $offset Number of blogs to skip.
    * @param int $number Maximum number of blogs to return.
    * @return int[] Blog ids, ordered by id.
@@ -227,7 +227,7 @@ class H5PCommons {
   /**
    * Run callback in context of one blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int      $blog_id Blog to switch to for the duration of the callback.
    * @param callable $callback
    * @return mixed Result of the callback.
@@ -239,7 +239,7 @@ class H5PCommons {
   /**
    * Run callback once per blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param callable $callback Receives current blog id. Returning self::STOP_ITERATION stops.
    */
   public static function for_each_blog(callable $callback) {
@@ -249,7 +249,7 @@ class H5PCommons {
   /**
    * Run callback once per blog of one page of blogs.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int      $offset   Number of blogs to skip.
    * @param int      $number   Maximum number of blogs to visit.
    * @param callable $callback Receives current blog id and its offset. Returning false stops.

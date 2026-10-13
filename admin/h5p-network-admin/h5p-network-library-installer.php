@@ -6,7 +6,7 @@
  * Installs and updates network level libraries: from the H5P Hub, from uploaded .h5p packages, and keeps the
  * content type cache of the hub up to date.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Library_Installer {
 

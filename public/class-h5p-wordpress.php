@@ -14,7 +14,7 @@ class H5PWordPress implements H5PFrameworkInterface {
   /**
    * Number of content items per library id, built on first use.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @var int[]|null
    */
   private $content_usage = NULL;
@@ -257,7 +257,7 @@ class H5PWordPress implements H5PFrameworkInterface {
    * rest of the request, because the library admin list asks about every library
    * in turn and switching blogs is not cheap.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int $id Library id.
    * @return int
    */
@@ -274,7 +274,7 @@ class H5PWordPress implements H5PFrameworkInterface {
   /**
    * Sum the number of content items per library across every blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return int[] Content count keyed by library id.
    */
   private function countContentUsageAllBlogs() {
@@ -295,7 +295,7 @@ class H5PWordPress implements H5PFrameworkInterface {
    * A blog where H5P has never been loaded has no content tables, and no content
    * either, so it contributes nothing.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return int[] Content count keyed by library id.
    */
   private function countContentUsage() {
@@ -998,7 +998,7 @@ class H5PWordPress implements H5PFrameworkInterface {
   /**
    * Clear filtered parameters of content using given libraries on the current blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @param int[] $library_ids
    */
   private function clearFilteredParametersOnBlog($library_ids) {
@@ -1041,7 +1041,7 @@ class H5PWordPress implements H5PFrameworkInterface {
    * A blog where H5P has never been loaded has no content tables, and no content
    * either, so it contributes nothing.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return int
    */
   private function countNotFiltered() {

@@ -13,7 +13,7 @@
  * @package   H5P
  * @license   MIT
  * @link      http://h5p.org
- * @since     1.19.0
+ * @since     1.18.0
  */
 class H5P_Network_Mode {
 
@@ -27,7 +27,7 @@ class H5P_Network_Mode {
   /**
    * Whether network mode is enabled.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return bool
    */
   public static function is_network_enabled() {
@@ -54,7 +54,7 @@ class H5P_Network_Mode {
   /**
    * Whether H5P Hub access is enabled on the current blog.
    *
-   * @since 1.19.0
+   * @since 1.18.0
    * @return bool
    */
   public static function is_hub_enabled() {

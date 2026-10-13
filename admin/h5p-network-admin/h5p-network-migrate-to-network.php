@@ -5,7 +5,7 @@
  *
  * Handles migration of H5P libraries from blog-level to network-level.
  * @package H5P
- * @since 1.19.0
+ * @since 1.18.0
  */
 class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
