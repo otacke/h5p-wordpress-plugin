@@ -105,6 +105,27 @@ class H5P_Blogs {
   }
 
   /**
+   * Run callback once per blog that has all the given H5P tables, i.e. that uses H5P.
+   *
+   * A blog where H5P has never run has no content tables, so it is skipped instead of every caller checking.
+   *
+   * @since 1.18.0
+   * @param string[] $table_names Table names without prefix, resolved per blog (e.g. 'h5p_contents').
+   * @param callable $callback    Receives current blog id. Returning self::STOP_ITERATION stops.
+   */
+  public static function for_each_blog_with_tables(array $table_names, callable $callback) {
+    self::for_each_blog(function ($blog_id) use ($table_names, $callback) {
+      foreach ($table_names as $table_name) {
+        if (!H5P_Tables::table_exists(H5P_Tables::build_full_db_table_name_singlesite($table_name))) {
+          return null;
+        }
+      }
+
+      return $callback($blog_id);
+    });
+  }
+
+  /**
    * Run callback once per blog of one page of blogs.
    *
    * Lets long running operations work through network in several requests. Callback may stop early,

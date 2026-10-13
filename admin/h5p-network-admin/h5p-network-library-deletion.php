@@ -11,13 +11,40 @@
 class H5P_Network_Library_Deletion {
 
   /**
-   * Sub content reference results by name and major.minor, cached while delete_deletable_libraries() runs.
+   * Sub content reference results by name and major.minor, cached inside with_cached_references().
    *
-   * Null outside that loop, so has_subcontent_references() queries fresh for the single-row delete.
+   * Null outside, so has_subcontent_references() queries fresh for the single-row delete.
    *
    * @var array|null
    */
   private $subcontent_references = null;
+
+  /**
+   * Run a callback with sub content reference results cached.
+   *
+   * Each check scans the content parameters of every blog, and the same versions are checked again and again
+   * while a whole list is decided. Content parameters do not change meanwhile, so neither can the answers.
+   * Nesting is fine: the outermost call owns the cache.
+   *
+   * @param callable $callback
+   *
+   * @return mixed Result of the callback.
+   */
+  public function with_cached_references(callable $callback) {
+    $outermost = $this->subcontent_references === null;
+    if ($outermost) {
+      $this->subcontent_references = array();
+    }
+
+    try {
+      return $callback();
+    }
+    finally {
+      if ($outermost) {
+        $this->subcontent_references = null;
+      }
+    }
+  }
 
   /**
    * Index the network library dependency table by both ends of each edge.
@@ -292,7 +319,7 @@ class H5P_Network_Library_Deletion {
     $pattern = $this->subcontent_reference_pattern($name, $major, $minor);
 
     $found = false;
-    H5PCommons::for_each_blog(function () use ($pattern, &$found) {
+    H5PCommons::for_each_blog_with_tables(array('h5p_contents'), function () use ($pattern, &$found) {
       if ($found) {
         return H5PCommons::STOP_ITERATION; // One hit on any blog is enough.
       }
@@ -300,11 +327,6 @@ class H5P_Network_Library_Deletion {
       global $wpdb;
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-
-      if (!H5PCommons::table_exists($table_contents)) {
-        return; // Blog has no H5P content tables yet.
-      }
-
       $found = null !== $wpdb->get_var(
         $wpdb->prepare(
           "SELECT 1
@@ -397,8 +419,7 @@ class H5P_Network_Library_Deletion {
     $deleted_ids = array();
     $more = false;
 
-    $this->subcontent_references = array();
-    try {
+    $this->with_cached_references(function () use ($deadline, $dry_run, $content_counts, &$deleted, &$deleted_ids, &$more) {
       do {
         $model = $this->get_deletion_model($content_counts);
 
@@ -449,10 +470,7 @@ class H5P_Network_Library_Deletion {
       } while ($deleted_in_pass > 0 && $time_left);
 
       $more = $deleted_in_pass > 0 && !$time_left;
-    }
-    finally {
-      $this->subcontent_references = null;
-    }
+    });
 
     return array(
       'deleted' => $deleted,

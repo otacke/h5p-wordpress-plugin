@@ -114,11 +114,15 @@ class H5P_Network_Library_Overview {
     foreach ($installed as $row) {
       $installed_names_by_id[$row['id']] = H5P_Network_Library_Helpers::format_library_name($row);
     }
+    $deletions = $this->deletion->with_cached_references(function () use ($installed, $deletion_model) {
+      $deletions = array();
+      foreach ($installed as $index => $row) {
+        $deletions[$index] = $this->deletion->is_library_deletable($deletion_model['libraries'][$row['id']], $deletion_model);
+      }
+      return $deletions;
+    });
     foreach ($installed as $index => $row) {
-      $deletion = $this->deletion->is_library_deletable(
-        $deletion_model['libraries'][$row['id']],
-        $deletion_model
-      );
+      $deletion = $deletions[$index];
       $installed[$index]['deletable'] = $deletion['deletable'];
       $installed[$index]['alsoDelete'] = $deletion['alsoDelete'];
       // The partner's name for the delete messages; null when there is no partner.

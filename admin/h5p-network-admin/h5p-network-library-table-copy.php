@@ -74,14 +74,10 @@ class H5P_Network_Library_Table_Copy extends H5P_Network_Admin_Base {
   public function copyLibraryDependenciesToNetwork() {
     $network_table_libraries_libraries = H5PCommons::build_full_db_table_name_multisite('h5p_libraries_libraries');
 
-    H5PCommons::for_each_blog(function ($blog_id) use ($network_table_libraries_libraries) {
+    H5PCommons::for_each_blog_with_tables(array('h5p_libraries_libraries'), function ($blog_id) use ($network_table_libraries_libraries) {
       global $wpdb;
 
       $blog_table_libraries_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_libraries');
-
-      if (!H5PCommons::table_exists($blog_table_libraries_libraries)) {
-        return;
-      }
 
       $dependencies = $wpdb->get_results(
         "SELECT library_id, required_library_id, dependency_type FROM {$blog_table_libraries_libraries}"

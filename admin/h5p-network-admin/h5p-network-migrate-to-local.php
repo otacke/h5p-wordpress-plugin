@@ -332,7 +332,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   protected function verifyBlogsMatchNetwork() {
     global $wpdb;
 
-    // The cached assets are not compared: copyDatabaseTablesToBlogs() empties them, createCachedAssets() rebuilds.
+    // The cached assets are not compared: copyDatabaseTablesToBlog() empties them, createCachedAssets() rebuilds.
     $table_names = array_diff(H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY), array('h5p_libraries_cachedassets'));
     $network_counts = array();
     foreach ($table_names as $table_name) {
@@ -343,14 +343,9 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
 
     $libraries_exist = is_dir($this->getNetworkLibrariesPath());
 
-    H5PCommons::for_each_blog(function ($blog_id) use ($table_names, $network_counts, $libraries_exist) {
+    // Blogs without a libraries table did not use H5P and got no copy.
+    H5PCommons::for_each_blog_with_tables(array('h5p_libraries'), function ($blog_id) use ($table_names, $network_counts, $libraries_exist) {
       global $wpdb;
-
-      $table_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
-
-      if (!H5PCommons::table_exists($table_libraries)) {
-        return;
-      }
 
       foreach ($table_names as $table_name) {
         $blog_table = H5PCommons::build_full_db_table_name_singlesite($table_name);

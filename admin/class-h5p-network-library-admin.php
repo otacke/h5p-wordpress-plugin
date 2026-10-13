@@ -45,12 +45,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
     $out->skipped = $skipped['keys'];
     $skip_by_blog = $skipped['by_blog'];
 
-    $left = $this->count_remaining_content($library_id, $skip_by_blog);
-    if ($left > 0) {
-      $this->fill_next_batch($out, $library_id, $skip_by_blog);
-    }
-
-    $out->left = $left;
+    $out->left = $this->count_and_fill_next_batch($out, $library_id, $skip_by_blog);
 
     header('Content-type: application/json');
     print json_encode($out);
@@ -124,74 +119,52 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   }
 
   /**
-   * Count content that still needs upgrading, across all blogs.
+   * Count content that still needs upgrading across all blogs, and fill the next upgrade batch, in one walk.
+   *
+   * Each blog is visited once: its remaining content is counted, and fetched while the batch has room.
    *
    * @since 1.18.0
-   * @param int $library_id Id of library to count content for.
+   * @param object $out Response being built; params are added under composite "blogId_contentId" keys.
+   * @param int $library_id Id of library to upgrade content of.
    * @param array $skip_by_blog Map of blog id to list of content ids to exclude.
-   * @return int
+   * @return int Number of content items left to upgrade, the batch included.
    */
-  private function count_remaining_content($library_id, $skip_by_blog) {
+  private function count_and_fill_next_batch($out, $library_id, $skip_by_blog) {
     $left = 0;
 
-    H5PCommons::for_each_blog(function ($blog_id) use (&$left, $library_id, $skip_by_blog) {
+    H5PCommons::for_each_blog_with_tables(array('h5p_contents'), function ($blog_id) use (&$left, $out, $library_id, $skip_by_blog) {
       global $wpdb;
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-
-      if (!H5PCommons::table_exists($table_contents)) {
-        return; // Blog has no H5P content tables yet
-      }
-
       $skip = isset($skip_by_blog[$blog_id]) ? $skip_by_blog[$blog_id] : array();
+
       $sql = "SELECT COUNT(id) FROM {$table_contents} WHERE library_id = %d";
       $args = array($library_id);
       if (!empty($skip)) {
         $sql .= ' AND id NOT IN (' . H5PCommons::int_placeholders($skip) . ')';
         $args = array_merge($args, $skip);
       }
-
-      $left += (int) $wpdb->get_var($wpdb->prepare($sql, $args));
-    });
-
-    return $left;
-  }
-
-  /**
-   * Fill next upgrade batch from every blog.
-   *
-   * @since 1.18.0
-   * @param object $out Response being built; params are added under composite "blogId_contentId" keys.
-   * @param int $library_id Id of library to fetch content for.
-   * @param array $skip_by_blog Map of blog id to list of content ids to exclude.
-   */
-  private function fill_next_batch($out, $library_id, $skip_by_blog) {
-    H5PCommons::for_each_blog(function ($blog_id) use (&$out, $library_id, $skip_by_blog) {
-      global $wpdb;
+      $blog_left = (int) $wpdb->get_var($wpdb->prepare($sql, $args));
+      $left += $blog_left;
 
       $remaining = self::UPGRADE_BATCH_SIZE - count($out->params);
-      if ($remaining <= 0) {
-        return H5PCommons::STOP_ITERATION; // Batch is full.
+      if ($blog_left === 0 || $remaining <= 0) {
+        return; // Nothing to fetch here, or the batch is full; counting goes on.
       }
 
-      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-
-      if (!H5PCommons::table_exists($table_contents)) {
-        return; // Blog has no H5P content tables, so nothing to fetch.
-      }
-
-      $skip = isset($skip_by_blog[$blog_id]) ? $skip_by_blog[$blog_id] : array();
       $skip_query = empty($skip)
         ? ''
         : ' AND id NOT IN (' . $wpdb->prepare(H5PCommons::int_placeholders($skip), $skip) . ')';
-      $contents = $this->get_next_contents($library_id, $skip_query, $remaining);
-      foreach ($contents as $content) {
+      foreach ($this->get_next_contents($library_id, $skip_query, $remaining) as $content) {
         $out->params[$blog_id . '_' . $content->id] =
           '{"params":' . $content->params .
           ',"metadata":' . \H5PMetadata::toJSON($content) . '}';
       }
     });
+
+    return $left;
   }
+
 
   /**
    * Refuse the blog level restriction toggle.

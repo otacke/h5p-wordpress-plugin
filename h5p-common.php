@@ -261,6 +261,17 @@ class H5PCommons {
   }
 
   /**
+   * Run callback once per blog that has all the given H5P tables, i.e. that uses H5P.
+   *
+   * @since 1.18.0
+   * @param string[] $table_names Table names without prefix, resolved per blog (e.g. 'h5p_contents').
+   * @param callable $callback    Receives current blog id. Returning self::STOP_ITERATION stops.
+   */
+  public static function for_each_blog_with_tables(array $table_names, callable $callback) {
+    H5P_Blogs::for_each_blog_with_tables($table_names, $callback);
+  }
+
+  /**
    * Run callback once per blog of one page of blogs.
    *
    * @since 1.18.0

@@ -982,15 +982,8 @@ class H5PWordPress implements H5PFrameworkInterface {
       return;
     }
 
-    H5PCommons::for_each_blog(function () use ($library_ids) {
-      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-      $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
-
-      // A blog where H5P has never been loaded has no content tables, and no content either.
-      if (!H5PCommons::table_exists($table_contents) || !H5PCommons::table_exists($table_contents_libraries)) {
-        return;
-      }
-
+    // A blog where H5P has never been loaded has no content tables, and no content either.
+    H5PCommons::for_each_blog_with_tables(array('h5p_contents', 'h5p_contents_libraries'), function () use ($library_ids) {
       $this->clearFilteredParametersOnBlog($library_ids);
     });
   }

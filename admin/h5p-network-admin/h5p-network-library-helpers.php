@@ -13,20 +13,20 @@ class H5P_Network_Library_Helpers {
   /**
    * Count the contents that use each library version as their main library, across all blogs.
    *
+   * The network counterpart of core's getNumContent() (h5p_contents.library_id), which the upgrade and delete
+   * actions are about. Not the dependency usage of getLibraryUsage() (h5p_contents_libraries), which also counts
+   * every library a content loads; deletability adds the sub content check of
+   * H5P_Network_Library_Deletion::is_library_deletable() instead.
+   *
    * @return array Map of library id to content count.
    */
   public static function get_content_counts() {
     $counts = array();
 
-    H5PCommons::for_each_blog(function () use (&$counts) {
+    H5PCommons::for_each_blog_with_tables(array('h5p_contents'), function () use (&$counts) {
       global $wpdb;
 
       $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-
-      if (!H5PCommons::table_exists($table_contents)) {
-        return; // Blog has no H5P content tables yet.
-      }
-
       $rows = $wpdb->get_results(
         "SELECT library_id, COUNT(id) AS content_count
           FROM {$table_contents}

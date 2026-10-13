@@ -181,14 +181,10 @@ abstract class H5P_Network_Admin_Base {
    * @param float|null $deadline microtime(true) after which no further content is processed, or null for none.
    */
   public function createCachedAssets($deadline = null) {
-    H5PCommons::for_each_blog(function () use ($deadline) {
+    H5PCommons::for_each_blog_with_tables(array('h5p_contents'), function () use ($deadline) {
       global $wpdb;
 
       $table_contents = H5PCommons::build_full_db_table_name_singlesite('h5p_contents');
-      if (!H5PCommons::table_exists($table_contents)) {
-        return; // Blog does not use H5P.
-      }
-
       $core = H5P_Plugin::get_instance()->get_h5p_instance('core');
       $content_ids = $wpdb->get_col("SELECT id FROM {$table_contents}");
 
