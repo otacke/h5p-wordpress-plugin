@@ -76,6 +76,9 @@ class H5P_Network_Paths {
   /**
    * Get URL to the libraries folder, wherever the current mode stores them.
    *
+   * Absolute in network mode; in local mode relative to the site, like H5P_Plugin::get_h5p_url(), which core
+   * expects there. Library file URLs for core come from H5P_Mode::get_library_file_url().
+   *
    * @since 1.18.0
    * @return string
    */

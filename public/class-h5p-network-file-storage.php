@@ -174,23 +174,12 @@ class H5P_Network_File_Storage implements H5PFileStorage {
   }
 
   /**
-   * Build the relative traversal from the blog folder to the network folder,
-   * e.g. "/../h5p_network" for the main site and "/../../../h5p_network" for a
-   * subsite. Valid as both a file system path and a URL, because the uploads
-   * URL structure mirrors the uploads directory structure.
+   * Build the relative traversal from the blog folder to the network folder, see
+   * H5P_Core_Adapter::relative_path().
    *
    * @return string
    */
   private function getNetworkTraversal() {
-    $local = explode('/', trim(str_replace('\\', '/', $this->localPath), '/'));
-    $network = explode('/', trim(str_replace('\\', '/', $this->networkPath), '/'));
-
-    // Drop the segments the two roots have in common.
-    while (!empty($local) && !empty($network) && $local[0] === $network[0]) {
-      array_shift($local);
-      array_shift($network);
-    }
-
-    return '/' . str_repeat('../', count($local)) . implode('/', $network);
+    return H5P_Core_Adapter::relative_path($this->localPath, $this->networkPath);
   }
 }

@@ -355,9 +355,7 @@ class H5P_Network_Library_Deletion {
   public function delete_library_version($id, $also_delete) {
     global $wpdb;
 
-    $plugin = H5P_Plugin::get_instance();
-    $interface = $plugin->get_h5p_instance('interface');
-    $core = $plugin->get_h5p_instance('core');
+    $interface = H5P_Plugin::get_instance()->get_h5p_instance('interface');
 
     $to_delete = array($id);
     if ($also_delete !== null) {
@@ -366,11 +364,7 @@ class H5P_Network_Library_Deletion {
 
     $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
     foreach ($to_delete as $library_id) {
-      // deleteLibrary() leaves the cached assets of the version behind,
-      // like H5PCore::saveLibraries() does when replacing a library.
-      if ($core->aggregateAssets && ($hashes = $interface->deleteCachedAssets($library_id))) {
-        $core->fs->deleteCachedAssets($hashes);
-      }
+      H5P_Core_Adapter::delete_library_cached_assets($library_id);
 
       $to_be_deleted = $wpdb->get_row(
         $wpdb->prepare("SELECT * FROM {$table_libraries} WHERE id = %d", $library_id)

@@ -40,10 +40,9 @@ class H5P_Network_Library_Installer {
   /**
    * Install one content type from the H5P Hub.
    *
-   * Repeats the order of H5PEditorAjax::libraryInstall() with public calls only, so it can also be
-   * called from a scheduling endpoint later. Installs one content type per request, because the
-   * temporary upload path is cached statically per request. Never throws: the outcome comes back as
-   * a 'status' and 'messages' pair, so a bulk queue can continue past a failed item.
+   * Checks like H5PEditorAjax::libraryInstall(); the download and install itself is
+   * H5P_Core_Adapter::install_hub_package(). One content type per request. Never throws: the outcome comes back
+   * as a 'status' and 'messages' pair, so a bulk queue can continue past a failed item.
    */
   public function install_hub_library($machine_name) {
     if (!H5PCommons::is_hub_enabled()) {
@@ -98,34 +97,7 @@ class H5P_Network_Library_Installer {
       }
     }
 
-    $core = H5P_Plugin::get_instance()->get_h5p_instance('core');
-    $core->mayUpdateLibraries(TRUE);
-
-    $path = $interface->getUploadedH5pPath();
-    $response = $interface->fetchExternalData(
-      H5PHubEndpoints::createURL(H5PHubEndpoints::CONTENT_TYPES . $machine_name),
-      NULL,
-      TRUE,
-      empty($path) ? TRUE : $path
-    );
-
-    $valid = FALSE;
-    if ($response) {
-      $valid = (new H5PValidator($interface, $core))->isValidPackage(TRUE, FALSE);
-    }
-
-    if ($valid) {
-      (new H5PStorage($interface, $core))->savePackage(NULL, NULL, TRUE);
-      $status = 'installed';
-    }
-    else {
-      $status = 'error';
-    }
-
-    // The temporary paths are static per request, so clean up on every exit path. Core removes the
-    // .h5p file in some cases, hence the @.
-    H5PCore::deleteFileTree($interface->getUploadedH5pFolderPath());
-    @unlink($path);
+    $status = H5P_Core_Adapter::install_hub_package($machine_name) ? 'installed' : 'error';
 
     $messages = H5P_Network_Library_Helpers::collect_h5p_messages();
     if ($status === 'error' && empty($messages['error'])) {
