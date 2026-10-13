@@ -2,8 +2,8 @@
 /**
  * H5P_Tables
  *
- * Database table names and existence checks, resolving the blog level from the network level
- * in network mode.
+ * Registry of the H5P database tables and their scopes, table name resolution for the blog and
+ * network levels, and existence checks.
  *
  * @package   H5P
  * @license   MIT
@@ -15,26 +15,76 @@ class H5P_Tables {
   /** Network database table prefix. */
   const NETWORK_DB_TABLE_PREFIX = 'h5p_network_';
 
+  /** Scope of tables every blog has its own of: content, results, tags, events. */
+  const SCOPE_BLOG = 'blog';
+
   /**
-   * Database tables managed at network level in multisite installation.
+   * Scope of the library tables: every blog has its own in local mode, the network shares one set in network mode.
+   * Migrations move them between the two levels.
+   */
+  const SCOPE_LIBRARY = 'library';
+
+  /** Scope of tables that exist at network level only, in network mode, with no blog counterpart. */
+  const SCOPE_NETWORK_ONLY = 'network_only';
+
+  /** Scope of tables shared by the whole installation in either mode, without the network table prefix. */
+  const SCOPE_GLOBAL = 'global';
+
+  /**
+   * Every H5P database table, by name without prefix, with its scope.
+   *
+   * The single source for resolving, creating, dropping and migrating tables. Order is the order tables are
+   * dropped in.
    *
    * @var string[]
    */
-  const NETWORK_DATABASE_TABLE_NAMES = [
-    'h5p_libraries',
-    'h5p_libraries_cachedassets',
-    'h5p_libraries_languages',
-    'h5p_libraries_libraries'
+  const TABLES = [
+    'h5p_contents' => self::SCOPE_BLOG,
+    'h5p_contents_libraries' => self::SCOPE_BLOG,
+    'h5p_contents_user_data' => self::SCOPE_BLOG,
+    'h5p_contents_tags' => self::SCOPE_BLOG,
+    'h5p_tags' => self::SCOPE_BLOG,
+    'h5p_results' => self::SCOPE_BLOG,
+    'h5p_libraries' => self::SCOPE_LIBRARY,
+    'h5p_libraries_libraries' => self::SCOPE_LIBRARY,
+    'h5p_libraries_languages' => self::SCOPE_LIBRARY,
+    'h5p_libraries_cachedassets' => self::SCOPE_LIBRARY,
+    'h5p_counters' => self::SCOPE_BLOG,
+    'h5p_events' => self::SCOPE_BLOG,
+    'h5p_tmpfiles' => self::SCOPE_BLOG,
+    'h5p_libraries_restrictions' => self::SCOPE_NETWORK_ONLY,
+    'h5p_libraries_hub_cache' => self::SCOPE_GLOBAL,
   ];
 
   /**
-   * Database tables that exist at network level only, without a blog level counterpart to migrate from or to.
+   * Get names of the tables of the given scopes, in registry order.
    *
-   * @var string[]
+   * @param string ...$scopes One or more SCOPE_* constants.
+   * @return string[] Table names without prefix.
    */
-  const NETWORK_ONLY_DATABASE_TABLE_NAMES = [
-    H5P_Library_Restrictions::TABLE_NAME
-  ];
+  public static function get_table_names(...$scopes) {
+    return array_keys(array_filter(self::TABLES, function ($scope) use ($scopes) {
+      return in_array($scope, $scopes, true);
+    }));
+  }
+
+  /**
+   * Get scope of a table, reporting unknown names, which are most likely typos.
+   *
+   * Unknown names are treated as blog tables, as before the registry existed.
+   *
+   * @param string $table_name Table name without prefix.
+   * @return string SCOPE_* constant.
+   */
+  private static function get_scope($table_name) {
+    if (isset(self::TABLES[$table_name])) {
+      return self::TABLES[$table_name];
+    }
+
+    _doing_it_wrong(__METHOD__, sprintf('Unknown H5P database table "%s".', esc_html($table_name)), '1.18.0');
+
+    return self::SCOPE_BLOG;
+  }
 
   /**
    * Build full database table name, including correct prefix.
@@ -43,9 +93,24 @@ class H5P_Tables {
    * @return string Full table name.
    */
   public static function build_full_db_table_name($table_name) {
-    return (H5P_Network_Mode::is_network_enabled())
-      ? H5P_Tables::build_full_db_table_name_multisite($table_name)
-      : H5P_Tables::build_full_db_table_name_singlesite($table_name);
+    global $wpdb;
+
+    switch (self::get_scope($table_name)) {
+      case self::SCOPE_LIBRARY:
+        return (H5P_Network_Mode::is_network_enabled())
+          ? self::build_full_db_table_name_multisite($table_name)
+          : self::build_full_db_table_name_singlesite($table_name);
+
+      case self::SCOPE_NETWORK_ONLY:
+        return self::build_full_db_table_name_multisite($table_name);
+
+      case self::SCOPE_GLOBAL:
+        return "{$wpdb->base_prefix}{$table_name}";
+
+      default:
+        // Not via build_full_db_table_name_singlesite(), which would report an unknown name a second time.
+        return "{$wpdb->prefix}{$table_name}";
+    }
   }
 
   /**
@@ -56,6 +121,8 @@ class H5P_Tables {
    */
   public static function build_full_db_table_name_singlesite($table_name) {
     global $wpdb;
+
+    self::get_scope($table_name); // Reports unknown names.
 
     return "{$wpdb->prefix}{$table_name}";
   }
@@ -69,10 +136,12 @@ class H5P_Tables {
   public static function build_full_db_table_name_multisite($table_name) {
     global $wpdb;
 
-    $is_table_network_table = in_array($table_name, self::NETWORK_DATABASE_TABLE_NAMES, true)
-      || in_array($table_name, self::NETWORK_ONLY_DATABASE_TABLE_NAMES, true);
-    if (!$is_table_network_table) {
-      return H5P_Tables::build_full_db_table_name_singlesite($table_name);
+    $scope = self::get_scope($table_name);
+    if ($scope === self::SCOPE_GLOBAL) {
+      return "{$wpdb->base_prefix}{$table_name}";
+    }
+    if ($scope !== self::SCOPE_LIBRARY && $scope !== self::SCOPE_NETWORK_ONLY) {
+      return "{$wpdb->prefix}{$table_name}"; // Blog table; get_scope() already reported an unknown name.
     }
 
     return $wpdb->base_prefix . self::NETWORK_DB_TABLE_PREFIX . $table_name;

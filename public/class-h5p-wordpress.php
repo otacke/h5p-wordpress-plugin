@@ -1376,10 +1376,11 @@ class H5PWordPress implements H5PFrameworkInterface {
     global $wpdb;
 
     // Replace existing content type cache
-    $wpdb->query("TRUNCATE TABLE {$wpdb->base_prefix}h5p_libraries_hub_cache");
+    $table_hub_cache = H5PCommons::build_full_db_table_name('h5p_libraries_hub_cache');
+    $wpdb->query("TRUNCATE TABLE {$table_hub_cache}");
     foreach ($contentTypeCache->contentTypes as $ct) {
       // Insert into db
-      $wpdb->insert("{$wpdb->base_prefix}h5p_libraries_hub_cache", array(
+      $wpdb->insert($table_hub_cache, array(
         'machine_name'      => $ct->id,
         'major_version'     => $ct->version->major,
         'minor_version'     => $ct->version->minor,

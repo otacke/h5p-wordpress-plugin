@@ -652,7 +652,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   public function migrateDatabaseTablesToNetwork($network_libraries_installed) {
     global $wpdb;
 
-    foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
+    foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY) as $table_name) {
       $this->createTableFromExisting(
         H5PCommons::build_full_db_table_name_singlesite($table_name),
         H5PCommons::build_full_db_table_name_multisite($table_name),
@@ -1005,7 +1005,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     H5PCommons::in_blog($blog_id, function () {
       global $wpdb;
 
-      foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
+      foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY) as $table_name) {
         $blog_table = H5PCommons::build_full_db_table_name_singlesite($table_name);
 
         if ($wpdb->query("DROP TABLE IF EXISTS {$blog_table}") === false) {

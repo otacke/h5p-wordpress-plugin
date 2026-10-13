@@ -49,7 +49,7 @@ foreach ($all_roles as $role_name => $role_info) {
 }
 
 global $wpdb;
-$wpdb->query("DROP TABLE {$wpdb->base_prefix}h5p_libraries_hub_cache");
+$wpdb->query('DROP TABLE ' . H5PCommons::build_full_db_table_name('h5p_libraries_hub_cache'));
 
 if (!is_multisite()) {
   // Simple uninstall for single site

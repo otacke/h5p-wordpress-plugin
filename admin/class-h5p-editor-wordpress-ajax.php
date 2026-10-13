@@ -58,18 +58,20 @@ class H5PEditorWordPressAjax implements H5PEditorAjaxInterface {
   public function getContentTypeCache($machineName = NULL) {
     global $wpdb;
 
+    $table_hub_cache = H5PCommons::build_full_db_table_name('h5p_libraries_hub_cache');
+
     // Return info of only the content type with the given machine name
     if ($machineName) {
       return $wpdb->get_row($wpdb->prepare(
         "SELECT id, is_recommended
-           FROM {$wpdb->base_prefix}h5p_libraries_hub_cache
+           FROM {$table_hub_cache}
           WHERE machine_name = %s",
         $machineName
       ));
     }
 
     return $wpdb->get_results(
-      "SELECT * FROM {$wpdb->base_prefix}h5p_libraries_hub_cache"
+      "SELECT * FROM {$table_hub_cache}"
     );
   }
 

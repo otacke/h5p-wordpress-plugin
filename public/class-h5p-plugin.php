@@ -289,7 +289,8 @@ class H5P_Plugin {
     }
 
     // Keep track of h5p libraries content type cache
-    dbDelta("CREATE TABLE {$wpdb->base_prefix}h5p_libraries_hub_cache (
+    $table_hub_cache = H5PCommons::build_full_db_table_name('h5p_libraries_hub_cache');
+    dbDelta("CREATE TABLE {$table_hub_cache} (
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
       machine_name VARCHAR(127) NOT NULL,
       major_version INT UNSIGNED NOT NULL,
@@ -1920,33 +1921,10 @@ class H5P_Plugin {
 
     // Drop tables of this blog only. In network mode, the library tables are shared by all blogs and are dropped
     // by uninstall_network(), so deleting a single blog must not resolve its table names to them.
-    $table_contents = H5PCommons::build_full_db_table_name_singlesite('h5p_contents');
-    $table_contents_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_contents_libraries');
-    $table_contents_user_data = H5PCommons::build_full_db_table_name_singlesite('h5p_contents_user_data');
-    $table_contents_tags = H5PCommons::build_full_db_table_name_singlesite('h5p_contents_tags');
-    $table_tags = H5PCommons::build_full_db_table_name_singlesite('h5p_tags');
-    $table_results = H5PCommons::build_full_db_table_name_singlesite('h5p_results');
-    $table_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
-    $table_libraries_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_libraries');
-    $table_libraries_languages = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_languages');
-    $table_libraries_cachedassets = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries_cachedassets');
-    $table_counters = H5PCommons::build_full_db_table_name_singlesite('h5p_counters');
-    $table_events = H5PCommons::build_full_db_table_name_singlesite('h5p_events');
-    $table_tmpfiles = H5PCommons::build_full_db_table_name_singlesite('h5p_tmpfiles');
-
-    $wpdb->query("DROP TABLE IF EXISTS {$table_contents}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_contents_libraries}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_contents_user_data}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_contents_tags}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_tags}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_results}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_libraries}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_libraries_libraries}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_libraries_languages}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_libraries_cachedassets}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_counters}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_events}");
-    $wpdb->query("DROP TABLE IF EXISTS {$table_tmpfiles}");
+    foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_BLOG, H5PCommons::TABLE_SCOPE_LIBRARY) as $table_name) {
+      $table = H5PCommons::build_full_db_table_name_singlesite($table_name);
+      $wpdb->query("DROP TABLE IF EXISTS {$table}");
+    }
 
     // Remove settings
     delete_option('h5p_version');
@@ -2006,8 +1984,7 @@ class H5P_Plugin {
   public static function uninstall_network() {
     global $wpdb;
 
-    $table_names = array_merge(H5PCommons::NETWORK_DATABASE_TABLE_NAMES, H5PCommons::NETWORK_ONLY_DATABASE_TABLE_NAMES);
-    foreach ($table_names as $table_name) {
+    foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY, H5PCommons::TABLE_SCOPE_NETWORK_ONLY) as $table_name) {
       $table = H5PCommons::build_full_db_table_name_multisite($table_name);
       $wpdb->query("DROP TABLE IF EXISTS {$table}");
     }

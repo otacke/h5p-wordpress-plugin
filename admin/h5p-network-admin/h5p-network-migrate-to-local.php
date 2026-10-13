@@ -39,7 +39,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
     H5PCommons::for_each_blog(function ($blog_id) use ($has_restrictions) {
       global $wpdb;
 
-      foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
+      foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY) as $table_name) {
         $this->copyTableFromNetwork(
           H5PCommons::build_full_db_table_name_singlesite($table_name),
           H5PCommons::build_full_db_table_name_multisite($table_name)
@@ -196,7 +196,8 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   protected function verifyBlogsMatchNetwork() {
     global $wpdb;
 
-    $table_names = array('h5p_libraries', 'h5p_libraries_libraries', 'h5p_libraries_languages');
+    // The cached assets are not compared: copyDatabaseTablesToBlogs() empties them, createCachedAssets() rebuilds.
+    $table_names = array_diff(H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY), array('h5p_libraries_cachedassets'));
     $network_counts = array();
     foreach ($table_names as $table_name) {
       $network_counts[$table_name] = (int) $wpdb->get_var(
@@ -280,8 +281,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   public function dropNetworkTables() {
     global $wpdb;
 
-    $table_names = array_merge(H5PCommons::NETWORK_DATABASE_TABLE_NAMES, H5PCommons::NETWORK_ONLY_DATABASE_TABLE_NAMES);
-    foreach ($table_names as $table_name) {
+    foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY, H5PCommons::TABLE_SCOPE_NETWORK_ONLY) as $table_name) {
       $wpdb->query("DROP TABLE IF EXISTS " . H5PCommons::build_full_db_table_name_multisite($table_name));
     }
   }

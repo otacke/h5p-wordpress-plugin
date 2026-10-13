@@ -32,19 +32,17 @@ class H5PCommons {
   /** Name of network level H5P files directory, relative to uploads root. */
   const NETWORK_DIRECTORY_NAME = H5P_Network_Paths::NETWORK_DIRECTORY_NAME;
 
-  /**
-   * Database tables managed at network level in multisite installation.
-   *
-   * @var string[]
-   */
-  const NETWORK_DATABASE_TABLE_NAMES = H5P_Tables::NETWORK_DATABASE_TABLE_NAMES;
+  /** Scope of tables every blog has its own of. */
+  const TABLE_SCOPE_BLOG = H5P_Tables::SCOPE_BLOG;
 
-  /**
-   * Database tables that exist at network level only, without a blog level counterpart.
-   *
-   * @var string[]
-   */
-  const NETWORK_ONLY_DATABASE_TABLE_NAMES = H5P_Tables::NETWORK_ONLY_DATABASE_TABLE_NAMES;
+  /** Scope of the library tables: per blog in local mode, shared in network mode. */
+  const TABLE_SCOPE_LIBRARY = H5P_Tables::SCOPE_LIBRARY;
+
+  /** Scope of tables that exist at network level only, in network mode. */
+  const TABLE_SCOPE_NETWORK_ONLY = H5P_Tables::SCOPE_NETWORK_ONLY;
+
+  /** Scope of tables shared by the whole installation in either mode. */
+  const TABLE_SCOPE_GLOBAL = H5P_Tables::SCOPE_GLOBAL;
 
   /** Value a for_each_blog() callback returns to stop iteration over the remaining blogs. */
   const STOP_ITERATION = H5P_Blogs::STOP_ITERATION;
@@ -173,6 +171,17 @@ class H5PCommons {
    */
   public static function build_full_db_table_name_multisite($table_name) {
     return H5P_Tables::build_full_db_table_name_multisite($table_name);
+  }
+
+  /**
+   * Get names of the tables of the given scopes, in registry order.
+   *
+   * @since 1.18.0
+   * @param string ...$scopes One or more TABLE_SCOPE_* constants.
+   * @return string[] Table names without prefix.
+   */
+  public static function get_table_names(...$scopes) {
+    return H5P_Tables::get_table_names(...$scopes);
   }
 
   /**
