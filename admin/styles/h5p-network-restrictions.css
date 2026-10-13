@@ -75,8 +75,10 @@
     color: #b32d2e;
   }
 
+  /* Both columns start at the same height, whatever comes first (a heading, or the hint to choose a site). */
+  .h5p-network-restrictions-master,
   .h5p-network-restrictions-detail {
-    h2 {
+    > :first-child {
       margin-top: 0;
     }
   }
