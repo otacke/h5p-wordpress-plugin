@@ -1610,3 +1610,278 @@ msgstr ""
 #. Author URI of the plugin/theme
 msgid "http://joubel.com"
 msgstr ""
+
+#: admin/class-h5p-network-admin.php:111 admin/class-h5p-network-admin.php:112
+msgid "H5P Network Restrictions"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:231
+msgid "Restrictions saved."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:232
+msgid "Nothing was changed."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:233
+msgid "The request failed. Please check the server error log."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:234
+msgid "There are unsaved changes. Leave the page anyway?"
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:306
+msgid "The migration back to blog level has not finished yet."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:380
+msgid "The migration to network level has not finished yet."
+msgstr ""
+
+#: admin/class-h5p-network-admin.php:595
+msgid ""
+"Another migration request is still running. Please try again in a moment."
+msgstr ""
+
+#: admin/class-h5p-network-library-admin.php:181
+msgid "Restrictions are managed on the H5P Network Restrictions page."
+msgstr ""
+
+#. translators: %s: directory path
+#: admin/h5p-network-admin/h5p-network-admin-base.php:95
+#, php-format
+msgid "Failed to create directory \"%s\"."
+msgstr ""
+
+#. translators: %s: directory path
+#: admin/h5p-network-admin/h5p-network-admin-base.php:116
+#, php-format
+msgid "Failed to delete directory \"%s\"."
+msgstr ""
+
+#. translators: %s: network table name
+#. translators: %s: blog table name
+#: admin/h5p-network-admin/h5p-network-admin-base.php:136
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:547
+#, php-format
+msgid "Failed to drop table \"%s\"."
+msgstr ""
+
+#. translators: %s: table name
+#: admin/h5p-network-admin/h5p-network-admin-base.php:240
+#, php-format
+msgid "Failed to read the schema of table \"%s\"."
+msgstr ""
+
+#. translators: %s: table name
+#. translators: %s: network table name
+#: admin/h5p-network-admin/h5p-network-admin-base.php:262
+#: admin/h5p-network-admin/h5p-network-library-table-copy.php:58
+#, php-format
+msgid "Failed to create table \"%s\"."
+msgstr ""
+
+#. translators: %s: library name and version, e.g. H5P.Accordion 1.0
+#: admin/h5p-network-admin/h5p-network-library-deletion.php:384
+#, php-format
+msgid "Failed to delete library %s."
+msgstr ""
+
+#. translators: %s: directory path
+#: admin/h5p-network-admin/h5p-network-library-files.php:38
+#, php-format
+msgid "Failed to scan libraries directory: %s"
+msgstr ""
+
+#. translators: %s: library directory path
+#: admin/h5p-network-admin/h5p-network-library-files.php:141
+#, php-format
+msgid "Failed to parse library.json from %s"
+msgstr ""
+
+#. translators: 1: library name and version, 2: library directory path
+#: admin/h5p-network-admin/h5p-network-library-files.php:155
+#, php-format
+msgid "Failed to copy library %1$s from %2$s"
+msgstr ""
+
+#. translators: %s: file or directory path
+#: admin/h5p-network-admin/h5p-network-library-files.php:208
+#, php-format
+msgid "Failed to delete: %s"
+msgstr ""
+
+#. translators: %s: blog table name
+#: admin/h5p-network-admin/h5p-network-migrate-to-local.php:229
+#, php-format
+msgid "Failed to truncate \"%s\"."
+msgstr ""
+
+#. translators: %s: blog table name
+#: admin/h5p-network-admin/h5p-network-migrate-to-local.php:258
+#, php-format
+msgid "Failed to copy library restrictions into \"%s\"."
+msgstr ""
+
+#. translators: 1: blog table name, 2: network table name
+#: admin/h5p-network-admin/h5p-network-migrate-to-local.php:283
+#, php-format
+msgid "Failed to copy rows from \"%2$s\" into \"%1$s\"."
+msgstr ""
+
+#. translators: 1: library name, 2: blog directory path
+#: admin/h5p-network-admin/h5p-network-migrate-to-local.php:315
+#, php-format
+msgid "Failed to copy library \"%1$s\" into \"%2$s\"."
+msgstr ""
+
+#. translators: 1: blog id, 2: table name, 3: blog row count, 4: network row count
+#: admin/h5p-network-admin/h5p-network-migrate-to-local.php:358
+#, php-format
+msgid ""
+"Migration to local level is incomplete: blog %1$d table \"%2$s\" has %3$d "
+"rows, the network has %4$d."
+msgstr ""
+
+#. translators: 1: blog id, 2: directory path
+#: admin/h5p-network-admin/h5p-network-migrate-to-local.php:376
+#, php-format
+msgid ""
+"Migration to local level is incomplete: blog %1$d has no library directory "
+"\"%2$s\"."
+msgstr ""
+
+#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:200
+msgid ""
+"An earlier attempt failed while the blog databases were being updated, so "
+"the migration cannot continue."
+msgstr ""
+
+#: admin/views/network-restrictions.php:42
+msgid ""
+"Authors on a site cannot create content with a library version restricted on "
+"that site. Network administrators are never restricted."
+msgstr ""
+
+#: admin/views/network-restrictions.php:49
+msgid "By content type"
+msgstr ""
+
+#: admin/views/network-restrictions.php:50
+msgid "By site"
+msgstr ""
+
+#: admin/views/network-restrictions.php:63
+msgid "No runnable libraries installed."
+msgstr ""
+
+#: admin/views/network-restrictions.php:68
+msgid "Content types"
+msgstr ""
+
+#. translators: 1: number of sites the library version is restricted on, 2: number of all sites
+#: admin/views/network-restrictions.php:85
+#, php-format
+msgid "restricted on %1$d of %2$d sites"
+msgstr ""
+
+#: admin/views/network-restrictions.php:111
+#: admin/views/network-restrictions.php:113
+#: admin/views/network-restrictions.php:205
+#: admin/views/network-restrictions.php:207
+msgid "Search sites by address"
+msgstr ""
+
+#: admin/views/network-restrictions.php:114
+#: admin/views/network-restrictions.php:208
+msgid "Search sites"
+msgstr ""
+
+#. translators: %d: number of sites
+#: admin/views/network-restrictions.php:122
+#, php-format
+msgid "all %d site"
+msgid_plural "all %d sites"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: number of sites
+#: admin/views/network-restrictions.php:124
+#, php-format
+msgid "the %d matching site"
+msgid_plural "all %d matching sites"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %s: "all 12 sites" or "all 3 matching sites"
+#: admin/views/network-restrictions.php:128
+#, php-format
+msgid "Restrict on %s"
+msgstr ""
+
+#. translators: 1: content type and version, 2: "all 12 sites" or "all 3 matching sites"
+#: admin/views/network-restrictions.php:130
+#, php-format
+msgid "Restrict %1$s on %2$s?"
+msgstr ""
+
+#. translators: %s: "all 12 sites" or "all 3 matching sites"
+#: admin/views/network-restrictions.php:134
+#, php-format
+msgid "Allow on %s"
+msgstr ""
+
+#. translators: 1: content type and version, 2: "all 12 sites" or "all 3 matching sites"
+#: admin/views/network-restrictions.php:136
+#, php-format
+msgid "Allow %1$s on %2$s?"
+msgstr ""
+
+#: admin/views/network-restrictions.php:153
+#: admin/views/network-restrictions.php:213
+msgid "No sites found."
+msgstr ""
+
+#: admin/views/network-restrictions.php:159
+msgid "Restrict on all sites of this page"
+msgstr ""
+
+#: admin/views/network-restrictions.php:162
+msgid "Restricted on site"
+msgstr ""
+
+#: admin/views/network-restrictions.php:163
+msgid "Address"
+msgstr ""
+
+#: admin/views/network-restrictions.php:185
+#: admin/views/network-restrictions.php:274
+msgid "Save changes"
+msgstr ""
+
+#: admin/views/network-restrictions.php:199
+msgid "Sites"
+msgstr ""
+
+#: admin/views/network-restrictions.php:235
+msgid "Choose a site to see its restrictions."
+msgstr ""
+
+#: admin/views/network-restrictions.php:245
+msgid "Restrict all content types on this site"
+msgstr ""
+
+#: admin/views/network-restrictions.php:248
+msgid "Restricted content type"
+msgstr ""
+
+#. translators: %s: comma separated content types with versions, e.g. "Multiple Choice 1.16"
+#: common/class-h5p-library-restrictions.php:173
+#, php-format
+msgid "Content using %s cannot be added on this site, as it is restricted."
+msgstr ""
+
+#: common/class-h5p-library-restrictions.php:324
+msgid "Failed to save the restrictions."
+msgstr ""
