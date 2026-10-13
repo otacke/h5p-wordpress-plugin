@@ -1051,16 +1051,6 @@ msgstr "Incrustar tipo"
 msgid "Disable"
 msgstr "Deshabilitar"
 
-#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:463
-#, php-format
-msgid "Failed to create network libraries directory: %s"
-msgstr ""
-
-#: admin/h5p-network-admin/h5p-network-migrate-to-network.php:485
-#, php-format
-msgid "Failed to create network cachedassets directory: %s"
-msgstr ""
-
 #: admin/h5p-network-admin/h5p-network-migrate-to-network.php:731
 #, php-format
 msgid "Failed to copy library dependencies of blog %1$d into \"%2$s\"."
