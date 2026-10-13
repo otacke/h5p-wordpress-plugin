@@ -234,46 +234,4 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
       }
     });
   }
-
-  /**
-   * Delete network-level files directory.
-   *
-   * @throws Exception If the directory cannot be deleted.
-   */
-  public function deleteNetworkFilesDirectory() {
-    $network_lib_base = $this->getH5PNetworkPath();
-
-    if (is_dir($network_lib_base)) {
-      H5PCore::deleteFileTree($network_lib_base);
-
-      if (is_dir($network_lib_base)) {
-        throw new Exception(
-          sprintf(
-            /* translators: %s: directory path */
-            __('Failed to delete directory "%s".', 'h5p'),
-            $network_lib_base
-          )
-        );
-      }
-    }
-  }
-
-  /**
-   * Drop network-level database tables.
-   *
-   * @throws Exception If a table cannot be dropped.
-   */
-  public function dropNetworkTables() {
-    foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY, H5PCommons::TABLE_SCOPE_NETWORK_ONLY) as $table_name) {
-      $table = H5PCommons::build_full_db_table_name_multisite($table_name);
-      $this->query_or_throw(
-        "DROP TABLE IF EXISTS {$table}",
-        sprintf(
-          /* translators: %s: network table name */
-          __('Failed to drop table "%s".', 'h5p'),
-          $table
-        )
-      );
-    }
-  }
 }

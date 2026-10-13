@@ -285,11 +285,7 @@ class H5P_Network_Admin {
    */
   public function handle_migrate_to_network() {
     $this->verify_request(false);
-
-    // Migrates copies and deletes every library file of every blog, which can
-    // take longer than the configured limit. Not honoured by every host.
-    @set_time_limit(0);
-    ignore_user_abort(true);
+    $this->prepare_long_request();
 
     $migrate = new H5P_Network_Migrate_To_Network();
 
@@ -300,21 +296,8 @@ class H5P_Network_Admin {
       $progress = $migrate->migrateNextBatch();
     }
     catch (Exception $exception) {
-      $rolled_back = false;
-
       // Decided by the step that failed, not by the phase: the database phase runs step 3, which changes blogs.
-      if ($migrate->isRollbackPossible()) {
-        try {
-          $demigrate = new H5P_Network_Migrate_To_Local();
-          $demigrate->deleteNetworkFilesDirectory();
-          $demigrate->dropNetworkTables();
-          H5P_Network_Migrate_To_Network::clearState();
-          $rolled_back = true;
-        }
-        catch (Exception $rollback_exception) {
-          error_log('H5P network migration rollback: ' . $rollback_exception->getMessage());
-        }
-      }
+      $rolled_back = $migrate->rollback();
 
       error_log(
         sprintf(
@@ -349,16 +332,7 @@ class H5P_Network_Admin {
     }
 
     $this->set_network_mode(true);
-
-    if (!(defined('H5P_DISABLE_AGGREGATION') && H5P_DISABLE_AGGREGATION === true)) {
-      try {
-        $migrate->createCachedAssets();
-      }
-      catch (Exception $exception) {
-        // Not fatal: cached assets are created lazily when content is viewed.
-        error_log('H5P network migration: ' . $exception->getMessage());
-      }
-    }
+    $migrate->createCachedAssetsUnlessDisabled('H5P network migration: ');
 
     wp_send_json_success(
       array(
@@ -373,11 +347,7 @@ class H5P_Network_Admin {
    */
   public function handle_migrate_to_local() {
     $this->verify_request(false);
-
-    // Migrating copies and deletes every library file of every blog, which can
-    // take longer than the configured limit. Not honoured by every host.
-    @set_time_limit(0);
-    ignore_user_abort(true);
+    $this->prepare_long_request();
 
     $demigrate = new H5P_Network_Migrate_To_Local();
 
@@ -401,8 +371,7 @@ class H5P_Network_Admin {
     $this->set_network_mode(false);
 
     try {
-      $demigrate->deleteNetworkFilesDirectory();
-      $demigrate->dropNetworkTables();
+      $demigrate->removeNetworkData();
 
       // The network tables are gone, so the network schema version is meaningless.
       delete_site_option('h5p_network_db_version');
@@ -412,15 +381,7 @@ class H5P_Network_Admin {
       error_log('H5P local demigration cleanup failed: ' . $exception->getMessage());
     }
 
-    if (!(defined('H5P_DISABLE_AGGREGATION') && H5P_DISABLE_AGGREGATION === true)) {
-      try {
-        $demigrate->createCachedAssets();
-      }
-      catch (Exception $exception) {
-        // Not fatal: cached assets are created lazily when content is viewed.
-        error_log('H5P local demigration: ' . $exception->getMessage());
-      }
-    }
+    $demigrate->createCachedAssetsUnlessDisabled('H5P local demigration: ');
 
     wp_send_json_success();
   }
@@ -572,6 +533,15 @@ class H5P_Network_Admin {
     }
 
     wp_send_json_success(array('saved' => $affected));
+  }
+
+  /**
+   * Let a migration request run as long as it needs: it copies and deletes library files of many blogs, which can
+   * take longer than the configured limit. Not honoured by every host.
+   */
+  private function prepare_long_request() {
+    @set_time_limit(0);
+    ignore_user_abort(true);
   }
 
   /**

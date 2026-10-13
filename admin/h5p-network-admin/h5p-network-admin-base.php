@@ -11,6 +11,16 @@ abstract class H5P_Network_Admin_Base {
   use H5PUtils;
 
   /**
+   * Seconds of work per batch request. Checked between blogs, so no blog is left half done.
+   */
+  const BATCH_TIMEOUT = 5;
+
+  /**
+   * Upper bound of blogs per batch; the time budget usually ends batches earlier.
+   */
+  const BATCH_BLOG_LIMIT = 200;
+
+  /**
    * Get network-level H5P base directory path.
    *
    * @return string
@@ -35,6 +45,129 @@ abstract class H5P_Network_Admin_Base {
    */
   protected function getNetworkCachedassetsPath() {
     return  $this->getH5PNetworkPath() . '/cachedassets';
+  }
+
+  /**
+   * Run one batch of a phase that visits every blog: the next blogs from the state's offset, until the time budget
+   * is spent, then move on to the next phase once the last blog was visited.
+   *
+   * @param array    $state      Migration state with 'phase' and 'offset'.
+   * @param callable $per_blog   Receives the blog id and the state by reference, in the blog's context.
+   * @param string   $next_phase Phase to continue with after the last blog.
+   * @return array Updated migration state.
+   */
+  protected function runBlogBatch($state, callable $per_blog, $next_phase) {
+    $start = microtime(true);
+
+    $state['offset'] = H5PCommons::for_each_blog_page(
+      $state['offset'],
+      static::BATCH_BLOG_LIMIT,
+      function ($blog_id) use ($per_blog, &$state, $start) {
+        $per_blog($blog_id, $state);
+
+        // Stop once the budget is spent, leaving no blog half done.
+        return (microtime(true) - $start) <= static::BATCH_TIMEOUT;
+      }
+    );
+
+    if ($state['offset'] >= H5PCommons::count_blogs()) {
+      $state['phase'] = $next_phase;
+      $state['offset'] = 0;
+    }
+
+    return $state;
+  }
+
+  /**
+   * Ensure a directory exists.
+   *
+   * @param string $path Directory path.
+   * @throws Exception If the directory cannot be created.
+   */
+  protected function ensureDir($path) {
+    if (is_dir($path) || mkdir($path, 0755, true)) {
+      return;
+    }
+
+    throw new Exception(
+      sprintf(
+        /* translators: %s: directory path */
+        __('Failed to create directory "%s".', 'h5p'),
+        $path
+      )
+    );
+  }
+
+  /**
+   * Delete network-level files directory.
+   *
+   * @throws Exception If the directory cannot be deleted.
+   */
+  public function deleteNetworkFilesDirectory() {
+    $network_lib_base = $this->getH5PNetworkPath();
+
+    if (is_dir($network_lib_base)) {
+      H5PCore::deleteFileTree($network_lib_base);
+
+      if (is_dir($network_lib_base)) {
+        throw new Exception(
+          sprintf(
+            /* translators: %s: directory path */
+            __('Failed to delete directory "%s".', 'h5p'),
+            $network_lib_base
+          )
+        );
+      }
+    }
+  }
+
+  /**
+   * Drop network-level database tables.
+   *
+   * @throws Exception If a table cannot be dropped.
+   */
+  public function dropNetworkTables() {
+    foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_LIBRARY, H5PCommons::TABLE_SCOPE_NETWORK_ONLY) as $table_name) {
+      $table = H5PCommons::build_full_db_table_name_multisite($table_name);
+      $this->query_or_throw(
+        "DROP TABLE IF EXISTS {$table}",
+        sprintf(
+          /* translators: %s: network table name */
+          __('Failed to drop table "%s".', 'h5p'),
+          $table
+        )
+      );
+    }
+  }
+
+  /**
+   * Remove the network level data: the library files folder and the network tables.
+   *
+   * @throws Exception If a part cannot be removed.
+   */
+  public function removeNetworkData() {
+    $this->deleteNetworkFilesDirectory();
+    $this->dropNetworkTables();
+  }
+
+  /**
+   * Create cached assets for all H5P content on all blogs, unless asset aggregation is disabled.
+   *
+   * Never fails: cached assets are created lazily when content is viewed, so a failure is only logged.
+   *
+   * @param string $log_prefix Prefix of the error log entry.
+   */
+  public function createCachedAssetsUnlessDisabled($log_prefix) {
+    if (defined('H5P_DISABLE_AGGREGATION') && H5P_DISABLE_AGGREGATION === true) {
+      return;
+    }
+
+    try {
+      $this->createCachedAssets();
+    }
+    catch (Exception $exception) {
+      error_log($log_prefix . $exception->getMessage());
+    }
   }
 
   /**
