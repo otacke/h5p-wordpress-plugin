@@ -3,8 +3,7 @@
 /**
  * H5P_Network_Library_Files
  *
- * Library directories during the migration to network level: copying each blog's library folders to the network
- * folder, in the order of the blog's library table, and clearing the blog folders afterwards.
+ * Copies each blog's library folders to network folder in blog's table order, then clears blog folders.
  * @package H5P
  * @since 1.18.0
  */
@@ -13,8 +12,7 @@ class H5P_Network_Library_Files extends H5P_Network_Admin_Base {
   /**
    * Copy library directories of one blog to network level.
    *
-   * Records copies in $network_libraries_installed, keeping only highest patch of each major.minor
-   * across all blogs. Passed in and out so batches can carry it over several requests.
+   * Records copies in $network_libraries_installed (highest patch per major.minor), carried across batch requests.
    *
    * @param int    $blog_id                     Blog to copy from.
    * @param string $network_libraries_path      Network-level libraries path.
@@ -41,8 +39,7 @@ class H5P_Network_Library_Files extends H5P_Network_Admin_Base {
       );
     }
 
-    // Network table auto-increment ids follow copy order, so process directories in the blog's
-    // own table id order to keep the network ids aligned with the blog's.
+    // Network auto-increment ids follow copy order, so copy in blog's table id order to keep ids aligned.
     $library_directories = $this->orderLibraryDirectories($library_directories);
 
     foreach ($library_directories as $library_directory_name) {
@@ -67,10 +64,7 @@ class H5P_Network_Library_Files extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Order library directory names so directories with a row in the blog's h5p_libraries
-   * table come first, in that table's id order; the remaining directories follow.
-   *
-   * Must run in the blog's context, since the table name resolves from the current blog.
+   * Order directory names by blog's h5p_libraries id order, unlisted ones last. Must run in blog's context.
    *
    * @param array $directory_names Directory names as returned by scandir().
    * @return array Ordered directory names.
@@ -168,9 +162,7 @@ class H5P_Network_Library_Files extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Clear migrated H5P files of one blog, keeping directories themselves.
-   *
-   * Skips absent directories, so it can run again on blogs already cleared.
+   * Clear migrated H5P files of one blog, keeping directories; skips absent ones, so it can run again.
    *
    * @param WP_Filesystem_Base $wp_filesystem Filesystem to delete through.
    *

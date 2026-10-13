@@ -281,9 +281,7 @@ class H5P_Plugin {
       KEY content_user (content_id,user_id)
     ) {$charset};");
 
-    // Keep track of h5p libraries, dependencies, languages and cached asset hashes.
-    // In network mode these four tables are shared by all blogs and are maintained
-    // once at network level by update_network_database() instead.
+    // Library, dependency, language and cached asset tables; shared in network mode, see update_network_database().
     if (H5PCommons::mode()->manages_libraries_per_blog()) {
       self::update_library_tables(
         array('H5PCommons', 'build_full_db_table_name'),
@@ -373,10 +371,7 @@ class H5P_Plugin {
   }
 
   /**
-   * Create or update the four H5P library tables: libraries, library dependencies,
-   * library languages and cached asset hashes.
-   *
-   * The same schema at blog level and at network level; the resolver picks the full table names.
+   * Create or update four library tables (libraries, dependencies, languages, cached assets) at blog or network level.
    *
    * @since 1.18.0
    * @param callable $table_name_builder Returns the full table name for a library table name.
@@ -439,10 +434,7 @@ class H5P_Plugin {
   }
 
   /**
-   * Create or update the network level H5P library tables.
-   *
-   * Shared by all blogs in network mode, so these run once per network, not once per blog
-   * like the rest of update_database().
+   * Create or update network level library tables, once per network, not per blog like update_database().
    *
    * @since 1.18.0
    */
@@ -495,8 +487,7 @@ class H5P_Plugin {
   public static function check_for_updates() {
     global $wpdb;
 
-    // The network level library tables are shared by all blogs, so they are updated
-    // once per network via a site option, before the per blog version check below.
+    // Shared network library tables update once per network via site option, before per blog version check below.
     if (H5PCommons::is_network_enabled()
       && get_site_option('h5p_network_db_version') !== self::VERSION) {
       self::update_network_database();
@@ -746,9 +737,7 @@ class H5P_Plugin {
   }
 
   /**
-   * Clear the cached assets of the current blog: its own folder, and in single site or
-   * local mode its own table. In network mode the table is shared, so it is left alone
-   * and cleared once per network by clearNetworkCachedAssets() instead.
+   * Clear blog's cached assets folder and, unless shared in network mode, table; see clearNetworkCachedAssets().
    */
   private static function clearCachedAssets() {
     WP_Filesystem();
@@ -774,8 +763,7 @@ class H5P_Plugin {
   }
 
   /**
-   * Clear the network level cached assets, once per network: the shared table and the
-   * h5p_network/cachedassets folder.
+   * Clear network level cached assets once per network: shared table and h5p_network/cachedassets folder.
    */
   private static function clearNetworkCachedAssets() {
     WP_Filesystem();
@@ -860,11 +848,7 @@ class H5P_Plugin {
   }
 
   /**
-   * Assign H5P capabilities to roles on every blog.
-   *
-   * Roles are stored per blog, so a change that depends on network wide state
-   * has to be applied to each of them. Used when network mode is switched on or
-   * off, which changes who may manage libraries.
+   * Assign H5P capabilities to roles on every blog, as roles are per blog; used when network mode switches.
    *
    * @since 1.18.0
    */
@@ -907,13 +891,9 @@ class H5P_Plugin {
   }
 
   /**
-   * The capability that a library capability should be mapped from.
+   * Capability library capability is mapped from.
    *
-   * Capabilities that write to the libraries folder are for network admins only
-   * when network mode is on, because the folder is then shared by every blog.
-   * manage_network_plugins belongs to no blog role, so mapping from it revokes
-   * the library capability from all of them, while super admins keep it by way
-   * of having every capability.
+   * In network mode manage_network_plugins, which no blog role has, so only super admins keep library capabilities.
    *
    * @since 1.18.0
    * @param string $local_cap Capability to map from when network mode is off.
@@ -994,11 +974,7 @@ class H5P_Plugin {
   }
 
   /**
-   * Get the file storage for H5P core to use.
-   *
-   * In network mode libraries and cached assets are shared by all blogs, which
-   * needs a storage with two roots. Otherwise the plain h5p folder will do, and
-   * H5PCore builds the default storage from it itself.
+   * Get file storage for H5P core: two-root storage in network mode, else plain h5p folder for core's default.
    *
    * @since 1.18.0
    * @return string|\H5PFileStorage
@@ -1093,11 +1069,7 @@ class H5P_Plugin {
   }
 
   /**
-   * Invalidate the per-blog H5P core and interface instances, and the editor built on them.
-   *
-   * The storage a core uses is resolved when it is constructed, so after the
-   * network mode changes, cores built for the previous mode must not be
-   * reused. Runs on h5p_network_mode_changed.
+   * Invalidate per-blog core, interface and editor instances on mode change, as core resolves storage when built.
    *
    * @since 1.18.0
    */
@@ -1390,14 +1362,7 @@ class H5P_Plugin {
   }
 
   /**
-   * Point library and cached asset paths at the network level folder.
-   *
-   * H5P core builds these paths relative to the storage root, which for
-   * libraries and cached assets is the shared network folder rather than this
-   * blog's h5p folder. Rewriting them to absolute URLs is what makes the three
-   * consumers leave them alone: H5PCore::getAssetsUrls(),
-   * H5peditor::getLibraryData() and self::enqueue_assets() all pass a path
-   * through unchanged once it carries a scheme.
+   * Point library and cached asset paths at network folder; absolute URLs pass core and editor unchanged.
    *
    * @since 1.18.0
    * @param array $files scripts & styles
@@ -1499,8 +1464,7 @@ class H5P_Plugin {
       'libraryUrl' => plugins_url('h5p/h5p-php-library/js')
     );
 
-    // Core JS builds library URLs as url + '/libraries/', which in network mode
-    // is not where the libraries are. H5P.getLibraryPath() honours this override.
+    // Core JS builds library URLs as url + '/libraries/', wrong in network mode; H5P.getLibraryPath() honours this.
     $libraries_url = H5PCommons::mode()->get_libraries_url_override();
     if ($libraries_url !== null) {
       $settings['urlLibraries'] = $libraries_url;
@@ -1897,8 +1861,7 @@ class H5P_Plugin {
   public static function uninstall() {
     global $wpdb;
 
-    // Drop tables of this blog only. In network mode, the library tables are shared by all blogs and are dropped
-    // by uninstall_network(), so deleting a single blog must not resolve its table names to them.
+    // Singlesite names only: shared network library tables must survive blog deletion; uninstall_network() drops them.
     foreach (H5PCommons::get_table_names(H5PCommons::TABLE_SCOPE_BLOG, H5PCommons::TABLE_SCOPE_LIBRARY) as $table_name) {
       $table = H5PCommons::build_full_db_table_name_singlesite($table_name);
       $wpdb->query("DROP TABLE IF EXISTS {$table}");
@@ -1957,7 +1920,7 @@ class H5P_Plugin {
   /**
    * WARNING! Removes the network level H5P data shared by all blogs: network library tables, files and settings.
    *
-   * Only for uninstalling the plugin on a multisite, after uninstall() ran on every blog; never for deleting a blog.
+   * Only for plugin uninstall on multisite, after uninstall() ran on every blog; never for deleting a blog.
    */
   public static function uninstall_network() {
     global $wpdb;

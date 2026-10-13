@@ -3,18 +3,14 @@
 /**
  * H5P_Network_Library_Id_Map
  *
- * Library ids during the migration to network level: which network library id each blog library id becomes, and
- * the two-pass remap of the blog content tables to those ids.
+ * Maps blog library ids to network library ids during migration and remaps blog tables in two passes.
  * @package H5P
  * @since 1.18.0
  */
 class H5P_Network_Library_Id_Map extends H5P_Network_Admin_Base {
 
   /**
-   * Offset of temporary id range used while remapping library ids.
-   *
-   * Must exceed every real library id, and offset plus highest new id must fit in
-   * library_id (INT UNSIGNED, max 4294967295).
+   * Temporary id range offset for remapping: must exceed all real ids; offset + highest new id must fit INT UNSIGNED.
    */
   const REMAP_TEMP_OFFSET = 1000000000;
 
@@ -26,10 +22,7 @@ class H5P_Network_Library_Id_Map extends H5P_Network_Admin_Base {
   protected $network_library_ids = null;
 
   /**
-   * Build map of library version key to library id for the network-level libraries.
-   *
-   * Cached: network libraries are written once before first lookup, and nothing later changes
-   * their name or version, so the map holds for the rest of the migration.
+   * Build map of library version key to network library id; cached, as names/versions don't change after first lookup.
    *
    * @return array Map of library version key to network library id.
    */
@@ -55,8 +48,7 @@ class H5P_Network_Library_Id_Map extends H5P_Network_Admin_Base {
    * Build map of one blog's library ids to their network-level library ids.
    *
    * @param int $blog_id Blog id.
-   * @return array Map of old library id to network library id. Empty for a blog without H5P
-   *   library tables, which is a blog that never used H5P or whose tables were already dropped.
+   * @return array Map of old library id to network library id; empty if blog has no H5P library tables.
    */
   public function buildBlogIdLookup($blog_id) {
     return H5PCommons::in_blog($blog_id, function () {
@@ -68,8 +60,7 @@ class H5P_Network_Library_Id_Map extends H5P_Network_Admin_Base {
 
       global $wpdb;
 
-      // Network table is the same for every blog, so read it once and match in PHP instead of
-      // querying it per blog library.
+      // Network table is same for every blog, so read it once and match in PHP.
       $network_ids = $this->buildNetworkLibraryIdMap();
       $mappings = array();
       foreach ($wpdb->get_results("SELECT id, name, major_version, minor_version FROM {$blog_table_libraries}") as $entry) {
@@ -97,16 +88,10 @@ class H5P_Network_Library_Id_Map extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Pass 1 of the two-pass library id remap for one blog-level table: move the old ids to a
-   * temporary range.
+   * Pass 1 of two-pass library id remap of one blog table: move old ids to temporary range.
    *
-   * Two statements are required per table: a mapping can move one library onto an id another row
-   * still holds (e.g. 18 => 4 while 10 => 18), and h5p_contents_libraries has
-   * PRIMARY KEY (content_id, library_id, dependency_type). Uniqueness is checked row by row while
-   * updating, not at end, so moving onto taken ids collides. The temporary range avoids that.
-   *
-   * Re-running this is a no-op: rows already moved hold temporary ids, not old ids, so they no
-   * longer match the WHERE.
+   * Direct move collides: target ids may still be held (18 => 4 while 10 => 18) and h5p_contents_libraries'
+   * PRIMARY KEY is checked row by row while updating. Re-running is no-op: moved rows no longer match WHERE.
    *
    * @param string $blog_table Full name of the blog-level table.
    * @param array  $mappings   Map of old id to new id.
@@ -143,10 +128,7 @@ class H5P_Network_Library_Id_Map extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Pass 2 of the two-pass library id remap for one blog-level table: move the temporary range to
-   * the final network ids.
-   *
-   * Re-running this is a no-op: no rows in the temporary range remain.
+   * Pass 2 of two-pass library id remap of one blog table: move temporary range to final ids; re-running is no-op.
    *
    * @param string $blog_table Full name of the blog-level table.
    *

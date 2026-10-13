@@ -3,20 +3,14 @@
 /**
  * H5P_Network_Library_Helpers
  *
- * Helpers shared by the network level library management classes and their views: content counts,
- * version comparison and formatting, and H5P core messages.
+ * Shared helpers of network library management: content counts, version comparison/formatting, core messages.
  * @package H5P
  * @since 1.18.0
  */
 class H5P_Network_Library_Helpers {
 
   /**
-   * Count the contents that use each library version as their main library, across all blogs.
-   *
-   * The network counterpart of core's getNumContent() (h5p_contents.library_id), which the upgrade and delete
-   * actions are about. Not the dependency usage of getLibraryUsage() (h5p_contents_libraries), which also counts
-   * every library a content loads; deletability adds the sub content check of
-   * H5P_Network_Library_Deletion::is_library_deletable() instead.
+   * Count contents per main library version on all blogs (like core's getNumContent(), not getLibraryUsage()).
    *
    * @return array Map of library id to content count.
    */

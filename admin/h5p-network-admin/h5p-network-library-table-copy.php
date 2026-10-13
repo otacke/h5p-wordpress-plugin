@@ -3,8 +3,7 @@
 /**
  * H5P_Network_Library_Table_Copy
  *
- * Library rows during the migration to network level: copying each blog's library rows, translations and
- * dependencies into the network tables, and creating the network restrictions table.
+ * Copies each blog's library rows, translations and dependencies to network tables; creates network restrictions table.
  * @package H5P
  * @since 1.18.0
  */
@@ -37,8 +36,7 @@ class H5P_Network_Library_Table_Copy extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Create empty network-level restrictions table, filled per blog by the remap phase. Drops it first,
-   * so a repeated attempt starts clean like the tables created from the blog tables.
+   * Create empty network restrictions table (filled per blog in remap phase); drops it first so retries start clean.
    *
    * @throws Exception If table cannot be created.
    */
@@ -65,9 +63,7 @@ class H5P_Network_Library_Table_Copy extends H5P_Network_Admin_Base {
   /**
    * Copy dependency entries (h5p_libraries_libraries) from every blog to network-level table.
    *
-   * Same dependency can come from several blogs, so duplicates are left to primary key via
-   * ON DUPLICATE KEY UPDATE, as H5PWordPress::saveLibraryDependencies() does. That key is
-   * (library_id, required_library_id) without dependency_type, so repeated pairs update type.
+   * Cross-blog duplicates hit primary key (library_id, required_library_id) via ON DUPLICATE KEY UPDATE, updating type.
    *
    * @throws Exception If dependency entry cannot be inserted.
    */
@@ -156,8 +152,7 @@ class H5P_Network_Library_Table_Copy extends H5P_Network_Admin_Base {
    * @param string $machine_name Machine name of library.
    * @param string $version Semantic version major.minor.patch
    *
-   * @return array|false Array with 'blog_library_id' and 'network_library_id',
-   *                     or false if blog has no such library.
+   * @return array|false 'blog_library_id' and 'network_library_id', or false if blog has no such library.
    * @throws Exception If insert fails.
    */
   public function insertBlogLibraryToNetwork($machine_name, $version) {
@@ -216,10 +211,7 @@ class H5P_Network_Library_Table_Copy extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Copy language translations for library to network-level table.
-   *
-   * Copied inside database, so large translations are never pulled into PHP and sent back, which
-   * would risk exceeding max_allowed_packet.
+   * Copy library translations to network table inside database, so large ones never exceed max_allowed_packet via PHP.
    *
    * @param int $blog_library_id    Blog-level library ID.
    * @param int $network_library_id Network-level library ID.

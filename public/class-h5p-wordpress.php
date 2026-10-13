@@ -95,10 +95,7 @@ class H5PWordPress implements H5PFrameworkInterface {
   }
 
   /**
-   * Helper
-   *
-   * Libraries are shared by all blogs in network mode, so they do not live in
-   * the blog's own h5p folder.
+   * Helper: in network mode libraries are shared by all blogs, so not in blog's own h5p folder.
    */
   private function getLibrariesPath() {
     return H5PCommons::get_libraries_path();
@@ -229,8 +226,7 @@ class H5PWordPress implements H5PFrameworkInterface {
 
     return array(
       'content' => $skipContent ? -1 : $this->getContentUsage($id),
-      // Dependencies are kept in a network level table in network mode, so this
-      // count already covers every blog.
+      // Dependencies are in network level table in network mode, so count already covers every blog.
       'libraries' => intval($wpdb->get_var($wpdb->prepare(
           "SELECT COUNT(*)
           FROM {$table_libraries_libraries}
@@ -241,14 +237,9 @@ class H5PWordPress implements H5PFrameworkInterface {
   }
 
   /**
-   * Number of content items using the given library.
+   * Number of content items using library; counts every blog in network mode, so deletion stays blocked if used.
    *
-   * In network mode libraries are shared, so content on every blog counts:
-   * deleting a library has to be blocked while any blog still uses it.
-   *
-   * Counts for all libraries are gathered in one query per blog and kept for the
-   * rest of the request, because the library admin list asks about every library
-   * in turn and switching blogs is not cheap.
+   * One query per blog, cached for request, as library admin list asks for every library and blog switches cost.
    *
    * @since 1.18.0
    * @param int $id Library id.
@@ -271,10 +262,7 @@ class H5PWordPress implements H5PFrameworkInterface {
 
 
   /**
-   * Count the number of content items per library on the current blog.
-   *
-   * A blog where H5P has never been loaded has no content tables, and no content
-   * either, so it contributes nothing.
+   * Count content items per library on current blog; blogs without H5P tables contribute nothing.
    *
    * @since 1.18.0
    * @return int[] Content count keyed by library id.
@@ -950,10 +938,7 @@ class H5PWordPress implements H5PFrameworkInterface {
   }
 
   /**
-   * Implements clearFilteredParameters().
-   *
-   * In network mode libraries are shared, so content using them on every blog
-   * needs to be filtered again.
+   * Implements clearFilteredParameters(), on every blog in network mode, as libraries are shared.
    */
   public function clearFilteredParameters($library_ids) {
     // In network mode a blog where H5P has never been loaded has no content tables, and no content either.
@@ -985,10 +970,7 @@ class H5PWordPress implements H5PFrameworkInterface {
   }
 
   /**
-   * Implements getNumNotFiltered().
-   *
-   * In network mode content lives on every blog, so unfiltered content on any
-   * blog makes the per-library usage counts untrustworthy there, too.
+   * Implements getNumNotFiltered(), on every blog in network mode, as unfiltered content anywhere skews usage counts.
    */
   public function getNumNotFiltered() {
     $not_filtered = 0;
@@ -999,10 +981,7 @@ class H5PWordPress implements H5PFrameworkInterface {
   }
 
   /**
-   * Count content items that have not been filtered yet on the current blog.
-   *
-   * A blog where H5P has never been loaded has no content tables, and no content
-   * either, so it contributes nothing.
+   * Count unfiltered content items on current blog; blogs without H5P tables contribute nothing.
    *
    * @since 1.18.0
    * @return int

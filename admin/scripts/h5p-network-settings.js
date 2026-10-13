@@ -115,9 +115,7 @@
 
     setButtonBusy(button, true);
 
-    // The migration works through the blogs in batches, so keep calling until
-    // the server reports it is done. The first call says so, so a new run
-    // never resumes an abandoned one.
+    // Call batches until server reports done; first call sends start, so new run never resumes abandoned one.
     const runBatch = async (nonce, start = false) => {
       const formData = new FormData();
       if (start) {
@@ -151,8 +149,7 @@
 
       if (progress.done === false) {
         setButtonProgress(button, progress);
-        // A fresh nonce comes back with every batch, so a long
-        // migration cannot fail on an expired one.
+        // Each batch returns fresh nonce, so long migration cannot fail on expired one.
         runBatch(progress.nonce || nonce);
         return;
       }

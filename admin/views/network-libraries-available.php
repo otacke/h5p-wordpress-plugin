@@ -1,6 +1,6 @@
 <?php
 /**
- * Grid of the hub content types that are not installed yet (WAI-ARIA APG data grid pattern).
+ * Grid of hub content types not installed yet (WAI-ARIA APG data grid pattern).
  *
  * Expects $overview from H5P_Network_Library_Overview::get_library_overview().
  *

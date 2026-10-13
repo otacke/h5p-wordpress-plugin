@@ -25,9 +25,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   const PHASE_DATABASE = 'database';
 
   /**
-   * Phase remapping blog-level library ids, moving the blogs' library restrictions to network level and
-   * dropping the blogs' obsolete library tables.
-   * Destructive, but resumable per blog and per stage.
+   * Phase remapping blog library ids, moving restrictions, dropping blog tables; destructive, resumable per blog/stage.
    */
   const PHASE_REMAP = 'remap';
 
@@ -42,10 +40,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   const PHASE_DONE = 'done';
 
   /**
-   * Step running when migration failed, null if no step failed.
-   *
-   * Steps 1 and 2 only add network files and tables, so they roll back. Steps 3 and 4 delete
-   * blog data and cannot.
+   * Step running when migration failed, or null; steps 1-2 only add network data and roll back, 3-4 delete blog data.
    *
    * @var int|null
    */
@@ -193,8 +188,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
       case self::PHASE_DATABASE:
         if (!empty($state['updating_blogs'])) {
-          // Older code set this marker inside this phase while it updated the blogs, so such a state may
-          // hold half-remapped blog databases. The migration cannot continue and has to be restarted.
+          // Older code set this marker while updating blogs, so databases may be half-remapped; restart required.
           $this->failed_step = 3;
           throw new Exception(
             __('An earlier attempt failed while the blog databases were being updated, so the migration cannot continue.', 'h5p')
@@ -221,8 +215,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
     if ($state['phase'] === self::PHASE_DONE) {
       $this->failed_step = null;
-      // The network tables are now current, so check_for_updates() will not re-run them
-      // on every blog until the plugin version changes.
+      // Network tables are current, so check_for_updates() won't re-run them on every blog until version changes.
       update_site_option('h5p_network_db_version', H5P_Plugin::VERSION);
       self::clearState();
     }
@@ -234,9 +227,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Describe how far migration has got, as percentage so progress only moves forwards.
-   *
-   * Blogs are walked three times, copying, remapping and clearing, so blog count is not total.
+   * Describe progress as forward-only percentage: blogs are walked three times (copy, remap, clear).
    *
    * @param array $state Current migration state.
    * @return array Progress with 'phase', 'percentage' and 'done'.
@@ -313,9 +304,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Remap one blog's library ids and drop its obsolete library tables, resuming at its saved stage.
    *
-   * Stages run in a fixed order and each is saved right after its statement, so re-running a
-   * finished stage is a no-op: pass one only matches old ids, pass two only matches temporary
-   * ids, and dropping tables is idempotent.
+   * Stages run in fixed order, saved after each statement; rerun no-op (passes match old/temp ids; drop idempotent).
    *
    * @param int $blog_id Blog id.
    * @param array $state Migration state, updated with the blog's progress.
@@ -340,8 +329,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       $recorded_index = -1;
     }
 
-    // A blog that already dropped its tables is done, even if the batch that dropped them did not
-    // get to persist its offset.
+    // Blog that already dropped its tables is done, even if dropping batch did not persist its offset.
     $already_dropped = H5PCommons::in_blog($blog_id, function () use ($recorded_stage) {
       return $recorded_stage === 'dropped'
         && !H5PCommons::table_exists(H5PCommons::build_full_db_table_name_singlesite('h5p_libraries'));
@@ -440,8 +428,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
         $inserted = $this->tableCopy()->insertBlogLibraryToNetwork($info['machine_name'], $info['version']);
 
         if ($inserted === false) {
-          // No matching row in this blog's libraries table; legitimate, but
-          // worth recording so missing libraries can be traced afterwards.
+          // No matching row in blog's libraries table; legitimate, but recorded to trace missing libraries.
           $skipped[] = "{$versioned_machine_name} (blog {$blog_id})";
           continue;
         }
@@ -469,8 +456,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   /**
    * Restrict on network level, for one blog, the library versions restricted in that blog's libraries table.
    *
-   * The network libraries table is shared by all blogs, so its restricted column cannot hold the blog's
-   * restrictions. Re-running this is a no-op, as existing rows are ignored.
+   * Shared network libraries table can't hold per-blog restrictions; re-run is no-op (existing rows ignored).
    *
    * @param int   $blog_id  Blog id.
    * @param array $mappings Map of blog library id to network library id.
@@ -504,8 +490,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
 
   /**
-   * Pass 1 of the two-pass library id remap for one blog-level table. See
-   * H5P_Network_Library_Id_Map::remapLibraryIdsPass1(); kept here as a seam for fault injection.
+   * Pass 1 of library id remap, see H5P_Network_Library_Id_Map::remapLibraryIdsPass1(); seam for fault injection.
    *
    * @param string $blog_table Full name of the blog-level table.
    * @param array  $mappings   Map of old id to new id.
@@ -516,8 +501,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Pass 2 of the two-pass library id remap for one blog-level table. See
-   * H5P_Network_Library_Id_Map::remapLibraryIdsPass2(); kept here as a seam for fault injection.
+   * Pass 2 of library id remap, see H5P_Network_Library_Id_Map::remapLibraryIdsPass2(); seam for fault injection.
    *
    * @param string $blog_table Full name of the blog-level table.
    * @throws Exception If the update fails.

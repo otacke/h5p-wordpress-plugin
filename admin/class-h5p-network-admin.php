@@ -1,13 +1,7 @@
 <?php
 
 /**
- * H5P_Network_Admin
- *
- * Super-admin (Network Admin) UI for enabling/disabling H5P "Network Mode" — central, network-level
- * library management. Lives under Network Admin > Settings and is only registered on multisite.
- * Delegates migration logic to H5P_Network_Migrate_To_Network and H5P_Network_Migrate_To_Local, and library
- * management to H5P_Network_Library_Overview, H5P_Network_Library_Deletion, H5P_Network_Library_Installer and
- * H5P_Network_Content_Cache, and per-blog library restrictions to H5P_Network_Library_Restrictions.
+ * H5P_Network_Admin: Network Admin > Settings UI (multisite only) to toggle network mode and manage libraries.
  * @package H5P
  * @since 1.18.0
  */
@@ -81,8 +75,7 @@ class H5P_Network_Admin {
     );
 
     if (H5PCommons::is_network_enabled()) {
-      // Installing and updating content types writes to network level libraries, so offered to network admins only.
-      // Registered without a parent, so it has no menu entry of its own and opens at admin.php?page=h5p_management.
+      // Network admins only (writes network libraries); parentless: no menu entry, opens at ?page=h5p_management.
       $management_page = add_submenu_page(
         '',
         __('H5P Management', 'h5p'),
@@ -92,8 +85,7 @@ class H5P_Network_Admin {
         array($this, 'render_management_page')
       );
       add_action('load-' . $management_page, array($this, 'set_management_page_title'));
-      // The page stays registered and loadable, but without this, get_admin_page_parent() would find it under
-      // the empty parent and reset the parent_file set by highlight_management_menu_entry(), closing Settings.
+      // Else get_admin_page_parent() finds page under empty parent, resets parent_file and closes Settings menu.
       remove_submenu_page('', 'h5p_management');
 
       // The Settings entry links to the management page; a slug with a query is used as the link as it is.
@@ -395,8 +387,7 @@ class H5P_Network_Admin {
       $progress = $demigrate->migrateNextBatch(!empty($_POST['start']));
     }
     catch (Exception $exception) {
-      // The network data is still intact and the partial local copies do no harm: in network mode
-      // the table resolver ignores them, and a retry recreates them with drop-first.
+      // Network data intact; partial local copies harmless: ignored in network mode, recreated drop-first on retry.
       error_log('H5P local demigration failed: ' . $exception->getMessage());
 
       wp_send_json_error(
@@ -501,10 +492,7 @@ class H5P_Network_Admin {
   }
 
   /**
-   * Handle AJAX request to install one content type from the H5P Hub.
-   *
-   * Always answers success, with the outcome in the data: a failed item is data for the bulk queue,
-   * not a fatal error.
+   * Handle AJAX install of one content type from H5P Hub; always succeeds, outcome in data for bulk queue.
    */
   public function handle_library_install() {
     $this->verify_request(true);
@@ -577,11 +565,8 @@ class H5P_Network_Admin {
   }
 
   /**
-   * Run a migration request while holding the migration lock, or refuse it if another one holds it.
-   *
-   * A database lock, so two requests (double click, a second admin) never run migration batches at once. The
-   * database releases it when the request ends, even after a fatal error; the explicit release covers callers
-   * that go on, like tests.
+   * Run migration request holding DB migration lock (no concurrent batches), or refuse it if another one holds it.
+   * Database releases lock at request end, even on fatal error; explicit release covers callers that go on (tests).
    *
    * @param callable $body Request body; ends the request itself.
    */
@@ -620,8 +605,7 @@ class H5P_Network_Admin {
   }
 
   /**
-   * Let a migration request run as long as it needs: it copies and deletes library files of many blogs, which can
-   * take longer than the configured limit. Not honoured by every host.
+   * Lift time limit for migration request (copies/deletes library files of many blogs); not honoured by every host.
    */
   private function prepare_long_request() {
     @set_time_limit(0);
@@ -629,13 +613,8 @@ class H5P_Network_Admin {
   }
 
   /**
-   * Verify that the AJAX request may manage the network libraries, or end it with an error.
-   *
-   * The migrate requests need only manage_network; the library management ones also need
-   * H5PCommons::current_user_can_manage_libraries().
-   *
-   * Ends the request itself: an invalid nonce via check_ajax_referer() (answering -1, 403), missing capabilities
-   * with a JSON error (403).
+   * Verify AJAX request may manage network libraries, else end it (bad nonce: -1/403, missing caps: JSON 403).
+   * Migrate needs only manage_network; library management also H5PCommons::current_user_can_manage_libraries().
    *
    * @param bool $library_caps Whether the library management capabilities are required.
    */

@@ -1,11 +1,8 @@
 <?php
 /**
- * Cache tools above the grids of the network management page, as on the Libraries page (views/libraries.php).
+ * Cache tools above management grids, as in views/libraries.php; buttons use page script (AJAX).
  *
- * The buttons run through the page script (AJAX). The section is left out if none of its boxes applies.
- *
- * Expects $overview from H5P_Network_Library_Overview::get_library_overview(), $content_type_cache_updated_at
- * (timestamp, 0 if never) and $not_cached (number of contents on all blogs without a cache).
+ * Expects $overview, $content_type_cache_updated_at (timestamp, 0 if never), $not_cached (uncached contents).
  *
  * @package   H5P
  * @license   MIT

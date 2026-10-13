@@ -3,8 +3,7 @@
 /**
  * H5P_Network_Migrate_To_Local
  *
- * Migrates H5P libraries from network level back to blog level, in batches over several requests, then removes
- * network files and tables.
+ * Migrates H5P libraries from network back to blog level in batches, then removes network files and tables.
  * @package H5P
  * @since 1.18.0
  */
@@ -50,10 +49,8 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   /**
    * Run one batch of the migration back to local level and report progress. Call until progress reports done.
    *
-   * Copies the network library files and tables into every blog that uses H5P, then verifies the copies. The
-   * network data itself (files, tables, schema version) is left in place: finish() removes it, after the caller
-   * switched the network mode off. A failure throws and forgets the state, so the network state stays consistent
-   * and a retry starts clean: copies drop their destination first.
+   * Copies network library files/tables into blogs using H5P, then verifies; finish() removes network data after
+   * network mode is off. Failure throws and forgets state; retry starts clean, as copies drop destination first.
    *
    * @param bool $restart Forget a stored state first, so a new run never resumes an abandoned one.
    * @return array Progress with 'phase', 'percentage' and 'done'.
@@ -98,9 +95,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Remove the network data once the network mode is switched off, and forget the network schema version.
-   *
-   * Never fails: the site is already local then, so leftover network data is inert and only logged.
+   * Remove network data and schema version once network mode is off; never fails, as leftovers are inert (logged).
    */
   public function finish() {
     try {
@@ -115,9 +110,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Describe how far the migration has got, as percentage so progress only moves forwards.
-   *
-   * Blogs are walked twice, copying files and copying tables; the verification counts as the end.
+   * Describe progress as forward-only percentage: two blog walks (files, tables), verification counts as end.
    *
    * @param array $state Current migration state.
    * @return array Progress with 'phase', 'percentage' and 'done'.
@@ -179,8 +172,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
    * @throws Exception If a table cannot be copied or truncated.
    */
   protected function runTablesBatch($state) {
-    // Absent if network mode was enabled by a version without per-blog restrictions; the restricted column
-    // copied from the network then stays as it is.
+    // Absent if network mode was enabled by version without per-blog restrictions; copied restricted column stays.
     $has_restrictions = H5PCommons::table_exists(H5P_Library_Restrictions::get_table());
 
     return $this->runBlogBatch($state, function ($blog_id) use ($has_restrictions) {
@@ -191,8 +183,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Whether the current blog uses H5P, i.e. has its content tables. A blog that never did needs no library copy:
-   * like before network mode, it gets its tables when H5P first runs there.
+   * Whether current blog uses H5P (has content tables); others need no copy, getting tables when H5P first runs.
    *
    * @return bool
    */
@@ -235,8 +226,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   /**
    * Set restricted column of the blog's libraries table from the network restrictions of that blog.
    *
-   * Library ids are preserved by copyTableFromNetwork(), so the network ids apply to the blog table as they are.
-   * Must run in the blog's context, after its libraries table was copied.
+   * Network ids apply as is (copyTableFromNetwork() keeps ids); run in blog's context after its libraries table copy.
    *
    * @param int $blog_id Blog id.
    * @throws Exception If the libraries table cannot be updated.
@@ -322,10 +312,7 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   }
 
   /**
-   * Verify that every blog using H5P holds a complete copy of the network-level library data.
-   *
-   * Row counts of the three library tables must match the network tables, and the library
-   * folders must exist wherever the network had library files.
+   * Verify each H5P blog has complete copy: matching library table row counts, library folder if network had one.
    *
    * @throws Exception If a blog's copy is incomplete.
    */

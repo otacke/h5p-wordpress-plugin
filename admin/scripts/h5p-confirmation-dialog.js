@@ -19,11 +19,8 @@
   };
 
   /**
-   * Set the HTML content of an element. Will hide the element if no HTML is set.
-   *
-   * The dialog performs no sanitization. The caller MUST pass HTML that has already
-   * been purified server-side (wp_kses with a restricted tag/attribute whitelist),
-   * because the HTML is assigned to innerHTML.
+   * Set HTML content of element, hide element if no HTML is set.
+   * No sanitization here: caller MUST pass HTML purified server-side (restricted wp_kses), as it goes to innerHTML.
    * @param {HTMLElement} element HTML element to set HTML of.
    * @param {string|undefined} html HTML to set, purified by the caller.
    */
@@ -206,10 +203,7 @@
   }
 
   /**
-   * Show a dialog with the given parameters and callbacks, reusing one dialog for all calls on the page.
-   *
-   * The dialog DOM stays in the document after it is closed, so a fresh instance per question would accumulate
-   * closed dialogs.
+   * Show dialog, reusing one instance per page, as closed dialogs stay in DOM and fresh ones would accumulate.
    * @param {object} params Parameters, as for the constructor.
    * @param {object} [callbacks] Callbacks, as for the constructor.
    */

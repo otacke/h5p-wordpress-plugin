@@ -1,11 +1,6 @@
 /* global H5PNetworkRestrictions H5PPluginConfirmationDialog */
 /**
- * Behavior of the network H5P Restrictions page.
- *
- * The page is rendered server-side. This saves the checkboxes changed on the
- * current page, and runs the bulk actions on all sites matching the search,
- * through the network restrictions endpoints; the page reloads afterwards, so
- * the counts rebuild from one server-side state.
+ * Network Restrictions page: save changed checkboxes, run bulk actions on sites matching search, reload for counts.
  */
 (() => {
   const STORAGE_KEY = 'h5p-network-restrictions-notice';

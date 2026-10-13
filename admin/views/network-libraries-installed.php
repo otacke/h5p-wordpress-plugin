@@ -1,6 +1,6 @@
 <?php
 /**
- * Grid of the libraries installed on the network (WAI-ARIA APG data grid pattern).
+ * Grid of libraries installed on network (WAI-ARIA APG data grid pattern).
  *
  * Expects $overview from H5P_Network_Library_Overview::get_library_overview().
  *

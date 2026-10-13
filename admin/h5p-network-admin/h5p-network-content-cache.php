@@ -12,10 +12,8 @@ class H5P_Network_Content_Cache {
   /**
    * Rebuild as many content caches as fit in the time budget, so a big network takes several requests.
    *
-   * Works like the "Rebuild cache" button of the Libraries page; H5PNetworkLibraryAdmin::ajax_rebuild_cache()
-   * delegates here. get_h5p_instance() keys its instances by the current blog, so H5PCore is fetched per
-   * blog: filterParameters() must delete and create the export files in the folders of the content's own
-   * blog, not the main blog's.
+   * H5PCore fetched per blog (get_h5p_instance() keys by current blog), so filterParameters() deletes/creates export
+   * files to content's own blog folders, not main blog's.
    *
    * @param float $deadline microtime(TRUE) after which no new content is started.
    *

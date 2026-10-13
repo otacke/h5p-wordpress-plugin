@@ -1,11 +1,6 @@
 <?php
 /**
- * Bulk actions above the grids of the network management page.
- *
- * Each button runs all the libraries its action applies to in one go, and reloads once at the end
- * with a single summary (page script, AJAX). A button with no eligible library is disabled. The
- * counts use the same conditions as the row buttons of the installed and available grids, and the
- * section is left out if no button applies.
+ * Bulk actions above management grids: each button runs all eligible libraries via AJAX, then reloads once.
  *
  * Expects $overview from H5P_Network_Library_Overview::get_library_overview().
  *

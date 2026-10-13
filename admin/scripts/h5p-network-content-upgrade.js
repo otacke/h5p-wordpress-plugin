@@ -1,9 +1,5 @@
 /**
- * Content upgrades for the network H5P management page.
- *
- * Exposes H5PNetworkContentUpgrade, whose create() builds the upgrade runner
- * the page script mounts, from the page's upgradeSettings, l10n, and fail
- * helper. Enqueued before the page script.
+ * Content upgrades for network H5P management page; create() builds page script's runner. Enqueued before it.
  */
 window.H5PNetworkContentUpgrade = {
   /**
@@ -20,10 +16,7 @@ window.H5PNetworkContentUpgrade = {
     const loadedScripts = Object.create(null);
 
     /**
-     * Load a plain script once, like core's loadScript: a core upgrade script or a library's upgrades script.
-     *
-     * Calls that arrive while the script loads share its promise. A failed load is not cached, so a
-     * later call re-attempts it.
+     * Load plain script once, like core's loadScript; pending calls share promise, failed loads are retried.
      *
      * @param {string} url
      *
@@ -105,14 +98,8 @@ window.H5PNetworkContentUpgrade = {
     };
 
     /**
-     * Upgrade the contents that use a library version to another installed version of it.
-     *
-     * Reimplements the batch loop of core's h5p-content-upgrade.js on top of the
-     * existing network-aware endpoints; that script is a closed IIFE, so it can
-     * neither be enqueued nor stopped, and it is replaced instead.
-     *
-     * Creates its own workers and terminates them when done. Contents upgraded in
-     * earlier batches stay saved on the server if the run fails later.
+     * Upgrade contents of library version to another one; reimplements core's h5p-content-upgrade.js batch loop,
+     * as that closed IIFE can't be enqueued or stopped. Earlier batches stay saved on server if run fails later.
      *
      * @param {Object} job
      * @param {string} job.sourceId Id of the library version the contents use now.
@@ -421,8 +408,8 @@ window.H5PNetworkContentUpgrade = {
 
                   loadLibrary(data.name, {major, minor}, (err, library) => {
                     if (err) {
-                      // A worker cannot be told the load failed; a library with null semantics
-                      // makes the process report a missing library and free the worker.
+                      // Worker cannot be told load failed; library with null semantics
+                      // makes process report missing library and free worker.
                       worker.postMessage({
                         action: 'libraryLoaded',
                         library: {

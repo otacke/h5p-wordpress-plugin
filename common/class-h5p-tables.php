@@ -2,8 +2,7 @@
 /**
  * H5P_Tables
  *
- * Registry of the H5P database tables and their scopes, table name resolution for the blog and
- * network levels, and existence checks.
+ * Registry of H5P database tables and scopes, name resolution for blog and network level, existence checks.
  *
  * @package   H5P
  * @license   MIT
@@ -18,10 +17,7 @@ class H5P_Tables {
   /** Scope of tables every blog has its own of: content, results, tags, events. */
   const SCOPE_BLOG = 'blog';
 
-  /**
-   * Scope of the library tables: every blog has its own in local mode, the network shares one set in network mode.
-   * Migrations move them between the two levels.
-   */
+  /** Scope of library tables: per blog in local mode, shared in network mode; migrations move them between. */
   const SCOPE_LIBRARY = 'library';
 
   /** Scope of tables that exist at network level only, in network mode, with no blog counterpart. */
@@ -33,8 +29,7 @@ class H5P_Tables {
   /**
    * Every H5P database table, by name without prefix, with its scope.
    *
-   * The single source for resolving, creating, dropping and migrating tables. Order is the order tables are
-   * dropped in.
+   * Single source for resolving, creating, dropping and migrating tables; order is drop order.
    *
    * @var string[]
    */
@@ -69,9 +64,7 @@ class H5P_Tables {
   }
 
   /**
-   * Get scope of a table, reporting unknown names, which are most likely typos.
-   *
-   * Unknown names are treated as blog tables, as before the registry existed.
+   * Get scope of table; unknown names (likely typos) are reported and treated as blog tables, as before.
    *
    * @param string $table_name Table name without prefix.
    * @return string SCOPE_* constant.
@@ -146,9 +139,7 @@ class H5P_Tables {
   }
 
   /**
-   * Determine whether given database table exists on current blog.
-   *
-   * Not memoized, because update_database() creates tables within a request.
+   * Determine whether database table exists on current blog; not memoized, as update_database() creates tables.
    *
    * @since 1.18.0
    * @param string $table Full table name.

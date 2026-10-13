@@ -15,9 +15,7 @@ class H5P_Network_Paths {
   const NETWORK_DIRECTORY_NAME = 'h5p_network';
 
   /**
-   * Get path to network level H5P files folder.
-   *
-   * Unlike wp_upload_dir(), always resolves to network wide uploads root, whichever blog is current.
+   * Get path to network level H5P files folder in network wide uploads root, whichever blog is current.
    *
    * @return string
    */
@@ -29,10 +27,7 @@ class H5P_Network_Paths {
   }
 
   /**
-   * Get URL for network level H5P files folder.
-   *
-   * Always absolute, since H5P core and editor only leave asset paths untouched when they carry
-   * scheme. Applies the shared HTTPS fixup, so SSL pages never load plain HTTP.
+   * Get absolute URL for network level H5P files folder, as core and editor only leave URLs with scheme untouched.
    *
    * @return string
    */
@@ -61,10 +56,7 @@ class H5P_Network_Paths {
   }
 
   /**
-   * Get path to the libraries folder, wherever the current mode stores them.
-   *
-   * In network mode libraries are shared by all blogs, so they live in the network folder;
-   * otherwise they live in the current blog's h5p folder.
+   * Get path to libraries folder: network folder in network mode, else current blog's h5p folder.
    *
    * @since 1.18.0
    * @return string
@@ -74,10 +66,7 @@ class H5P_Network_Paths {
   }
 
   /**
-   * Get URL to the libraries folder, wherever the current mode stores them.
-   *
-   * Absolute in network mode; in local mode relative to the site, like H5P_Plugin::get_h5p_url(), which core
-   * expects there. Library file URLs for core come from H5P_Mode::get_library_file_url().
+   * Get URL to libraries folder: absolute in network mode, site relative in local mode as core expects.
    *
    * @since 1.18.0
    * @return string
@@ -87,9 +76,7 @@ class H5P_Network_Paths {
   }
 
   /**
-   * Strip per blog segment from uploads base path or URL.
-   *
-   * On subsites wp_upload_dir() points inside "sites/<blog id>"; network directory sits beside it.
+   * Strip "sites/<blog id>" segment, which wp_upload_dir() adds on subsites, from uploads base path or URL.
    *
    * @param string $base Uploads base path or URL.
    * @return string Base without trailing per blog segment.

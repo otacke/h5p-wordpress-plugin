@@ -1,9 +1,6 @@
 <?php
 /**
- * Network level H5P restrictions.
- *
- * Which runnable library versions are restricted on which blogs, in two views: one library version with a
- * paged list of blogs, and a paged list of blogs with all runnable library versions of the chosen one.
+ * Network level H5P restrictions of runnable library versions per blog, viewed per library version or per blog.
  *
  * Expects $model from H5P_Network_Library_Restrictions::get_page_model().
  *

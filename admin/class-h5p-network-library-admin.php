@@ -1,10 +1,6 @@
 <?php
 /**
- * H5P Network Library Admin class
- *
- * Library management in network mode: libraries are shared network wide, content lives on each blog.
- * Only the content upgrade and the cache rebuild are reachable in network mode (the blog Libraries page is not
- * registered there); they fan out over every blog via H5PCommons::for_each_blog().
+ * H5P Network Library Admin class: content upgrade and cache rebuild over all blogs in network mode.
  *
  * @package H5P_Plugin_Admin
  */
@@ -25,10 +21,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   }
 
   /**
-   * AJAX processing for content upgrade script, across all blogs.
-   *
-   * Content ids collide between blogs, so the JS<->PHP protocol addresses content with composite
-   * "blogId_contentId" keys.
+   * AJAX content upgrade across all blogs; ids collide between blogs, so JS<->PHP uses "blogId_contentId" keys.
    */
   public function ajax_upgrade_progress() {
     $prepared = $this->prepare_upgrade_progress();
@@ -90,8 +83,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
    * Parse skipped content posted by upgrade script.
    *
    * @since 1.18.0
-   * @return array{keys: array, by_blog: array} Composite keys to echo back unchanged, and a map of
-   *         blog id to the list of content ids to exclude, ready for H5PCommons::int_placeholders().
+   * @return array{keys: array, by_blog: array} Composite keys to echo back, blog id => content ids to exclude.
    */
   private function parse_skipped_from_request() {
     $skipped = filter_input(INPUT_POST, 'skipped');
@@ -119,9 +111,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
   }
 
   /**
-   * Count content that still needs upgrading across all blogs, and fill the next upgrade batch, in one walk.
-   *
-   * Each blog is visited once: its remaining content is counted, and fetched while the batch has room.
+   * Count content still needing upgrade across all blogs and fill next upgrade batch, visiting each blog once.
    *
    * @since 1.18.0
    * @param object $out Response being built; params are added under composite "blogId_contentId" keys.
@@ -167,10 +157,7 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
 
 
   /**
-   * Refuse the blog level restriction toggle.
-   *
-   * In network mode, restrictions are set per blog on the network restrictions page, and the restricted column of
-   * the shared libraries table is not used, so toggling it would silently do nothing.
+   * Refuse blog level restriction toggle: network mode ignores shared table's restricted column (set per blog).
    *
    * @since 1.18.0
    */

@@ -48,8 +48,7 @@ abstract class H5P_Network_Admin_Base {
   }
 
   /**
-   * Run one batch of a phase that visits every blog: the next blogs from the state's offset, until the time budget
-   * is spent, then move on to the next phase once the last blog was visited.
+   * Run one batch of blog-visiting phase from state's offset until time budget is spent; advance after last blog.
    *
    * @param array    $state      Migration state with 'phase' and 'offset'.
    * @param callable $per_blog   Receives the blog id and the state by reference, in the blog's context.
@@ -153,8 +152,7 @@ abstract class H5P_Network_Admin_Base {
   /**
    * Create cached assets for all H5P content on all blogs, unless asset aggregation is disabled.
    *
-   * Never fails: cached assets are created lazily when content is viewed, so a failure is only logged. Limited
-   * to one batch time budget, as it runs in the request that finishes the migration.
+   * Failure is only logged, as assets are created lazily on view; one batch budget, as it runs in finishing request.
    *
    * @param string $log_prefix Prefix of the error log entry.
    */
@@ -174,9 +172,8 @@ abstract class H5P_Network_Admin_Base {
   /**
    * Create cached assets for all H5P content on all blogs.
    *
-   * Must run after network mode flag matches target level, since storage and table names resolve at call
-   * time. Idempotent: uses same code path as viewing content, so existing cached assets stay untouched.
-   * Stops at the deadline: whatever is left is created when the content is first viewed.
+   * Must run after network mode flag matches target level, as storage and table names resolve at call time.
+   * Idempotent (same path as viewing content); stops at deadline, rest is created on first view.
    *
    * @param float|null $deadline microtime(true) after which no further content is processed, or null for none.
    */

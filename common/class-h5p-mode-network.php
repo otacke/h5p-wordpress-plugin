@@ -2,8 +2,7 @@
 /**
  * H5P_Mode_Network
  *
- * Network mode: the network shares one set of libraries in the network folder and tables; content, results and
- * library restrictions stay per blog.
+ * Network mode: libraries shared in network folder and tables; content, results and restrictions stay per blog.
  *
  * @package   H5P
  * @license   MIT
@@ -38,9 +37,7 @@ class H5P_Mode_Network implements H5P_Mode {
   }
 
   public function rewrite_asset_paths(&$files) {
-    // Library and cached asset paths come relative to the blog's h5p folder; they live in the network folder.
-    // Absolute URLs make H5PCore::getAssetsUrls(), H5peditor::getLibraryData() and H5P_Plugin::enqueue_assets()
-    // pass them through unchanged.
+    // Library and cached asset paths come relative to blog's h5p folder; absolute network URLs pass core unchanged.
     $network_url = H5P_Network_Paths::get_h5p_network_url();
 
     foreach (array('scripts', 'styles') as $type) {
@@ -62,8 +59,7 @@ class H5P_Mode_Network implements H5P_Mode {
   }
 
   public function get_library_capability_source($local_cap) {
-    // The libraries folder is shared, so blog roles lose the library capabilities; super admins keep them by
-    // having every capability.
+    // Libraries folder is shared, so blog roles lose library capabilities; super admins have every capability.
     return array('install_plugins', 'manage_network_plugins');
   }
 

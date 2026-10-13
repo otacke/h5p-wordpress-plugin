@@ -2,9 +2,7 @@
 /**
  * H5P_Mode
  *
- * What differs between local mode (every blog manages its own libraries) and network mode (the network shares
- * one set of libraries, content stays on each blog). Plugin code asks the current mode, H5PCommons::mode(),
- * instead of branching on the network flag.
+ * What differs between local and network mode; plugin code asks H5PCommons::mode() instead of checking flag.
  *
  * @package   H5P
  * @license   MIT
@@ -99,8 +97,7 @@ interface H5P_Mode {
   /**
    * Run callback on every blog whose content uses the libraries: the current blog, or all blogs.
    *
-   * @param string[] $table_names Tables a blog must have to be visited (network mode only; locally the blog's own
-   *   tables are the caller's business).
+   * @param string[] $table_names Tables blog must have to be visited (network mode only).
    * @param callable $callback Receives the blog id, in the blog's context.
    */
   public function for_each_content_blog(array $table_names, callable $callback);

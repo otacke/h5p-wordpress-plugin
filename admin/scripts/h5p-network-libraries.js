@@ -1,14 +1,6 @@
 /* global H5PEditor H5PNetworkLibraries H5PPluginConfirmationDialog wp */
 /**
- * Behavior of the library grids on the network H5P Management page.
- *
- * The two grids (WAI-ARIA APG data grid pattern) are rendered server-side from
- * the network library table and the hub cache. This adds keyboard navigation,
- * and install, update, deletion, and content upgrades through the core
- * library-install and content-upgrade endpoints and the network delete
- * endpoint; the page reloads afterwards, so the grids rebuild from one
- * server-side state. The library tools above the grids (as on the Libraries
- * page) run through network endpoints the same way.
+ * Network Management page grids and tools: keyboard nav, install, update, delete, upgrade, then reload to rebuild.
  */
 ((ns) => {
   const STORAGE_KEY = 'h5p-network-libraries-notice';
@@ -116,9 +108,7 @@
     const plurals = l10n.plurals || {};
 
     /**
-     * The l10n line for a count, in the plural form the language's own rule picks for it.
-     *
-     * Keys without msgid pair (the bulk confirmations) fall back to their singular or plural template.
+     * Plural-form l10n line for count; keys without msgid pair (bulk confirmations) use Singular/Plural template.
      *
      * @param {string} key The l10n name, e.g. "bulkUpdated".
      * @param {number} n The count.
@@ -147,8 +137,7 @@
      * @param {HTMLButtonElement} button The button being replaced.
      * @param {boolean} [showProgress] Also show a progress line below the spinner.
      *
-     * @return {{status: (HTMLElement|null), restore: function}} The progress line and a function
-     *          that puts the button back and refocuses it.
+     * @return {{status: (HTMLElement|null), restore: function}} Progress line, function restoring/refocusing button.
      */
     const startAction = (cell, button, showProgress) => {
       const children = [];
@@ -192,10 +181,7 @@
     };
 
     /**
-     * Store a notice to show after the page reload, then reload it.
-     *
-     * The page reloads, so sessionStorage is the bridge for the success notice
-     * and for the row to focus afterwards.
+     * Store success notice and row to focus in sessionStorage, then reload page.
      *
      * @param {Object} entry What to show and where to return focus.
      */
@@ -400,9 +386,7 @@
       };
 
       /**
-       * Run all the items of a bulk action sequentially, then reload once with a summary.
-       *
-       * An item error does not stop the run; only a fatal error (nonce, permission, transport) does.
+       * Run bulk items sequentially, reload once with summary; only fatal errors (nonce, permission, transport) stop.
        *
        * @param {HTMLButtonElement} button The clicked bulk button.
        * @param {object} options
@@ -456,9 +440,7 @@
     const {startBulkAction, runBulk, failBulk} = makeBulkRunner();
 
     /**
-     * Install or update one content type from the hub, via the network endpoint.
-     *
-     * An item failure resolves as a failed outcome; only a fatal error rejects.
+     * Install/update one hub content type via network endpoint; item failure resolves as failed, fatal error rejects.
      *
      * @param {string} machineName The machine name of the content type.
      * @return {Promise<{status: string, lines: string[]}>} The outcome of the item.
@@ -520,18 +502,14 @@
     const updateAll = makeHubBulk({grid: installedGrid, action: 'update', progressKey: 'bulkProgressUpdate', doneKey: 'bulkUpdated', failedKey: 'bulkUpdateFailed'});
 
     /**
-     * Install all the available content types, via the network endpoint.
-     *
-     * The endpoint skips a content type an earlier install already pulled in as a dependency.
+     * Install all available content types via network endpoint, which skips those pulled in as dependencies.
      *
      * @param {HTMLButtonElement} button The clicked bulk button.
      */
     const installAll = makeHubBulk({grid: availableGrid, action: 'install', progressKey: 'bulkProgressInstall', doneKey: 'bulkInstalled', failedKey: 'bulkInstallFailed'});
 
     /**
-     * Delete all the deletable libraries, and those that become deletable by that, via the network endpoint.
-     *
-     * The endpoint deletes what fits in its time budget, so the request repeats while it answers more.
+     * Delete deletable libraries and those becoming so, repeating while time-limited network endpoint reports more.
      *
      * @param {HTMLButtonElement} button The clicked bulk button.
      */
@@ -595,12 +573,7 @@
     };
 
     /**
-     * Show the hub information and usage statistics of a library.
-     *
-     * The message is built server-side as HTML (purified with a restricted
-     * wp_kses whitelist) and passed as the dialog's HTML message. The empty
-     * cancel label makes the dialog hide its cancel button, leaving only Close.
-     * No callbacks are needed: confirming or cancelling just closes the dialog.
+     * Show library hub info and usage stats; HTML purified server-side (wp_kses), empty cancel label hides Cancel.
      *
      * @param {HTMLButtonElement} button
      */
@@ -683,10 +656,7 @@
     };
 
     /**
-     * Upgrade the contents of all the libraries that have an upgrade target, one library after the other.
-     *
-     * A library whose run fails is recorded as failed and the next one runs; contents upgraded in its
-     * earlier batches are already saved on the server.
+     * Upgrade contents of all libraries with upgrade target in turn; failed library is recorded, next one runs.
      *
      * @param {HTMLButtonElement} button The clicked bulk button.
      */
@@ -789,8 +759,7 @@
       window.H5PNetworkGrid.makeNavigable(availableGrid);
     }
 
-    // A successful install or update reloaded the page; the stored notice and
-    // target row are consumed once.
+    // After reload following successful action, consume stored notice and target row once.
     let pendingFocus = null;
     let hadStoredNotice = false;
     let fromTools = false;

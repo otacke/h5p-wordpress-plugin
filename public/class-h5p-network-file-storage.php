@@ -3,19 +3,10 @@
 /**
  * H5P_Network_File_Storage
  *
- * File storage for network mode, where one single "libraries" folder is shared
- * by every blog while content, exports and editor files stay with the blog.
+ * File storage for network mode: libraries shared by all blogs; content, exports and editor files per blog.
  *
- * H5PCore accepts an H5PFileStorage instance in place of a path (see
- * H5PCore::__construct), which lets us split the storage root per operation
- * without touching H5P core. Library and cached asset operations are delegated
- * to a storage rooted at the network folder, everything else to a storage
- * rooted at the blog folder.
- *
- * Cached assets belong with the libraries: they are aggregated purely from
- * library files, the CSS url() rewriting in H5PDefaultStorage::cacheAssets()
- * is relative to the storage root, and h5p_libraries_cachedassets is a network
- * level table.
+ * Libraries and cached assets go to network rooted storage, rest to blog rooted storage. Cached assets must stay
+ * with libraries, as CSS url() rewriting in H5PDefaultStorage::cacheAssets() is relative to storage root.
  *
  * @package   H5P
  * @license   MIT
@@ -66,8 +57,7 @@ class H5P_Network_File_Storage implements H5PFileStorage {
   }
 
   /**
-   * Note the third parameter: the interface declares two, but
-   * H5PDefaultStorage accepts three and H5PExport calls it with three.
+   * Third parameter: interface declares two, but H5PDefaultStorage accepts three and H5PExport passes three.
    */
   public function exportLibrary($library, $target, $developmentPath = NULL) {
     return $this->network->exportLibrary($library, $target, $developmentPath);
@@ -78,10 +68,7 @@ class H5P_Network_File_Storage implements H5PFileStorage {
   }
 
   /**
-   * The return value is used as a URL by H5peditor::getLibraryData(), which
-   * prefixes it with H5PCore::$url, i.e. this blog's h5p URL. There is no hook
-   * in between, so return a path that traverses from the blog folder to the
-   * network folder instead of one relative to the network folder.
+   * Traverse from blog folder, as H5peditor::getLibraryData() prefixes result with blog's H5PCore::$url, no hook.
    */
   public function getUpgradeScript($machineName, $majorVersion, $minorVersion) {
     $script = $this->network->getUpgradeScript($machineName, $majorVersion, $minorVersion);
@@ -104,8 +91,7 @@ class H5P_Network_File_Storage implements H5PFileStorage {
   }
 
   /**
-   * Both roots have to be writable, since libraries are installed into the
-   * network folder while content is written to the blog folder.
+   * Both roots must be writable: libraries go to network folder, content to blog folder.
    */
   public function hasWriteAccess() {
     return $this->local->hasWriteAccess() && $this->network->hasWriteAccess();
@@ -174,8 +160,7 @@ class H5P_Network_File_Storage implements H5PFileStorage {
   }
 
   /**
-   * Build the relative traversal from the blog folder to the network folder, see
-   * H5P_Core_Adapter::relative_path().
+   * Build relative traversal from blog folder to network folder, see H5P_Core_Adapter::relative_path().
    *
    * @return string
    */

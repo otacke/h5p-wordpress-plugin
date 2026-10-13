@@ -2,9 +2,7 @@
 /**
  * H5P_Core_Adapter
  *
- * Every place where the plugin relies on how H5P core works inside (call order, side effects, per-request static
- * state) rather than on its interfaces alone. h5p-php-library and h5p-editor-php-library are never changed, so
- * when a core update changes these internals, this is the one class to adapt.
+ * All plugin reliance on H5P core internals beyond its interfaces; the one class to adapt when core updates.
  *
  * @package   H5P
  * @license   MIT
@@ -14,10 +12,9 @@
 class H5P_Core_Adapter {
 
   /**
-   * Download a content type from the H5P Hub and install its libraries, like H5PEditorAjax::libraryInstall().
+   * Download content type from H5P Hub and install its libraries, like H5PEditorAjax::libraryInstall().
    *
-   * Repeats core's order with public calls only, as that method also answers the AJAX request itself. One per
-   * request: core caches the temporary upload path statically per request.
+   * Call at most once per request: core caches temporary upload path statically per request.
    *
    * @param string $machine_name Machine name of the content type.
    * @return bool Whether the package was valid and saved; core's messages tell why not.
@@ -45,8 +42,7 @@ class H5P_Core_Adapter {
       (new H5PStorage($interface, $core))->savePackage(NULL, NULL, TRUE);
     }
 
-    // The temporary paths are static per request, so clean up on every exit path. Core removes the
-    // .h5p file in some cases, hence the @.
+    // Temporary paths are static per request, so always clean up; @ as core sometimes removes .h5p file.
     H5PCore::deleteFileTree($interface->getUploadedH5pFolderPath());
     @unlink($path);
 
@@ -54,10 +50,7 @@ class H5P_Core_Adapter {
   }
 
   /**
-   * Delete the cached assets that include a library version.
-   *
-   * H5PFrameworkInterface::deleteLibrary() leaves them behind; core deletes them itself only when it replaces a
-   * library (H5PCore::saveLibraries()).
+   * Delete cached assets that include library version; H5PFrameworkInterface::deleteLibrary() leaves them.
    *
    * @param int $library_id
    */
@@ -72,12 +65,10 @@ class H5P_Core_Adapter {
   }
 
   /**
-   * Build the relative traversal from one folder to another, e.g. "/../h5p_network" from uploads/h5p to
-   * uploads/h5p_network, or "/../../../h5p_network" from uploads/sites/4/h5p.
+   * Build relative traversal between folders, e.g. "/../../../h5p_network" from uploads/sites/4/h5p.
    *
-   * H5peditor::getLibraryData() prefixes the upgrade script path with H5PCore::$url, the blog's h5p URL, with no
-   * hook in between; a traversal is the only way to reach the network folder. Valid as both a file system path
-   * and a URL, because the uploads URL structure mirrors the uploads directory structure.
+   * H5peditor::getLibraryData() prefixes upgrade script path with blog's H5PCore::$url without hook, so only
+   * traversal reaches network folder. Valid as path and URL, as uploads URL mirrors uploads directory.
    *
    * @param string $from Folder the result is relative to.
    * @param string $to   Folder to reach.

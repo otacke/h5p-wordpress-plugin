@@ -3,8 +3,7 @@
 /**
  * H5P_Network_Library_Overview
  *
- * Collects what the network level management page shows: the installed and available libraries with their
- * icons, updates, upgrade targets, deletability and info messages, and the settings of the page script.
+ * Collects network management page data: installed/available libraries (icons, updates, deletability), script settings.
  * @package H5P
  * @since 1.18.0
  */
@@ -108,8 +107,7 @@ class H5P_Network_Library_Overview {
       }
     }
 
-    // Deletability of a row depends on every other row, so decide it in a second pass.
-    // The delete confirm messages name the partner version that is deleted along.
+    // Deletability depends on all other rows, so decide it in second pass; confirm messages name partner deleted along.
     $installed_names_by_id = array();
     foreach ($installed as $row) {
       $installed_names_by_id[$row['id']] = H5P_Network_Library_Helpers::format_library_name($row);
@@ -328,14 +326,11 @@ class H5P_Network_Library_Overview {
   }
 
   /**
-   * Read the author, description and license from the library.json of an
-   * installed library, used as a fallback when the H5P Hub has no data for it.
+   * Read author, description and license from installed library's library.json, as fallback for missing hub data.
    *
    * @param array $row Installed library row.
    *
-   * @return array|null The fields that are set, each a non-empty string, keyed
-   *               by author, description and license; null when there is no
-   *               readable library.json.
+   * @return array|null Non-empty author/description/license fields that are set; null without readable library.json.
    */
   private function get_library_json_info($row) {
     $path = H5PCommons::get_h5p_network_path() . '/libraries/'
@@ -357,29 +352,15 @@ class H5P_Network_Library_Overview {
   }
 
   /**
-   * Build the HTML message the Info action of a library row shows.
+   * Build Info action HTML of library row; hub metadata preferred, library.json fills gaps, missing data left out.
    *
-   * The dialog renders it with innerHTML. Every field value is escaped and the
-   * whole document is reduced to a restricted wp_kses whitelist, so it holds
-   * no markup beyond the structural tags used here: a highlighted title, a
-   * qualifier/value table and an unordered list of usage statistics. Rows and
-   * list items with missing data are left out.
-   *
-   * The H5P Hub is the preferred source of metadata; for installed libraries
-   * the values from their library.json fill in whatever the Hub has no data for.
+   * Rendered via innerHTML, so every value is escaped and output is reduced to restricted wp_kses whitelist.
    *
    * @param array $row Library row of either grid.
-   * @param object|null $hub_row Newest hub cache row of the library, if any;
-   *               null for installed libraries without a hub entry, e.g.
-   *               non-runnable dependencies.
-   * @param int|null $content_count Contents using this installed version as main
-   *               library, across all blogs; null when the library is not installed.
-   * @param int|null $dependent_count Installed versions that require it as a
-   *               preloaded or editor dependency; null when the library is not
-   *               installed.
-   * @param array|null $file_info author, description and license of the
-   *               library's library.json for installed libraries; null for
-   *               available ones.
+   * @param object|null $hub_row Newest hub cache row, or null if none (e.g. non-runnable dependencies).
+   * @param int|null $content_count Contents on all blogs using this version as main library; null if not installed.
+   * @param int|null $dependent_count Versions requiring it as preloaded/editor dependency; null if not installed.
+   * @param array|null $file_info Author, description, license from installed library.json; null for available.
    *
    * @return string
    */
@@ -477,14 +458,12 @@ class H5P_Network_Library_Overview {
       'working' => __('Working...', 'h5p'),
       'dismiss' => __('Dismiss this notice.', 'h5p'),
       'uploadFailed' => __('The library package could not be uploaded. Please try again.', 'h5p'),
-      // Same msgid as the upload error in H5P_Network_Library_Installer::upload_library_package(), so the two
-      // stay in sync.
+      // Same msgid as upload error in H5P_Network_Library_Installer::upload_library_package(), to stay in sync.
       'noFile' => __('No file was uploaded', 'h5p'),
       'contentTypeCacheFailed' => __('The content type cache could not be updated. Please try again.', 'h5p'),
       'rebuildFailed' => __('The content cache could not be rebuilt. Please try again.', 'h5p'),
       'rebuildDone' => __('The content cache was rebuilt.', 'h5p'),
-      // The msgids of the upgrade error messages are the same as in H5PLibraryAdmin::display_content_upgrades(),
-      // so the translations of the two pages stay in sync.
+      // Upgrade error msgids match H5PLibraryAdmin::display_content_upgrades(), so translations stay in sync.
       'inProgress' => __('Upgrading to %ver...', 'h5p'),
       'error' => __('An error occurred while processing parameters:', 'h5p'),
       'errorData' => __('Could not load data for library %lib.', 'h5p'),
@@ -508,8 +487,7 @@ class H5P_Network_Library_Overview {
       'bulkProgressDelete' => __('Deleting... %d deleted', 'h5p'),
       'bulkProgressUpgrade' => __('Upgrading %lib %old to %new (%i of %n)...', 'h5p'),
       'bulkFailed' => __('One of the requests failed, so the bulk action was stopped.', 'h5p'),
-      // Count dependent lines: msgid pairs, translated in the script by the language's own plural rule, as a fixed
-      // singular and plural template would be wrong for languages with more plural forms (e.g. ru, pl).
+      // Count dependent msgid pairs, pluralized in script by language's own rule; fixed templates fail e.g. ru, pl.
       'plurals' => array_map(
         function ($noop) {
           return array($noop['singular'], $noop['plural']);
@@ -520,10 +498,7 @@ class H5P_Network_Library_Overview {
   }
 
   /**
-   * Get the count dependent strings of the library grid script.
-   *
-   * Some msgids are those of the Libraries page (H5PLibraryAdmin::get_not_cached_settings(),
-   * H5PLibraryAdmin::display_content_upgrades()), so the translations of the two pages stay in sync.
+   * Get count dependent strings of library grid script; some msgids shared with Libraries page to stay in sync.
    *
    * @return array _n_noop() results, keyed by the name the script uses.
    */
@@ -542,10 +517,7 @@ class H5P_Network_Library_Overview {
   }
 
   /**
-   * Get the locale data for wp.i18n that translates the count dependent strings of the library grid script.
-   *
-   * Holds the language's plural rule and every plural form of the strings, so the script picks the right form
-   * for any count, which PHP cannot do in advance.
+   * Get wp.i18n locale data (plural rule and forms) so grid script picks right plural form for any count.
    *
    * @return array Jed locale data, as wp.i18n.createI18n() takes it.
    */

@@ -3,8 +3,7 @@
 /**
  * H5P_Network_Library_Installer
  *
- * Installs and updates network level libraries: from the H5P Hub, from uploaded .h5p packages, and keeps the
- * content type cache of the hub up to date.
+ * Installs/updates network libraries from H5P Hub and uploaded .h5p packages; updates hub content type cache.
  * @package H5P
  * @since 1.18.0
  */
@@ -38,11 +37,7 @@ class H5P_Network_Library_Installer {
   }
 
   /**
-   * Install one content type from the H5P Hub.
-   *
-   * Checks like H5PEditorAjax::libraryInstall(); the download and install itself is
-   * H5P_Core_Adapter::install_hub_package(). One content type per request. Never throws: the outcome comes back
-   * as a 'status' and 'messages' pair, so a bulk queue can continue past a failed item.
+   * Install one hub content type, checked like H5PEditorAjax::libraryInstall(); never throws, so bulk queue continues.
    */
   public function install_hub_library($machine_name) {
     if (!H5PCommons::is_hub_enabled()) {
@@ -109,10 +104,7 @@ class H5P_Network_Library_Installer {
   }
 
   /**
-   * Install or update libraries from the uploaded .h5p package.
-   *
-   * Works like the upload on the Libraries page (H5PLibraryAdmin::process_libraries()) and shares its
-   * H5P_Plugin_Admin::handle_upload(), which also honours the "Disable file extension check" option.
+   * Install/update libraries from uploaded .h5p package via handle_upload() shared with Libraries page upload.
    *
    * @param int $upload_error UPLOAD_ERR_* code of the uploaded file.
    * @param bool $upgrade_only Whether only libraries that are already installed may be updated.
@@ -161,15 +153,12 @@ class H5P_Network_Library_Installer {
   }
 
   /**
-   * Update the content type cache from the H5P Hub.
-   *
-   * Works like the "Update" button of the Libraries page (H5PLibraryAdmin::process_libraries()).
+   * Update content type cache from H5P Hub, like "Update" button of Libraries page.
    *
    * @return array With 'success' and 'messages', lists of 'info' and 'error' messages.
    */
   public function update_content_type_cache() {
-    // The button is only shown with the hub enabled, the same per-blog option
-    // H5P_Network_Library_Overview::get_library_overview() reads.
+    // Button is only shown with hub enabled, same per-blog option get_library_overview() reads.
     if (!H5PCommons::is_hub_enabled()) {
       return array(
         'success' => FALSE,

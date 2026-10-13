@@ -135,12 +135,7 @@ class H5PLibraryAdmin {
   }
 
   /**
-   * End the request unless the current user may manage libraries.
-   *
-   * These operations are reached over AJAX, which is registered for every logged
-   * in user, so the page capability that guards the libraries screen does not
-   * apply. In network mode libraries are shared by all blogs, and then only
-   * network admins may act on them.
+   * End request unless user may manage libraries (AJAX skips page capability; network mode: network admins only).
    *
    * @since 1.18.0
    */
@@ -304,9 +299,7 @@ class H5PLibraryAdmin {
     $post = ($_SERVER['REQUEST_METHOD'] === 'POST');
     $task = filter_input(INPUT_GET, 'task');
 
-    // Uploading and deleting write to the libraries folder, which is shared by
-    // every blog in network mode. The libraries screen is already gated on the
-    // same capability, but this handler does not depend on how it is reached.
+    // Upload/delete write libraries folder (shared in network mode); check here, independent of how it is reached.
     if (($post || $task === 'delete') && !H5PCommons::current_user_can_manage_libraries()) {
       H5P_Plugin_Admin::set_error(__('You are not allowed to manage H5P libraries.', $this->plugin_slug));
       return;
@@ -445,9 +438,7 @@ class H5PLibraryAdmin {
   }
 
   /**
-   * Get path and URL of the upgrades.js file of a library, wherever libraries are stored.
-   *
-   * The network variant overrides this to point at the shared network folder.
+   * Get path and URL of library's upgrades.js; network variant overrides this to use shared network folder.
    *
    * @since 1.18.0
    * @param string $suffix Path fragment beginning at the h5p folder, e.g. /libraries/H5P.X-1.0/upgrades.js.
@@ -680,11 +671,7 @@ class H5PLibraryAdmin {
   }
 
   /**
-   * Validate content upgrade request and load library being upgraded to.
-   *
-   * Ends request with error message if anything is missing or invalid, so callers can
-   * assume a valid library id and target library on return. Shared by single-site and
-   * network implementations of ajax_upgrade_progress().
+   * Validate content upgrade request and load target library; ends request on error, so return values are valid.
    *
    * @since 1.18.0
    * @return array{library_id: string, to_library: object}

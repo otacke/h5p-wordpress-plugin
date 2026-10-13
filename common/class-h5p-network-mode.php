@@ -2,13 +2,10 @@
 /**
  * H5P_Network_Mode
  *
- * Network mode flag and the capability checks that depend on it.
+ * Network mode flag and capability checks depending on it.
  *
- * Rule shared with H5P_Plugin::library_capability_source(): capabilities that write to the
- * libraries folder are for network admins only when network mode is on, because the folder is
- * then shared by every blog. That method maps the source capability at role assignment time;
- * the checks here enforce the same rule on the request side, because roles are per blog and
- * capabilities can also be granted straight to users.
+ * In network mode only network admins may write shared libraries; H5P_Plugin::library_capability_source() maps
+ * roles, checks here enforce it per request, as roles are per blog and users can get capabilities directly.
  *
  * @package   H5P
  * @license   MIT
@@ -41,7 +38,6 @@ class H5P_Network_Mode {
   /**
    * Turn network mode on or off, keeping cached flag in step so same request sees new state.
    *
-   *
    * @param bool $enabled Whether network mode should be enabled.
    */
   public static function set_network_enabled($enabled) {
@@ -60,9 +56,7 @@ class H5P_Network_Mode {
   }
 
   /**
-   * Get the current mode, which answers everything that differs between local and network mode.
-   *
-   * Mode objects are stateless, so one per mode is kept; the stored flag decides which one is current.
+   * Get current mode, answering everything differing between local and network mode; one stateless object each.
    *
    * @since 1.18.0
    * @return H5P_Mode
@@ -107,11 +101,7 @@ class H5P_Network_Mode {
   }
 
   /**
-   * Whether current user holds capability that writes to libraries.
-   *
-   * In network mode, libraries folder is shared by every blog, so only network admins may write.
-   * assign_capabilities() revokes this from blog roles, but roles are per blog and capabilities can
-   * be granted straight to users, so request state is checked here too.
+   * Whether current user holds capability that writes to libraries; network admins only in network mode.
    *
    * @param string $capability Capability to check.
    * @return bool

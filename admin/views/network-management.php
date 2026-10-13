@@ -1,10 +1,6 @@
 <?php
 /**
- * Network level H5P management.
- *
- * A library management interface built from the network library and hub
- * cache tables: the libraries installed on the network, and the available
- * content types that can be installed and updated.
+ * Network level H5P management: installed network libraries and hub content types to install or update.
  *
  * Expects $overview from H5P_Network_Library_Overview::get_library_overview().
  *

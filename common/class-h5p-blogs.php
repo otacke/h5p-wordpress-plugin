@@ -17,8 +17,7 @@ class H5P_Blogs {
   /**
    * Get ids of all blogs in network.
    *
-   * get_sites() defaults to 'number' => 100, so it must be 0 to get every blog. Without that,
-   * networks above 100 blogs are silently truncated and network wide operations skip rest.
+   * 'number' => 0 is required: get_sites() defaults to 100 and would silently truncate larger networks.
    *
    * @since 1.18.0
    * @return int[] Blog ids, ordered by id.
@@ -49,9 +48,7 @@ class H5P_Blogs {
   }
 
   /**
-   * Get ids of one page of blogs in network.
-   *
-   * Ordered by id, so paging by offset stays stable unless blogs are created or deleted meanwhile.
+   * Get ids of one page of blogs in network, ordered by id so paging by offset stays stable.
    *
    * @since 1.18.0
    * @param int $offset Number of blogs to skip.
@@ -105,9 +102,7 @@ class H5P_Blogs {
   }
 
   /**
-   * Run callback once per blog that has all the given H5P tables, i.e. that uses H5P.
-   *
-   * A blog where H5P has never run has no content tables, so it is skipped instead of every caller checking.
+   * Run callback once per blog that has all given H5P tables, i.e. uses H5P; other blogs are skipped.
    *
    * @since 1.18.0
    * @param string[] $table_names Table names without prefix, resolved per blog (e.g. 'h5p_contents').
@@ -126,10 +121,7 @@ class H5P_Blogs {
   }
 
   /**
-   * Run callback once per blog of one page of blogs.
-   *
-   * Lets long running operations work through network in several requests. Callback may stop early,
-   * so it receives position of blog within whole network as second argument.
+   * Run callback once per blog of one page of blogs, so long operations can span several requests.
    *
    * @since 1.18.0
    * @param int      $offset   Number of blogs to skip.

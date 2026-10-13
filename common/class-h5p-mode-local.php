@@ -24,8 +24,7 @@ class H5P_Mode_Local implements H5P_Mode {
   }
 
   public function get_library_file_url($library_folder_name, $file_name) {
-    // wp_upload_dir() as base, since that is the path H5P core and editor expect for library files in the blog's
-    // own h5p folder.
+    // wp_upload_dir() as base, as H5P core and editor expect library files in blog's own h5p folder there.
     $upload_dir = wp_upload_dir();
     return $upload_dir['baseurl'] . '/h5p/libraries/' . $library_folder_name . '/' . $file_name;
   }

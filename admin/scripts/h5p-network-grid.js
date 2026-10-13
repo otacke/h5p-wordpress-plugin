@@ -1,14 +1,9 @@
 /**
- * Keyboard navigation of the library grids on the network H5P Management page (WAI-ARIA APG data grid pattern).
- *
- * window.H5PNetworkGrid.makeNavigable(grid) adds it to a grid rendered server-side.
+ * window.H5PNetworkGrid.makeNavigable(grid): APG data grid keyboard navigation for server-rendered Management grids.
  */
 (() => {
   /**
-   * Add APG grid keyboard navigation with a roving tabindex.
-   *
-   * Cells holding a button delegate focus and keys to the button, the only
-   * focusable child a cell can have.
+   * Add APG grid keyboard navigation with roving tabindex; cells delegate focus and keys to their only button.
    *
    * @param {HTMLElement} grid
    *

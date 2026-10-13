@@ -4,12 +4,8 @@
  *
  * Per-blog restrictions of runnable library versions in network mode.
  *
- * The network libraries table is shared by all blogs, so its restricted column cannot tell blogs apart.
- * Network mode therefore keeps one row per restricted library version and blog in its own network table
- * and ignores the restricted column, which migration to network level clears.
- *
- * Also checks content against the restrictions in either mode, since core only uses them to hide content types
- * in the editor and never refuses to save content using them.
+ * Shared libraries table's restricted column can't tell blogs apart, so network mode ignores it (migration
+ * clears it) and keeps rows per version and blog here. Also checks content in either mode, as core never refuses it.
  *
  * @package   H5P
  * @license   MIT
@@ -34,9 +30,7 @@ class H5P_Library_Restrictions {
   }
 
   /**
-   * Create or update network restrictions table.
-   *
-   * dbDelta() requires wp-admin/includes/upgrade.php to be loaded.
+   * Create or update network restrictions table; dbDelta() needs wp-admin/includes/upgrade.php loaded.
    *
    * @param string $charset Charset clause to append to CREATE TABLE.
    */
@@ -52,10 +46,7 @@ class H5P_Library_Restrictions {
   }
 
   /**
-   * Build SQL expression telling whether library is restricted on current blog, for use in SELECT lists.
-   *
-   * Yields '1' or '0' like the restricted column it replaces in network mode, so callers keep comparing
-   * against '1'.
+   * Build SELECT expression yielding '1'/'0' like restricted column: is library restricted on current blog.
    *
    * @param string $alias Alias or full name of libraries table in the query.
    * @return string SQL expression, not aliased.
@@ -65,9 +56,7 @@ class H5P_Library_Restrictions {
   }
 
   /**
-   * Get library versions the current user may not use on the current blog.
-   *
-   * Users who may create restricted content, as core's CREATE_RESTRICTED permission maps it, get none.
+   * Get library versions current user may not use on current blog; none if user has CREATE_RESTRICTED.
    *
    * @return string[] Titles of restricted versions, keyed by "machineName major.minor".
    */
@@ -95,12 +84,9 @@ class H5P_Library_Restrictions {
   }
 
   /**
-   * Find restricted library versions that content would newly use, as main library or as sub-content.
+   * Find restricted versions content would newly use; versions used before pass, keeping such content editable.
    *
-   * Versions the content used before are not reported, so content using a version restricted later stays editable.
-   *
-   * @param array|string      $main_library     Main library, as array with machineName or name, majorVersion and
-   *                                            minorVersion, or as "machineName major.minor".
+   * @param array|string      $main_library     As array with name and versions, or as "machineName major.minor".
    * @param array|object|string|null $params    Content parameters, decoded or as JSON.
    * @param array|string|null $old_main_library Main library before the change, null for new content.
    * @param array|object|string|null $old_params Content parameters before the change, null for new content.
@@ -119,9 +105,7 @@ class H5P_Library_Restrictions {
   }
 
   /**
-   * Find restricted library versions an H5P package would newly add: its main library or any sub content.
-   *
-   * The check of every package entry point (classic upload, Hub client upload), so they cannot drift apart.
+   * Find restricted versions H5P package would newly add; used by every package entry point so they can't drift.
    *
    * @param array                    $h5p_json         Decoded h5p.json, as associative array.
    * @param array|object|string      $content_json     content/content.json, decoded or as JSON.
@@ -139,9 +123,7 @@ class H5P_Library_Restrictions {
   }
 
   /**
-   * Get the main library of an H5P package from its h5p.json.
-   *
-   * h5p.json names the main library without version, so the version comes from its preloaded dependency entry.
+   * Get main library of H5P package; version comes from preloadedDependencies, as mainLibrary lacks it.
    *
    * @param array $h5p_json Decoded h5p.json, as associative array.
    * @return string "machineName major.minor", or empty string if h5p.json does not tell.

@@ -3,17 +3,14 @@
 /**
  * H5P_Network_Library_Deletion
  *
- * Decides which network level library versions can be deleted, and deletes them: dependency indexes,
- * sub content references, circular editor dependencies and the delete all passes.
+ * Decides which network library versions are deletable and deletes them, incl. circular editor dependencies.
  * @package H5P
  * @since 1.18.0
  */
 class H5P_Network_Library_Deletion {
 
   /**
-   * Sub content reference results by name and major.minor, cached inside with_cached_references().
-   *
-   * Null outside, so has_subcontent_references() queries fresh for the single-row delete.
+   * Sub content reference results by name and major.minor; null outside with_cached_references(), so queries are fresh.
    *
    * @var array|null
    */
@@ -22,9 +19,7 @@ class H5P_Network_Library_Deletion {
   /**
    * Run a callback with sub content reference results cached.
    *
-   * Each check scans the content parameters of every blog, and the same versions are checked again and again
-   * while a whole list is decided. Content parameters do not change meanwhile, so neither can the answers.
-   * Nesting is fine: the outermost call owns the cache.
+   * Checks scan all blogs' parameters repeatedly, which don't change meanwhile. Nesting ok: outermost call owns cache.
    *
    * @param callable $callback
    *
@@ -49,12 +44,9 @@ class H5P_Network_Library_Deletion {
   /**
    * Index the network library dependency table by both ends of each edge.
    *
-   * Self-referential rows (a library that lists itself) are ignored completely: they
-   * do not count as a dependency and do not block deletion.
+   * Self-referential rows (library listing itself) are ignored: no dependency, no deletion block.
    *
-   * @return array With 'dependents', a map of required library id to the library ids
-   *               that require it, and 'types', a map of "library_id:required_library_id"
-   *               to the dependency type.
+   * @return array 'dependents': required id => requiring ids; 'types': "library_id:required_library_id" => type.
    */
   public function get_dependency_indexes() {
     global $wpdb;
@@ -80,9 +72,7 @@ class H5P_Network_Library_Deletion {
   }
 
   /**
-   * Collect what the delete action needs to decide with, and what the overview needs from the
-   * same rows (icons): every installed version, the content counts across all blogs, and the
-   * indexed dependencies.
+   * Collect data for delete decisions and overview icons: all versions, content counts of all blogs, dependencies.
    *
    * @param array|null $content_counts From H5P_Network_Library_Helpers::get_content_counts(); reloaded when null.
    *
@@ -154,11 +144,7 @@ class H5P_Network_Library_Deletion {
   }
 
   /**
-   * Count the library versions that require $id as a preloaded or editor
-   * dependency, for the Info message.
-   *
-   * The dependency table has one row per pair, so each dependent is counted
-   * once. Self-referential rows are already filtered out of $indexes.
+   * Count versions requiring $id as preloaded/editor dependency (each once, self-references excluded), for Info.
    *
    * @param int $id
    * @param array $indexes From get_dependency_indexes().
@@ -188,19 +174,10 @@ class H5P_Network_Library_Deletion {
   }
 
   /**
-   * Decide whether a library version can be deleted, and whether the circular editor
-   * dependency must go with it.
+   * Decide whether library version is deletable, and whether its circular editor dependency must go with it.
    *
-   * A version is deletable when no content on any blog uses it as its main library,
-   * no content embeds it as sub content, and no other library depends on it (a
-   * library that lists itself does not count). Addons
-   * (non-empty add_to) are exempt from all of this: their only reference is their
-   * add_to target, which keeps working without the addon.
-   *
-   * The one exception to the dependency rule is a circular pair: when the library
-   * lists another library in its editorDependencies and that library lists this one
-   * in its preloadedDependencies, both are deleted together — but only when nothing
-   * else needs either of them, so deleting the pair leaves no broken dependency rows.
+   * Deletable if no content uses it (as main or sub content) and no other library depends on it. Addons always are.
+   * Circular pair (editor dependency one way, preloaded back) goes together if nothing else needs either.
    *
    * @param array $library Version to check (id, name, majorVersion, minorVersion, addTo).
    * @param array $model From get_deletion_model().
@@ -248,9 +225,7 @@ class H5P_Network_Library_Deletion {
         continue;
       }
 
-      // Nothing else may need either of the two, and no content may use the partner.
-      // The checked version is deleted as well, so content embedding it as sub
-      // content would break, too.
+      // Nothing else may need either, no content may use partner, and no content may embed either as sub content.
       if ($this->has_dependents_beyond($id, $partner_id, $model)
           || $this->has_dependents_beyond($partner_id, $id, $model)
           || !empty($model['contentCounts'][$partner_id])
@@ -275,18 +250,9 @@ class H5P_Network_Library_Deletion {
   }
 
   /**
-   * Build the REGEXP pattern that matches a library version as a sub content
-   * reference in the parameters of a content.
+   * Build REGEXP matching exact version as sub content reference {"library": "Name-1.1"}, also "Name 1.1" (uploads).
    *
-   * Sub content entries in the parameters look like {"library": "Name-1.1"}. The
-   * pattern tolerates a space before the version, as found in uploaded content.json
-   * files, and matches that exact version only: content embedding 1.2 is not
-   * affected by deleting 1.1.
-   *
-   * Whitespace around the colon is matched with an explicit tab/space class
-   * instead of [[:space:]] because the REGEXP engine of older MariaDB versions
-   * does not support POSIX character classes and would silently fail to match
-   * the whole pattern.
+   * Uses [ \t] instead of [[:space:]]: older MariaDB REGEXP lacks POSIX classes and would silently match nothing.
    *
    * @param string $name Machine name.
    * @param int $major
@@ -390,20 +356,14 @@ class H5P_Network_Library_Deletion {
   }
 
   /**
-   * Delete every deletable library version, and those that become deletable by that, until the time is up.
+   * Delete deletable library versions, and those freed by that, until time is up; also usable outside AJAX.
    *
-   * Works in passes. Each pass rebuilds the libraries and dependencies of the model and deletes what
-   * is_library_deletable() passes, addons included. Within a pass the model still lists the versions
-   * deleted in it as dependents, so it can only block more, never allow more; the versions they free
-   * are deleted in the next pass. Passes repeat while one deletes something and there is time left.
-   *
-   * Can also be called outside an AJAX request, e.g. by a scheduled task.
+   * Works in passes: within a pass, deleted versions still count as dependents; versions they free go next pass.
    *
    * @param float $deadline microtime(TRUE) after which no new pass is started.
    * @param bool $dry_run Only record what would be deleted, for testing the passes on real data.
    *
-   * @return array With 'deleted', the names and versions deleted, and 'more', whether time ran out
-   *               while the last pass still deleted something.
+   * @return array 'deleted': deleted names and versions; 'more': whether time ran out while last pass still deleted.
    */
   public function delete_deletable_libraries($deadline, $dry_run = false) {
     // Deleting libraries does not change which contents use them.

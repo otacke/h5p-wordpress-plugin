@@ -1,13 +1,9 @@
 /**
- * Helpers shared by the network H5P admin pages (settings, management, restrictions): mounting, notices,
- * requests to the network AJAX endpoints, and a notice carried across the page reload that follows a change.
- *
- * window.H5PNetworkCommon
+ * window.H5PNetworkCommon: helpers for network H5P admin pages (mounting, notices, AJAX, notice across reload).
  */
 (() => {
   /**
-   * Run a page script once the DOM is ready. Scripts are enqueued while the page body renders, so
-   * DOMContentLoaded may already have fired.
+   * Run page script once DOM is ready; scripts are enqueued in page body, so DOMContentLoaded may have fired.
    *
    * @param {function} callback
    */
@@ -113,9 +109,7 @@
   };
 
   /**
-   * Store a notice to show after the page reload, then reload.
-   *
-   * The page reloads, so sessionStorage is the bridge for the notice and whatever else the page needs then.
+   * Store notice (and whatever page needs then) in sessionStorage to show after reload, then reload.
    *
    * @param {string} key Storage key of the page.
    * @param {Object} entry What to show, e.g. {type, message}.

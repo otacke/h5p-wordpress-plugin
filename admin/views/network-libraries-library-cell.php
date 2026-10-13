@@ -1,8 +1,6 @@
 <?php
 /**
- * Row header cell of a library grid: icon and name of the library.
- *
- * Expects $library (a library row), $name (its formatted name) and $bold_name.
+ * Row header cell of library grid (icon, name); expects $library (row), $name (formatted) and $bold_name.
  *
  * @package   H5P
  * @license   MIT

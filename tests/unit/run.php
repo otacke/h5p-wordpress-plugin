@@ -4,9 +4,7 @@
  *
  *   php tests/unit/run.php
  *
- * The few WordPress functions the helpers touch are stubbed below. Behaviour that needs WordPress, a database
- * and fixtures (migrations, restrictions, uninstall, the admin pages) is tested by integration tests run against
- * a multisite installation.
+ * WordPress functions used are stubbed below; behaviour needing WordPress and database has integration tests.
  *
  * @package   H5P
  * @license   MIT

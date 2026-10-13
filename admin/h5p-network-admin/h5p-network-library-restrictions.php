@@ -3,9 +3,7 @@
 /**
  * H5P_Network_Library_Restrictions
  *
- * Collects what the network restrictions page shows, and saves what it changes: which runnable library
- * versions are restricted on which blogs. The page has two views, one library version with a paged list of
- * blogs, and one blog with all runnable library versions, since the blogs may be too many for one matrix.
+ * Collects/saves per-blog restrictions of runnable library versions; two views, as blogs may be too many for a matrix.
  * @package H5P
  * @since 1.18.0
  */
@@ -157,9 +155,7 @@ class H5P_Network_Library_Restrictions {
   }
 
   /**
-   * Restrict and allow pairs of library version and blog, as changed on one page of the restrictions page.
-   *
-   * Pairs naming a library version that is not runnable, or a blog that does not exist, are ignored.
+   * Restrict/allow library version and blog pairs changed on one page; non-runnable versions, missing blogs ignored.
    *
    * @param string[] $restrict Pairs "libraryId:blogId" to restrict.
    * @param string[] $allow    Pairs "libraryId:blogId" to allow.

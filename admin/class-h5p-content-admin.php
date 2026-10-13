@@ -617,8 +617,7 @@ class H5PContentAdmin {
       return FALSE;
     }
 
-    // Core only hides restricted content types in the editor, so content uploaded, pasted or posted with them
-    // must be refused here.
+    // Core only hides restricted content types in editor, so refuse uploaded, pasted or posted content using them.
     $restricted = H5P_Library_Restrictions::find_introduced_restricted($content['library'], $params->params, $oldLibrary, $oldParams);
     if (!empty($restricted)) {
       H5P_Plugin_Admin::set_error(H5P_Library_Restrictions::get_refusal_message($restricted));
@@ -1106,10 +1105,7 @@ class H5PContentAdmin {
   }
 
   /**
-   * Find restricted library versions an uploaded package would newly add to the content being edited.
-   *
-   * Only tells the author early: handle_content_creation() refuses saving them anyway. A package that cannot be
-   * read is left to core, which reports it as invalid.
+   * Find restricted library versions uploaded package would newly add; early hint, saving refuses them anyway.
    *
    * @param string   $file_path  Path of the uploaded .h5p file.
    * @param int|null $content_id Content being edited, empty for new content.

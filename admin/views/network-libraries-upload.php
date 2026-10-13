@@ -1,8 +1,6 @@
 <?php
 /**
- * Library upload below the grids of the network management page, as on the Libraries page (views/libraries.php).
- *
- * The button runs through the page script (AJAX), so the form is never submitted natively.
+ * Library upload below management grids, as in views/libraries.php; page script uploads via AJAX, no native submit.
  *
  * @package   H5P
  * @license   MIT

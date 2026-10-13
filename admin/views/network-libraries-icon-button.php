@@ -1,12 +1,8 @@
 <?php
 /**
- * Square icon button of a library grid.
+ * Square icon button of library grid; aria-disabled, not disabled, keeps it reachable in roving-tabindex navigation.
  *
- * Unavailable actions use aria-disabled, not disabled, so they stay reachable
- * in roving-tabindex navigation and announce themselves.
- *
- * Expects $button with 'icon' (dashicon name without prefix), 'label', and
- * optionally 'disabled' and 'data' (data attributes without the data- prefix).
+ * Expects $button: 'icon' (dashicon name w/o prefix), 'label', optional 'disabled', 'data' (w/o data- prefix).
  *
  * @package   H5P
  * @license   MIT

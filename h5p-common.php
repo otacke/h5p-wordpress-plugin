@@ -4,14 +4,7 @@
  *
  * Shared constants and helper functions for H5P plugin.
  *
- * Facade: every method is a one-line delegate to the class in common/ that owns it, and the
- * non-HTTP constants are aliases of the owning class's constants. Call sites keep using this
- * class unchanged.
- *
- * Scope: the facade covers the four shared helpers (H5P_Network_Mode, H5P_Tables,
- * H5P_Network_Paths, H5P_Blogs) and nothing else. Plugin code outside common/ calls them through
- * the facade; classes inside common/ call each other directly. Domain classes, e.g.
- * H5P_Library_Restrictions, are called directly and get no facade entries.
+ * Facade over H5P_Network_Mode, H5P_Tables, H5P_Network_Paths and H5P_Blogs only, for code outside common/.
  *
  * @package   H5P
  * @license   MIT
