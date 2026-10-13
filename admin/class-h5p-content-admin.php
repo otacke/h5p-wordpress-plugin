@@ -979,6 +979,15 @@ class H5PContentAdmin {
   }
 
   /**
+   * Drop the editor instance, so the next use builds it on the current core. Called when cores are invalidated.
+   *
+   * @since 1.18.0
+   */
+  public static function reset_editor() {
+    self::$h5peditor = NULL;
+  }
+
+  /**
    * Returns the instance of the h5p editor library.
    *
    * @since 1.1.0
@@ -1133,12 +1142,7 @@ class H5PContentAdmin {
       }
     }
 
-    return H5P_Library_Restrictions::find_introduced_restricted(
-      H5P_Library_Restrictions::get_package_main_library($h5p_json),
-      $content_json,
-      $old_library,
-      $old_params
-    );
+    return H5P_Library_Restrictions::find_introduced_restricted_in_package($h5p_json, $content_json, $old_library, $old_params);
   }
 
   /**

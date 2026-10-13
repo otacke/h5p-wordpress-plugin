@@ -658,10 +658,8 @@ class H5P_Network_Admin {
    * @param bool $enabled Whether network mode should be enabled.
    */
   private function set_network_mode($enabled) {
+    // Also drops the cores and the editor built for the previous mode (h5p_network_mode_changed).
     H5PCommons::set_network_enabled($enabled);
     H5P_Plugin::assign_capabilities_all_blogs();
-    // Cores built for the previous mode resolve their storage at construction,
-    // so drop them and let them rebuild for the new mode.
-    H5P_Plugin::clear_core_instances();
   }
 }

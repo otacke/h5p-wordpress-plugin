@@ -70,11 +70,7 @@ class H5P_Network_Paths {
    * @return string
    */
   public static function get_libraries_path() {
-    $base = H5P_Network_Mode::is_network_enabled()
-      ? self::get_h5p_network_path()
-      : H5P_Plugin::get_instance()->get_h5p_path();
-
-    return $base . '/libraries';
+    return H5P_Network_Mode::mode()->get_libraries_base_path() . '/libraries';
   }
 
   /**
@@ -84,11 +80,7 @@ class H5P_Network_Paths {
    * @return string
    */
   public static function get_libraries_url() {
-    $base = H5P_Network_Mode::is_network_enabled()
-      ? self::get_h5p_network_url()
-      : H5P_Plugin::get_instance()->get_h5p_url();
-
-    return $base . '/libraries';
+    return H5P_Network_Mode::mode()->get_libraries_base_url() . '/libraries';
   }
 
   /**

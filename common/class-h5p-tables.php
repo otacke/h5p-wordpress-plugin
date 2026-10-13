@@ -97,9 +97,7 @@ class H5P_Tables {
 
     switch (self::get_scope($table_name)) {
       case self::SCOPE_LIBRARY:
-        return (H5P_Network_Mode::is_network_enabled())
-          ? self::build_full_db_table_name_multisite($table_name)
-          : self::build_full_db_table_name_singlesite($table_name);
+        return H5P_Network_Mode::mode()->get_library_table_name($table_name);
 
       case self::SCOPE_NETWORK_ONLY:
         return self::build_full_db_table_name_multisite($table_name);

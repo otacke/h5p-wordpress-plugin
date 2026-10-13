@@ -99,6 +99,9 @@ class H5P_Plugin {
     // Always check if the plugin has been updated to a newer version
     add_action('init', array('H5P_Plugin', 'check_for_updates'), 1);
 
+    // Cores and the editor built for the previous mode must not be reused after a switch.
+    add_action('h5p_network_mode_changed', array('H5P_Plugin', 'clear_core_instances'));
+
     // Add menu options to admin bar.
     add_action('admin_bar_menu', array($this, 'admin_bar'), 999);
 
@@ -281,7 +284,7 @@ class H5P_Plugin {
     // Keep track of h5p libraries, dependencies, languages and cached asset hashes.
     // In network mode these four tables are shared by all blogs and are maintained
     // once at network level by update_network_database() instead.
-    if (!H5PCommons::is_network_enabled()) {
+    if (H5PCommons::mode()->manages_libraries_per_blog()) {
       self::update_library_tables(
         array('H5PCommons', 'build_full_db_table_name'),
         $charset
@@ -764,7 +767,7 @@ class H5P_Plugin {
       }
     }
 
-    if (!H5PCommons::is_network_enabled()) {
+    if (H5PCommons::mode()->manages_libraries_per_blog()) {
       $table_libraries_cachedassets = H5PCommons::build_full_db_table_name('h5p_libraries_cachedassets');
       $wpdb->query("TRUNCATE TABLE {$table_libraries_cachedassets}");
     }
@@ -917,11 +920,7 @@ class H5P_Plugin {
    * @return string|array
    */
   private static function library_capability_source($local_cap) {
-    if (!H5PCommons::is_network_enabled()) {
-      return $local_cap;
-    }
-
-    return array('install_plugins', 'manage_network_plugins');
+    return H5PCommons::mode()->get_library_capability_source($local_cap);
   }
 
   /**
@@ -1005,14 +1004,7 @@ class H5P_Plugin {
    * @return string|\H5PFileStorage
    */
   public function get_h5p_storage() {
-    if (!H5PCommons::is_network_enabled()) {
-      return $this->get_h5p_path();
-    }
-
-    return new H5P_Network_File_Storage(
-      $this->get_h5p_path(),
-      H5PCommons::get_h5p_network_path()
-    );
+    return H5PCommons::mode()->get_file_storage($this->get_h5p_path());
   }
 
   /**
@@ -1101,17 +1093,21 @@ class H5P_Plugin {
   }
 
   /**
-   * Invalidate the per-blog H5P core and interface instances.
+   * Invalidate the per-blog H5P core and interface instances, and the editor built on them.
    *
    * The storage a core uses is resolved when it is constructed, so after the
    * network mode changes, cores built for the previous mode must not be
-   * reused.
+   * reused. Runs on h5p_network_mode_changed.
    *
    * @since 1.18.0
    */
   public static function clear_core_instances() {
     self::$interface = array();
     self::$core = array();
+
+    if (class_exists('H5PContentAdmin', false)) {
+      H5PContentAdmin::reset_editor();
+    }
   }
 
   /**
@@ -1407,23 +1403,7 @@ class H5P_Plugin {
    * @param array $files scripts & styles
    */
   private function network_asset_paths(&$files) {
-    if (!H5PCommons::is_network_enabled()) {
-      return;
-    }
-
-    $network_url = H5PCommons::get_h5p_network_url();
-
-    foreach (array('scripts', 'styles') as $type) {
-      if (empty($files[$type])) {
-        continue;
-      }
-
-      foreach ($files[$type] as $asset) {
-        if (preg_match('#^/(libraries|cachedassets)/#', $asset->path) === 1) {
-          $asset->path = $network_url . $asset->path;
-        }
-      }
-    }
+    H5PCommons::mode()->rewrite_asset_paths($files);
   }
 
   /**
@@ -1521,8 +1501,9 @@ class H5P_Plugin {
 
     // Core JS builds library URLs as url + '/libraries/', which in network mode
     // is not where the libraries are. H5P.getLibraryPath() honours this override.
-    if (H5PCommons::is_network_enabled()) {
-      $settings['urlLibraries'] = H5PCommons::get_h5p_network_url() . '/libraries';
+    $libraries_url = H5PCommons::mode()->get_libraries_url_override();
+    if ($libraries_url !== null) {
+      $settings['urlLibraries'] = $libraries_url;
     }
 
     if ($current_user->ID) {
@@ -1895,10 +1876,7 @@ class H5P_Plugin {
   public function delete_blog($blog_id) {
     H5PCommons::in_blog($blog_id, 'H5P_Plugin::uninstall');
 
-    // Restrictions are kept at network level, so the blog's uninstall leaves them behind.
-    if (H5PCommons::is_network_enabled()) {
-      H5P_Library_Restrictions::delete_for_blog($blog_id);
-    }
+    H5PCommons::mode()->forget_blog($blog_id);
   }
 
   /**

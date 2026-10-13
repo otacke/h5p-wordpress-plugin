@@ -61,14 +61,7 @@ class H5P_Library_Restrictions {
    * @return string SQL expression, not aliased.
    */
   public static function restricted_column_sql($alias) {
-    if (!H5P_Network_Mode::is_network_enabled()) {
-      return "{$alias}.restricted";
-    }
-
-    $table = self::get_table();
-    $blog_id = (int) get_current_blog_id();
-
-    return "EXISTS(SELECT 1 FROM {$table} hlr WHERE hlr.library_id = {$alias}.id AND hlr.blog_id = {$blog_id})";
+    return H5P_Network_Mode::mode()->get_restricted_column_sql($alias);
   }
 
   /**
@@ -123,6 +116,26 @@ class H5P_Library_Restrictions {
     $used_before = $old_main_library === null ? array() : self::collect_libraries($old_main_library, $old_params);
 
     return array_values(array_intersect_key($restricted, array_diff_key($used, $used_before)));
+  }
+
+  /**
+   * Find restricted library versions an H5P package would newly add: its main library or any sub content.
+   *
+   * The check of every package entry point (classic upload, Hub client upload), so they cannot drift apart.
+   *
+   * @param array                    $h5p_json         Decoded h5p.json, as associative array.
+   * @param array|object|string      $content_json     content/content.json, decoded or as JSON.
+   * @param array|string|null        $old_main_library Main library of the content it replaces, null for new.
+   * @param array|object|string|null $old_params       Parameters of the content it replaces, null for new.
+   * @return string[] Titles of the restricted versions, empty if none.
+   */
+  public static function find_introduced_restricted_in_package($h5p_json, $content_json, $old_main_library = null, $old_params = null) {
+    return self::find_introduced_restricted(
+      self::get_package_main_library($h5p_json),
+      $content_json,
+      $old_main_library,
+      $old_params
+    );
   }
 
   /**

@@ -58,6 +58,16 @@ class H5PCommons {
   }
 
   /**
+   * Get the current mode, which answers everything that differs between local and network mode.
+   *
+   * @since 1.18.0
+   * @return H5P_Mode
+   */
+  public static function mode() {
+    return H5P_Network_Mode::mode();
+  }
+
+  /**
    * Turn network mode on or off.
    *
    * @param bool $enabled Whether network mode should be enabled.

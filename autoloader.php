@@ -16,6 +16,9 @@ function h5p_autoloader($class) {
       'H5P_Network_Paths' => 'common/class-h5p-network-paths.php',
       'H5P_Blogs' => 'common/class-h5p-blogs.php',
       'H5P_Library_Restrictions' => 'common/class-h5p-library-restrictions.php',
+      'H5P_Mode' => 'common/interface-h5p-mode.php',
+      'H5P_Mode_Local' => 'common/class-h5p-mode-local.php',
+      'H5P_Mode_Network' => 'common/class-h5p-mode-network.php',
 
       // Core
       'H5PCore' => 'h5p-php-library/h5p.classes.php',

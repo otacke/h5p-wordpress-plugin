@@ -49,6 +49,33 @@ class H5P_Network_Mode {
 
     update_site_option('h5p_network_enabled', $enabled);
     self::$is_network_enabled = $enabled;
+
+    /**
+     * Fires after the network mode was switched, so everything built for the previous mode is dropped.
+     *
+     * @since 1.18.0
+     * @param bool $enabled Whether network mode is enabled now.
+     */
+    do_action('h5p_network_mode_changed', $enabled);
+  }
+
+  /**
+   * Get the current mode, which answers everything that differs between local and network mode.
+   *
+   * Mode objects are stateless, so one per mode is kept; the stored flag decides which one is current.
+   *
+   * @since 1.18.0
+   * @return H5P_Mode
+   */
+  public static function mode() {
+    static $modes = array();
+
+    $key = self::is_network_enabled() ? 'network' : 'local';
+    if (!isset($modes[$key])) {
+      $modes[$key] = ($key === 'network') ? new H5P_Mode_Network() : new H5P_Mode_Local();
+    }
+
+    return $modes[$key];
   }
 
   /**
@@ -90,7 +117,7 @@ class H5P_Network_Mode {
    * @return bool
    */
   private static function current_user_can_library_capability($capability) {
-    if (self::is_network_enabled() && !current_user_can('manage_network')) {
+    if (!self::mode()->current_user_may_write_libraries()) {
       return false;
     }
 

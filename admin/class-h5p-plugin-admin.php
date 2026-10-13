@@ -412,7 +412,7 @@ class H5P_Plugin_Admin {
     // Process form data when saving H5Ps.
     add_action('load-' . $contents_page, array($this->content, 'process_new_content'));
 
-    if (!H5PCommons::is_network_enabled()) {
+    if (H5PCommons::mode()->manages_libraries_per_blog()) {
       $libraries = __('Libraries', $this->plugin_slug);
       $libraries_page = add_submenu_page($this->plugin_slug, $libraries, $libraries, 'manage_h5p_libraries', $this->plugin_slug . '_libraries', array($this->library, 'display_libraries_page'));
 
@@ -607,8 +607,8 @@ class H5P_Plugin_Admin {
           }
         }
 
-        $restricted = H5P_Library_Restrictions::find_introduced_restricted(
-          H5P_Library_Restrictions::get_package_main_library($validator->h5pC->mainJsonData),
+        $restricted = H5P_Library_Restrictions::find_introduced_restricted_in_package(
+          $validator->h5pC->mainJsonData,
           $validator->h5pC->contentJsonData,
           isset($content['library']) ? $content['library'] : NULL,
           isset($content['params']) ? $content['params'] : NULL

@@ -64,9 +64,7 @@ class H5PLibraryAdmin {
    * @return H5PLibraryAdmin Admin page instance.
    */
   public static function create($plugin_slug) {
-    return H5PCommons::is_network_enabled()
-      ? new H5PNetworkLibraryAdmin($plugin_slug)
-      : new self($plugin_slug);
+    return H5PCommons::mode()->create_library_admin($plugin_slug);
   }
 
   /**

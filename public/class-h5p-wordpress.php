@@ -108,14 +108,7 @@ class H5PWordPress implements H5PFrameworkInterface {
    * Get the URL to a library file
    */
   public function getLibraryFileUrl($libraryFolderName, $fileName) {
-    if (H5PCommons::is_network_enabled()) {
-      return H5PCommons::get_libraries_url() . '/' . $libraryFolderName . '/' . $fileName;
-    }
-
-    // The local branch keeps wp_upload_dir() as base, since that is the path H5P core and
-    // editor expect for library files in the blog's own h5p folder.
-    $upload_dir = wp_upload_dir();
-    return $upload_dir['baseurl'] . '/h5p/libraries/' . $libraryFolderName . '/' . $fileName;
+    return H5PCommons::mode()->get_library_file_url($libraryFolderName, $fileName);
   }
 
   /**
@@ -263,31 +256,19 @@ class H5PWordPress implements H5PFrameworkInterface {
    */
   private function getContentUsage($id) {
     if ($this->content_usage === NULL) {
-      $this->content_usage = H5PCommons::is_network_enabled()
-        ? $this->countContentUsageAllBlogs()
-        : $this->countContentUsage();
+      // Content lives on every blog in network mode, so the counts of all of them add up.
+      $usage = array();
+      H5PCommons::mode()->for_each_content_blog(array(), function () use (&$usage) {
+        foreach ($this->countContentUsage() as $library_id => $count) {
+          $usage[$library_id] = (isset($usage[$library_id]) ? $usage[$library_id] : 0) + $count;
+        }
+      });
+      $this->content_usage = $usage;
     }
 
     return isset($this->content_usage[$id]) ? $this->content_usage[$id] : 0;
   }
 
-  /**
-   * Sum the number of content items per library across every blog.
-   *
-   * @since 1.18.0
-   * @return int[] Content count keyed by library id.
-   */
-  private function countContentUsageAllBlogs() {
-    $usage = array();
-
-    H5PCommons::for_each_blog(function () use (&$usage) {
-      foreach ($this->countContentUsage() as $library_id => $count) {
-        $usage[$library_id] = (isset($usage[$library_id]) ? $usage[$library_id] : 0) + $count;
-      }
-    });
-
-    return $usage;
-  }
 
   /**
    * Count the number of content items per library on the current blog.
@@ -516,9 +497,7 @@ class H5PWordPress implements H5PFrameworkInterface {
     $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_libraries_languages'), array('library_id' => $library->id), array('%d'));
     $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_libraries'), array('id' => $library->id), array('%d'));
 
-    if (H5PCommons::is_network_enabled()) {
-      H5P_Library_Restrictions::delete_for_library($library->id);
-    }
+    H5PCommons::mode()->forget_library($library->id);
   }
 
   /**
@@ -977,13 +956,8 @@ class H5PWordPress implements H5PFrameworkInterface {
    * needs to be filtered again.
    */
   public function clearFilteredParameters($library_ids) {
-    if (!H5PCommons::is_network_enabled()) {
-      $this->clearFilteredParametersOnBlog($library_ids);
-      return;
-    }
-
-    // A blog where H5P has never been loaded has no content tables, and no content either.
-    H5PCommons::for_each_blog_with_tables(array('h5p_contents', 'h5p_contents_libraries'), function () use ($library_ids) {
+    // In network mode a blog where H5P has never been loaded has no content tables, and no content either.
+    H5PCommons::mode()->for_each_content_blog(array('h5p_contents', 'h5p_contents_libraries'), function () use ($library_ids) {
       $this->clearFilteredParametersOnBlog($library_ids);
     });
   }
@@ -1017,12 +991,8 @@ class H5PWordPress implements H5PFrameworkInterface {
    * blog makes the per-library usage counts untrustworthy there, too.
    */
   public function getNumNotFiltered() {
-    if (!H5PCommons::is_network_enabled()) {
-      return $this->countNotFiltered();
-    }
-
     $not_filtered = 0;
-    H5PCommons::for_each_blog(function () use (&$not_filtered) {
+    H5PCommons::mode()->for_each_content_blog(array(), function () use (&$not_filtered) {
       $not_filtered += $this->countNotFiltered();
     });
     return $not_filtered;
