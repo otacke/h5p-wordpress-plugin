@@ -15,6 +15,7 @@ function h5p_autoloader($class) {
       'H5P_Tables' => 'common/class-h5p-tables.php',
       'H5P_Network_Paths' => 'common/class-h5p-network-paths.php',
       'H5P_Blogs' => 'common/class-h5p-blogs.php',
+      'H5P_Library_Restrictions' => 'common/class-h5p-library-restrictions.php',
 
       // Core
       'H5PCore' => 'h5p-php-library/h5p.classes.php',
@@ -53,6 +54,7 @@ function h5p_autoloader($class) {
       'H5P_Network_Library_Overview' => 'admin/h5p-network-admin/h5p-network-library-overview.php',
       'H5P_Network_Library_Deletion' => 'admin/h5p-network-admin/h5p-network-library-deletion.php',
       'H5P_Network_Library_Installer' => 'admin/h5p-network-admin/h5p-network-library-installer.php',
+      'H5P_Network_Library_Restrictions' => 'admin/h5p-network-admin/h5p-network-library-restrictions.php',
       'H5P_Network_Content_Cache' => 'admin/h5p-network-admin/h5p-network-content-cache.php',
       'H5PContentAdmin' => 'admin/class-h5p-content-admin.php',
       'H5PContentQuery' => 'admin/class-h5p-content-query.php',

@@ -515,6 +515,10 @@ class H5PWordPress implements H5PFrameworkInterface {
     $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_libraries_libraries'), array('library_id' => $library->id), array('%d'));
     $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_libraries_languages'), array('library_id' => $library->id), array('%d'));
     $wpdb->delete(H5PCommons::build_full_db_table_name('h5p_libraries'), array('id' => $library->id), array('%d'));
+
+    if (H5PCommons::is_network_enabled()) {
+      H5P_Library_Restrictions::delete_for_library($library->id);
+    }
   }
 
   /**

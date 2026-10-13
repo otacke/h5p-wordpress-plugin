@@ -34,6 +34,13 @@ class H5PCommons {
    */
   const NETWORK_DATABASE_TABLE_NAMES = H5P_Tables::NETWORK_DATABASE_TABLE_NAMES;
 
+  /**
+   * Database tables that exist at network level only, without a blog level counterpart.
+   *
+   * @var string[]
+   */
+  const NETWORK_ONLY_DATABASE_TABLE_NAMES = H5P_Tables::NETWORK_ONLY_DATABASE_TABLE_NAMES;
+
   /** Value a for_each_blog() callback returns to stop iteration over the remaining blogs. */
   const STOP_ITERATION = H5P_Blogs::STOP_ITERATION;
 

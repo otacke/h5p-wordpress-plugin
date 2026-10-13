@@ -100,9 +100,10 @@ class H5PEditorWordPressStorage implements H5peditorStorage {
       foreach ($libraries as $library) {
         // Look for library
         $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+        $restricted = H5P_Library_Restrictions::restricted_column_sql('hl');
         $details = $wpdb->get_row($wpdb->prepare(
-            "SELECT title, runnable, restricted, tutorial_url, metadata_settings
-              FROM {$table_libraries}
+            "SELECT title, runnable, {$restricted} AS restricted, tutorial_url, metadata_settings
+              FROM {$table_libraries} hl
               WHERE name = %s
               AND major_version = %d
               AND minor_version = %d
@@ -127,15 +128,16 @@ class H5PEditorWordPressStorage implements H5peditorStorage {
     // Load all libraries
     $libraries = array();
     $table_libraries = H5PCommons::build_full_db_table_name('h5p_libraries');
+    $restricted = H5P_Library_Restrictions::restricted_column_sql('hl');
     $libraries_result = $wpdb->get_results(
         "SELECT name,
                 title,
                 major_version AS majorVersion,
                 minor_version AS minorVersion,
                 tutorial_url AS tutorialUrl,
-                restricted,
+                {$restricted} AS restricted,
                 metadata_settings AS metadataSettings
-          FROM {$table_libraries}
+          FROM {$table_libraries} hl
           WHERE runnable = 1
           AND semantics IS NOT NULL
           ORDER BY title"

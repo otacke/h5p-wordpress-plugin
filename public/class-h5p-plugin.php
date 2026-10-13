@@ -445,10 +445,13 @@ class H5P_Plugin {
   public static function update_network_database() {
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
+    $charset = self::determine_charset();
+
     self::update_library_tables(
       array('H5PCommons', 'build_full_db_table_name_multisite'),
-      self::determine_charset()
+      $charset
     );
+    H5P_Library_Restrictions::update_table($charset);
   }
 
   /**
@@ -1890,6 +1893,11 @@ class H5P_Plugin {
    */
   public function delete_blog($blog_id) {
     H5PCommons::in_blog($blog_id, 'H5P_Plugin::uninstall');
+
+    // Restrictions are kept at network level, so the blog's uninstall leaves them behind.
+    if (H5PCommons::is_network_enabled()) {
+      H5P_Library_Restrictions::delete_for_blog($blog_id);
+    }
   }
 
   /**
@@ -1998,7 +2006,8 @@ class H5P_Plugin {
   public static function uninstall_network() {
     global $wpdb;
 
-    foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
+    $table_names = array_merge(H5PCommons::NETWORK_DATABASE_TABLE_NAMES, H5PCommons::NETWORK_ONLY_DATABASE_TABLE_NAMES);
+    foreach ($table_names as $table_name) {
       $table = H5PCommons::build_full_db_table_name_multisite($table_name);
       $wpdb->query("DROP TABLE IF EXISTS {$table}");
     }

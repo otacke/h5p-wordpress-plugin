@@ -1,0 +1,77 @@
+/* Network H5P Restrictions page. */
+
+.h5p-network-restrictions {
+  .h5p-network-restrictions-notices {
+    margin-top: 0.5rem;
+  }
+
+  /* A list to choose from beside the details of the chosen entry; stacked on narrow screens. */
+  .h5p-network-restrictions-layout {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: minmax(16rem, 1fr) 3fr;
+    margin-top: 1rem;
+
+    @media (max-width: 782px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .h5p-network-restrictions-list {
+    margin: 0;
+
+    ul {
+      margin: 0.25rem 0 0.75rem 1rem;
+    }
+
+    a.current {
+      font-weight: 600;
+      text-decoration: none;
+      color: inherit;
+    }
+  }
+
+  .h5p-network-restrictions-type {
+    font-weight: 600;
+  }
+
+  .h5p-network-restrictions-machine-name,
+  .h5p-network-restrictions-count {
+    color: #646970;
+    margin-left: 0.25rem;
+  }
+
+  .h5p-network-restrictions-count--restricted {
+    color: #b32d2e;
+  }
+
+  .h5p-network-restrictions-detail {
+    h2 {
+      margin-top: 0;
+    }
+
+    .search-form .search-box {
+      float: none;
+      margin: 0 0 0.75rem;
+    }
+  }
+
+  .h5p-network-restrictions-bulk {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .tablenav.bottom {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    height: auto;
+  }
+
+  &[aria-busy="true"] .button {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+}

@@ -31,7 +31,12 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
    * @throws Exception If a table cannot be copied or truncated.
    */
   protected function copyDatabaseTablesToBlogs() {
-    H5PCommons::for_each_blog(function () {
+    $restrictions_table = H5P_Library_Restrictions::get_table();
+    // Absent if network mode was enabled by a version without per-blog restrictions; the restricted column
+    // copied from the network then stays as it is.
+    $has_restrictions = H5PCommons::table_exists($restrictions_table);
+
+    H5PCommons::for_each_blog(function ($blog_id) use ($has_restrictions) {
       global $wpdb;
 
       foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
@@ -39,6 +44,10 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
           H5PCommons::build_full_db_table_name_singlesite($table_name),
           H5PCommons::build_full_db_table_name_multisite($table_name)
         );
+      }
+
+      if ($has_restrictions) {
+        $this->copyRestrictionsToBlog($blog_id);
       }
 
       // Rebuilt by createCachedAssets() after migration.
@@ -54,6 +63,38 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
         );
       }
     });
+  }
+
+  /**
+   * Set restricted column of the blog's libraries table from the network restrictions of that blog.
+   *
+   * Library ids are preserved by copyTableFromNetwork(), so the network ids apply to the blog table as they are.
+   * Must run in the blog's context, after its libraries table was copied.
+   *
+   * @param int $blog_id Blog id.
+   * @throws Exception If the libraries table cannot be updated.
+   */
+  protected function copyRestrictionsToBlog($blog_id) {
+    global $wpdb;
+
+    $blog_table_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
+    $restrictions_table = H5P_Library_Restrictions::get_table();
+
+    $result = $wpdb->query($wpdb->prepare(
+      "UPDATE {$blog_table_libraries} hl SET hl.restricted = EXISTS("
+      . "SELECT 1 FROM {$restrictions_table} hlr WHERE hlr.library_id = hl.id AND hlr.blog_id = %d)",
+      $blog_id
+    ));
+
+    if ($result === false) {
+      throw new Exception(
+        sprintf(
+          /* translators: %s: blog table name */
+          __('Failed to copy library restrictions into "%s".', 'h5p'),
+          $blog_table_libraries
+        )
+      );
+    }
   }
 
   /**
@@ -239,7 +280,8 @@ class H5P_Network_Migrate_To_Local extends H5P_Network_Admin_Base {
   public function dropNetworkTables() {
     global $wpdb;
 
-    foreach (H5PCommons::NETWORK_DATABASE_TABLE_NAMES as $table_name) {
+    $table_names = array_merge(H5PCommons::NETWORK_DATABASE_TABLE_NAMES, H5PCommons::NETWORK_ONLY_DATABASE_TABLE_NAMES);
+    foreach ($table_names as $table_name) {
       $wpdb->query("DROP TABLE IF EXISTS " . H5PCommons::build_full_db_table_name_multisite($table_name));
     }
   }

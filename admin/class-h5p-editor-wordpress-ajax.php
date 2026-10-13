@@ -29,6 +29,8 @@ class H5PEditorWordPressAjax implements H5PEditorAjaxInterface {
              AND hl1.major_version = hl2.major_version
         GROUP BY hl2.name, hl2.major_version";
 
+    $restricted = H5P_Library_Restrictions::restricted_column_sql('hl4');
+
     return $wpdb->get_results(
         "SELECT hl4.id,
                 hl4.name AS machine_name,
@@ -36,7 +38,7 @@ class H5PEditorWordPressAjax implements H5PEditorAjaxInterface {
                 hl4.major_version,
                 hl4.minor_version,
                 hl4.patch_version,
-                hl4.restricted,
+                {$restricted} AS restricted,
                 hl4.has_icon
            FROM ({$minor_versions_sql}) hl3
            JOIN {$table_libraries} hl4

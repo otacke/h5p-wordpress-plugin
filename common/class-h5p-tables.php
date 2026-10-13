@@ -28,6 +28,15 @@ class H5P_Tables {
   ];
 
   /**
+   * Database tables that exist at network level only, without a blog level counterpart to migrate from or to.
+   *
+   * @var string[]
+   */
+  const NETWORK_ONLY_DATABASE_TABLE_NAMES = [
+    H5P_Library_Restrictions::TABLE_NAME
+  ];
+
+  /**
    * Build full database table name, including correct prefix.
    *
    * @param string $table_name Table name without prefix (e.g. 'h5p_libraries').
@@ -60,7 +69,8 @@ class H5P_Tables {
   public static function build_full_db_table_name_multisite($table_name) {
     global $wpdb;
 
-    $is_table_network_table = in_array($table_name, self::NETWORK_DATABASE_TABLE_NAMES, true);
+    $is_table_network_table = in_array($table_name, self::NETWORK_DATABASE_TABLE_NAMES, true)
+      || in_array($table_name, self::NETWORK_ONLY_DATABASE_TABLE_NAMES, true);
     if (!$is_table_network_table) {
       return H5P_Tables::build_full_db_table_name_singlesite($table_name);
     }

@@ -7,7 +7,7 @@
  * library management. Lives under Network Admin > Settings and is only registered on multisite.
  * Delegates migration logic to H5P_Network_Migrate_To_Network and H5P_Network_Migrate_To_Local, and library
  * management to H5P_Network_Library_Overview, H5P_Network_Library_Deletion, H5P_Network_Library_Installer and
- * H5P_Network_Content_Cache.
+ * H5P_Network_Content_Cache, and per-blog library restrictions to H5P_Network_Library_Restrictions.
  * @package H5P
  * @since 1.19.0
  */
@@ -41,10 +41,18 @@ class H5P_Network_Admin {
    */
   private $overview;
 
+  /**
+   * Collects what the restrictions page shows, and saves its changes.
+   *
+   * @var H5P_Network_Library_Restrictions
+   */
+  private $restrictions;
+
   public function __construct() {
     $this->deletion = new H5P_Network_Library_Deletion();
     $this->installer = new H5P_Network_Library_Installer();
     $this->overview = new H5P_Network_Library_Overview($this->deletion, $this->installer);
+    $this->restrictions = new H5P_Network_Library_Restrictions();
 
     add_action('network_admin_menu', array($this, 'add_network_admin_menu'));
     add_action('wp_ajax_h5p_migrate_to_network', array($this, 'handle_migrate_to_network'));
@@ -55,6 +63,8 @@ class H5P_Network_Admin {
     add_action('wp_ajax_h5p_network_library_upload', array($this, 'handle_library_upload'));
     add_action('wp_ajax_h5p_network_update_content_type_cache', array($this, 'handle_update_content_type_cache'));
     add_action('wp_ajax_h5p_network_rebuild_cache', array($this, 'handle_rebuild_cache'));
+    add_action('wp_ajax_h5p_network_restrictions_save', array($this, 'handle_restrictions_save'));
+    add_action('wp_ajax_h5p_network_restrictions_apply', array($this, 'handle_restrictions_apply'));
   }
 
   /**
@@ -93,6 +103,16 @@ class H5P_Network_Admin {
         __('H5P Network Libraries', 'h5p'),
         'manage_network',
         'admin.php?page=h5p_management'
+      );
+
+      // Restricting a library version on a blog keeps that blog's authors from creating content with it.
+      add_submenu_page(
+        'settings.php',
+        __('H5P Network Restrictions', 'h5p'),
+        __('H5P Network Restrictions', 'h5p'),
+        'manage_network',
+        'h5p_restrictions',
+        array($this, 'render_restrictions_page')
       );
 
       add_filter('parent_file', array($this, 'highlight_management_menu_entry'));
@@ -192,6 +212,58 @@ class H5P_Network_Admin {
     wp_enqueue_style(
       $plugin->asset_handle('network-libraries'),
       plugins_url('h5p/admin/styles/h5p-network-libraries.css'),
+      array(),
+      H5P_Plugin::VERSION
+    );
+  }
+
+  /**
+   * Render the network level H5P restrictions page.
+   */
+  public function render_restrictions_page() {
+    if (!current_user_can('manage_network')) {
+      wp_die(esc_html__('You do not have permission to manage H5P content types.', 'h5p'));
+    }
+
+    $plugin = H5P_Plugin::get_instance();
+    $restrictions_settings = array(
+      'ajaxUrl' => admin_url('admin-ajax.php'),
+      'nonce' => wp_create_nonce('h5p_network_ajax'),
+      'l10n' => array(
+        'dismiss' => __('Dismiss this notice.', 'h5p'),
+        'cancel' => __('Cancel', 'h5p'),
+        'saved' => __('Restrictions saved.', 'h5p'),
+        'nothingChanged' => __('Nothing was changed.', 'h5p'),
+        'requestFailed' => __('The request failed. Please check the server error log.', 'h5p'),
+        'unsavedChanges' => __('There are unsaved changes. Leave the page anyway?', 'h5p'),
+      ),
+    );
+    $plugin->print_settings($restrictions_settings, 'H5PNetworkRestrictions');
+
+    $model = $this->restrictions->get_page_model($_GET);
+    include __DIR__ . '/views/network-restrictions.php';
+
+    wp_enqueue_script(
+      $plugin->asset_handle('plugin-confirmation-dialog'),
+      plugins_url('h5p/admin/scripts/h5p-confirmation-dialog.js'),
+      array(),
+      H5P_Plugin::VERSION
+    );
+    wp_enqueue_style(
+      $plugin->asset_handle('plugin-confirmation-dialog'),
+      plugins_url('h5p/admin/styles/h5p-confirmation-dialog.css'),
+      array(),
+      H5P_Plugin::VERSION
+    );
+    wp_enqueue_script(
+      $plugin->asset_handle('network-restrictions'),
+      plugins_url('h5p/admin/scripts/h5p-network-restrictions.js'),
+      array($plugin->asset_handle('plugin-confirmation-dialog')),
+      H5P_Plugin::VERSION
+    );
+    wp_enqueue_style(
+      $plugin->asset_handle('network-restrictions'),
+      plugins_url('h5p/admin/styles/h5p-network-restrictions.css'),
       array(),
       H5P_Plugin::VERSION
     );
@@ -478,6 +550,45 @@ class H5P_Network_Admin {
     $left = (new H5P_Network_Content_Cache())->rebuild(microtime(TRUE) + self::BATCH_TIMEOUT);
 
     wp_send_json_success(array('left' => $left));
+  }
+
+  /**
+   * Handle AJAX request to save the restrictions changed on one page of the restrictions page.
+   */
+  public function handle_restrictions_save() {
+    $this->verify_request(true);
+
+    $restrict = isset($_POST['restrict']) ? array_map('sanitize_text_field', (array) wp_unslash($_POST['restrict'])) : array();
+    $allow = isset($_POST['allow']) ? array_map('sanitize_text_field', (array) wp_unslash($_POST['allow'])) : array();
+
+    try {
+      $saved = $this->restrictions->save_pairs($restrict, $allow);
+    }
+    catch (Exception $exception) {
+      wp_send_json_error(array('message' => $exception->getMessage()));
+    }
+
+    wp_send_json_success(array('saved' => $saved));
+  }
+
+  /**
+   * Handle AJAX request to restrict or allow a library version on every blog matching the search.
+   */
+  public function handle_restrictions_apply() {
+    $this->verify_request(true);
+
+    $library_id = isset($_POST['library']) ? (int) $_POST['library'] : 0;
+    $search = isset($_POST['s']) ? sanitize_text_field(wp_unslash($_POST['s'])) : '';
+    $restricted = isset($_POST['restricted']) && $_POST['restricted'] === '1';
+
+    try {
+      $affected = $this->restrictions->apply_to_matching_sites($library_id, $search, $restricted);
+    }
+    catch (Exception $exception) {
+      wp_send_json_error(array('message' => $exception->getMessage()));
+    }
+
+    wp_send_json_success(array('saved' => $affected));
   }
 
   /**

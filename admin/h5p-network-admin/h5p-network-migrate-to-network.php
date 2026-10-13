@@ -48,7 +48,8 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
   const PHASE_DATABASE = 'database';
 
   /**
-   * Phase remapping blog-level library ids and dropping the blogs' obsolete library tables.
+   * Phase remapping blog-level library ids, moving the blogs' library restrictions to network level and
+   * dropping the blogs' obsolete library tables.
    * Destructive, but resumable per blog and per stage.
    */
   const PHASE_REMAP = 'remap';
@@ -323,6 +324,7 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       'h5p_contents:2',
       'h5p_contents_libraries:1',
       'h5p_contents_libraries:2',
+      'restrictions',
       'dropped'
     );
 
@@ -354,6 +356,9 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
 
       if ($stage === 'dropped') {
         $this->dropBlogLibraryTables($blog_id);
+      }
+      elseif ($stage === 'restrictions') {
+        $this->copyBlogRestrictionsToNetwork($blog_id, $mappings);
       }
       elseif (!empty($mappings)) {
         list($table_name, $pass) = explode(':', $stage);
@@ -655,6 +660,8 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       );
     }
 
+    $this->createNetworkRestrictionsTable();
+
     $skipped = array();
 
     H5PCommons::for_each_blog(function ($blog_id) use ($network_libraries_installed, &$skipped) {
@@ -693,6 +700,65 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
     $this->copyLibraryDependenciesToNetwork();
 
     return $network_libraries_installed;
+  }
+
+  /**
+   * Create empty network-level restrictions table, filled per blog by the remap phase. Drops it first,
+   * so a repeated attempt starts clean like the tables created from the blog tables.
+   *
+   * @throws Exception If table cannot be created.
+   */
+  protected function createNetworkRestrictionsTable() {
+    global $wpdb;
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+    $table = H5P_Library_Restrictions::get_table();
+    $wpdb->query("DROP TABLE IF EXISTS {$table}");
+    H5P_Library_Restrictions::update_table(H5P_Plugin::determine_charset());
+
+    if (!H5PCommons::table_exists($table)) {
+      throw new Exception(
+        sprintf(
+          /* translators: %s: network table name */
+          __('Failed to create table "%s".', 'h5p'),
+          $table
+        )
+      );
+    }
+  }
+
+  /**
+   * Restrict on network level, for one blog, the library versions restricted in that blog's libraries table.
+   *
+   * The network libraries table is shared by all blogs, so its restricted column cannot hold the blog's
+   * restrictions. Re-running this is a no-op, as existing rows are ignored.
+   *
+   * @param int   $blog_id  Blog id.
+   * @param array $mappings Map of blog library id to network library id.
+   *
+   * @throws Exception If restrictions cannot be stored.
+   */
+  protected function copyBlogRestrictionsToNetwork($blog_id, $mappings) {
+    $restricted_ids = H5PCommons::in_blog($blog_id, function () {
+      global $wpdb;
+
+      $blog_table_libraries = H5PCommons::build_full_db_table_name_singlesite('h5p_libraries');
+      if (!H5PCommons::table_exists($blog_table_libraries)) {
+        return array();
+      }
+
+      return $wpdb->get_col("SELECT id FROM {$blog_table_libraries} WHERE restricted = 1");
+    });
+
+    $network_ids = array();
+    foreach ($restricted_ids as $restricted_id) {
+      if (isset($mappings[$restricted_id])) {
+        $network_ids[] = $mappings[$restricted_id];
+      }
+    }
+
+    H5P_Library_Restrictions::set_restricted($network_ids, array($blog_id), true);
   }
 
   /**
@@ -1014,6 +1080,10 @@ class H5P_Network_Migrate_To_Network extends H5P_Network_Admin_Base {
       if (property_exists($blog_library, $col)) {
         $insert_data[$col] = $blog_library->{$col};
       }
+    }
+    // Restrictions differ per blog, so they move to the network restrictions table in the remap phase.
+    if (array_key_exists('restricted', $insert_data)) {
+      $insert_data['restricted'] = 0;
     }
     $result = $wpdb->insert($network_table_libraries, $insert_data);
 
