@@ -479,10 +479,6 @@ class H5P_Network_Library_Overview {
       'contentTypeCacheFailed' => __('The content type cache could not be updated. Please try again.', 'h5p'),
       'rebuildFailed' => __('The content cache could not be rebuilt. Please try again.', 'h5p'),
       'rebuildDone' => __('The content cache was rebuilt.', 'h5p'),
-      // The msgids of the Libraries page (H5PLibraryAdmin::get_not_cached_settings()), so the translations stay
-      // in sync. The singular template contains no %d; the JS picks the template by count.
-      'notCachedSingular' => _n('1 content need to get its cache rebuilt.', '%d contents needs to get their cache rebuilt.', 1, 'h5p'),
-      'notCachedPlural' => _n('1 content need to get its cache rebuilt.', '%d contents needs to get their cache rebuilt.', 2, 'h5p'),
       // The msgids of the upgrade error messages are the same as in H5PLibraryAdmin::display_content_upgrades(),
       // so the translations of the two pages stay in sync.
       'inProgress' => __('Upgrading to %ver...', 'h5p'),
@@ -494,11 +490,6 @@ class H5P_Network_Library_Overview {
       'errorLibrary' => __('Missing required library %lib.', 'h5p'),
       'errorTooHighVersion' => __('Parameters contain %used while only %supported or earlier are supported.', 'h5p'),
       'errorNotSupported' => __('Parameters contain %used which is not supported.', 'h5p'),
-      // The singular templates contain no %d; the JS picks the template by count.
-      'upgradedSingular' => _n('1 content upgraded', '%d contents upgraded', 1, 'h5p'),
-      'upgradedPlural' => _n('1 content upgraded', '%d contents upgraded', 2, 'h5p'),
-      'failedSingular' => _n('1 content could not be upgraded', '%d contents could not be upgraded', 1, 'h5p'),
-      'failedPlural' => _n('1 content could not be upgraded', '%d contents could not be upgraded', 2, 'h5p'),
       // The singular templates contain no %d; the JS picks the template by count.
       'bulkConfirmUpdateSingular' => __('Update 1 library?', 'h5p'),
       'bulkConfirmUpdatePlural' => __('Update %d libraries?', 'h5p'),
@@ -512,19 +503,82 @@ class H5P_Network_Library_Overview {
       'bulkProgressInstall' => __('Installing %lib (%i of %n)...', 'h5p'),
       'bulkProgressDelete' => __('Deleting... %d deleted', 'h5p'),
       'bulkProgressUpgrade' => __('Upgrading %lib %old to %new (%i of %n)...', 'h5p'),
-      'bulkUpdatedSingular' => _n('1 library updated', '%d libraries updated', 1, 'h5p'),
-      'bulkUpdatedPlural' => _n('1 library updated', '%d libraries updated', 2, 'h5p'),
-      'bulkInstalledSingular' => _n('1 content type installed', '%d content types installed', 1, 'h5p'),
-      'bulkInstalledPlural' => _n('1 content type installed', '%d content types installed', 2, 'h5p'),
-      'bulkDeletedSingular' => _n('1 library deleted:', '%d libraries deleted:', 1, 'h5p'),
-      'bulkDeletedPlural' => _n('1 library deleted:', '%d libraries deleted:', 2, 'h5p'),
-      'bulkSkippedSingular' => _n('1 skipped (already up to date)', '%d skipped (already up to date)', 1, 'h5p'),
-      'bulkSkippedPlural' => _n('1 skipped (already up to date)', '%d skipped (already up to date)', 2, 'h5p'),
-      'bulkUpdateFailedSingular' => _n('1 library could not be updated:', '%d libraries could not be updated:', 1, 'h5p'),
-      'bulkUpdateFailedPlural' => _n('1 library could not be updated:', '%d libraries could not be updated:', 2, 'h5p'),
-      'bulkInstallFailedSingular' => _n('1 content type could not be installed:', '%d content types could not be installed:', 1, 'h5p'),
-      'bulkInstallFailedPlural' => _n('1 content type could not be installed:', '%d content types could not be installed:', 2, 'h5p'),
       'bulkFailed' => __('One of the requests failed, so the bulk action was stopped.', 'h5p'),
+      // Count dependent lines: msgid pairs, translated in the script by the language's own plural rule, as a fixed
+      // singular and plural template would be wrong for languages with more plural forms (e.g. ru, pl).
+      'plurals' => array_map(
+        function ($noop) {
+          return array($noop['singular'], $noop['plural']);
+        },
+        $this->get_plural_noops()
+      ),
     );
+  }
+
+  /**
+   * Get the count dependent strings of the library grid script.
+   *
+   * Some msgids are those of the Libraries page (H5PLibraryAdmin::get_not_cached_settings(),
+   * H5PLibraryAdmin::display_content_upgrades()), so the translations of the two pages stay in sync.
+   *
+   * @return array _n_noop() results, keyed by the name the script uses.
+   */
+  private function get_plural_noops() {
+    return array(
+      'notCached' => _n_noop('1 content need to get its cache rebuilt.', '%d contents needs to get their cache rebuilt.', 'h5p'),
+      'upgraded' => _n_noop('1 content upgraded', '%d contents upgraded', 'h5p'),
+      'failed' => _n_noop('1 content could not be upgraded', '%d contents could not be upgraded', 'h5p'),
+      'bulkUpdated' => _n_noop('1 library updated', '%d libraries updated', 'h5p'),
+      'bulkInstalled' => _n_noop('1 content type installed', '%d content types installed', 'h5p'),
+      'bulkDeleted' => _n_noop('1 library deleted:', '%d libraries deleted:', 'h5p'),
+      'bulkSkipped' => _n_noop('1 skipped (already up to date)', '%d skipped (already up to date)', 'h5p'),
+      'bulkUpdateFailed' => _n_noop('1 library could not be updated:', '%d libraries could not be updated:', 'h5p'),
+      'bulkInstallFailed' => _n_noop('1 content type could not be installed:', '%d content types could not be installed:', 'h5p'),
+    );
+  }
+
+  /**
+   * Get the locale data for wp.i18n that translates the count dependent strings of the library grid script.
+   *
+   * Holds the language's plural rule and every plural form of the strings, so the script picks the right form
+   * for any count, which PHP cannot do in advance.
+   *
+   * @return array Jed locale data, as wp.i18n.createI18n() takes it.
+   */
+  public function get_plural_locale_data() {
+    $translations = get_translations_for_domain('h5p');
+
+    $plural_forms = '';
+    foreach ((array) $translations->headers as $name => $value) {
+      // Header names are lowercased by the translation files of WordPress 6.5 and later, but not by MO.
+      if (strtolower($name) === 'plural-forms') {
+        $plural_forms = $value;
+      }
+    }
+
+    $locale_data = array(
+      '' => array(
+        'domain' => 'h5p',
+        'lang' => determine_locale(),
+      ),
+    );
+    if ($plural_forms !== '') {
+      $locale_data['']['plural_forms'] = $plural_forms;
+    }
+
+    $singulars = array();
+    foreach ($this->get_plural_noops() as $noop) {
+      $singulars[$noop['singular']] = true;
+    }
+
+    // Without a translation, wp.i18n falls back to the msgids with the English plural rule.
+    foreach ((array) $translations->entries as $entry) {
+      if ($entry->is_plural && empty($entry->context) && isset($singulars[$entry->singular])
+          && count(array_filter($entry->translations, 'strlen')) > 0) {
+        $locale_data[$entry->singular] = array_values($entry->translations);
+      }
+    }
+
+    return $locale_data;
   }
 }

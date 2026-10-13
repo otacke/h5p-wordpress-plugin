@@ -1,4 +1,4 @@
-/* global H5PEditor H5PNetworkLibraries H5PPluginConfirmationDialog */
+/* global H5PEditor H5PNetworkLibraries H5PPluginConfirmationDialog wp */
 /**
  * Behavior of the library grids on the network H5P Management page.
  *
@@ -80,7 +80,7 @@
       return {region, toolsRegion, show};
     };
 
-    const {noticesRegion, toolsNoticesRegion, showNotice} = makeNotices();
+    const {region: noticesRegion, toolsRegion: toolsNoticesRegion, show: showNotice} = makeNotices();
 
     /**
      * Name the tools section that holds a tool's button.
@@ -216,15 +216,23 @@
       return error;
     };
 
+    // Private instance, so the plural forms of this page do not change the h5p domain for other scripts.
+    const i18n = wp.i18n.createI18n(settings.pluralLocaleData || {}, 'h5p');
+    const plurals = l10n.plurals || {};
+
     /**
-     * The l10n line for a count, from its singular or plural template.
+     * The l10n line for a count, in the plural form the language's own rule picks for it.
      *
-     * @param {string} key The l10n prefix without the variant suffix, e.g. "bulkUpdated".
+     * Keys without msgid pair (the bulk confirmations) fall back to their singular or plural template.
+     *
+     * @param {string} key The l10n name, e.g. "bulkUpdated".
      * @param {number} n The count.
      * @return {string} The template, with %d replaced by the count, if it has one.
      */
     const plural = (key, n) => {
-      const template = l10n[`${key}${n === 1 ? 'Singular' : 'Plural'}`] || '';
+      const template = plurals[key]
+        ? i18n._n(plurals[key][0], plurals[key][1], n, 'h5p')
+        : l10n[`${key}${n === 1 ? 'Singular' : 'Plural'}`] || '';
       return template.replace('%d', String(n));
     };
 

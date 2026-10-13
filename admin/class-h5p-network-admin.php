@@ -173,6 +173,7 @@ class H5P_Network_Admin {
       'nonce' => wp_create_nonce('h5p_network_ajax'),
       'upgrade' => $this->overview->get_upgrade_settings(),
       'l10n' => $this->overview->get_library_l10n(),
+      'pluralLocaleData' => $this->overview->get_plural_locale_data(),
     );
     $plugin->print_settings($library_settings, 'H5PNetworkLibraries');
 
@@ -206,7 +207,7 @@ class H5P_Network_Admin {
     wp_enqueue_script(
       $plugin->asset_handle('network-libraries'),
       plugins_url('h5p/admin/scripts/h5p-network-libraries.js'),
-      array($plugin->asset_handle('editor'), $plugin->asset_handle('plugin-confirmation-dialog'), $plugin->asset_handle('network-content-upgrade')),
+      array('wp-i18n', $plugin->asset_handle('editor'), $plugin->asset_handle('plugin-confirmation-dialog'), $plugin->asset_handle('network-content-upgrade')),
       H5P_Plugin::VERSION
     );
     wp_enqueue_style(
