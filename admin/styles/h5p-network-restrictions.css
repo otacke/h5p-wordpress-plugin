@@ -17,10 +17,40 @@
     }
   }
 
+  /* Core floats p.search-box right, which lets the list beside it flow around it; keep it above instead. */
+  .search-form .search-box {
+    float: none;
+    margin: 0 0 0.75rem;
+  }
+
+  /* Fill the narrow list column instead of overflowing it. */
+  .h5p-network-restrictions-master .search-box input[type="search"] {
+    flex: 1;
+    min-width: 0;
+  }
+
   .h5p-network-restrictions-list {
     margin: 0;
 
+    /* Parts of an entry wrap as a whole, never between a link and its description. */
+    li {
+      align-items: baseline;
+      column-gap: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .h5p-network-restrictions-machine-name,
+    .h5p-network-restrictions-count {
+      margin-left: 0;
+    }
+
+    .h5p-network-restrictions-machine-name {
+      overflow-wrap: anywhere;
+    }
+
     ul {
+      flex-basis: 100%;
       margin: 0.25rem 0 0.75rem 1rem;
     }
 
@@ -48,11 +78,6 @@
   .h5p-network-restrictions-detail {
     h2 {
       margin-top: 0;
-    }
-
-    .search-form .search-box {
-      float: none;
-      margin: 0 0 0.75rem;
     }
   }
 
