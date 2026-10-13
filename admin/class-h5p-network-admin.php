@@ -286,7 +286,19 @@ class H5P_Network_Admin {
   public function handle_migrate_to_network() {
     $this->verify_request(false);
     $this->prepare_long_request();
+    $this->with_migration_lock(function () {
+      $this->refuse_while_in_flight(
+        H5P_Network_Migrate_To_Local::state(),
+        __('The migration back to blog level has not finished yet.', 'h5p')
+      );
+      $this->migrate_to_network_batch();
+    });
+  }
 
+  /**
+   * Run one batch of the migration to network level and answer the request.
+   */
+  private function migrate_to_network_batch() {
     $migrate = new H5P_Network_Migrate_To_Network();
 
     $state_before = H5P_Network_Migrate_To_Network::getState();
@@ -348,11 +360,25 @@ class H5P_Network_Admin {
   public function handle_migrate_to_local() {
     $this->verify_request(false);
     $this->prepare_long_request();
+    $this->with_migration_lock(function () {
+      $this->refuse_while_in_flight(
+        H5P_Network_Migrate_To_Network::state(),
+        __('The migration to network level has not finished yet.', 'h5p')
+      );
+      $this->migrate_to_local_batch();
+    });
+  }
 
+  /**
+   * Run one batch of the migration back to local level and answer the request.
+   *
+   * The client sends 'start' with the first request of a run, so a new run never resumes an abandoned one.
+   */
+  private function migrate_to_local_batch() {
     $demigrate = new H5P_Network_Migrate_To_Local();
 
     try {
-      $demigrate->migrateToLocal();
+      $progress = $demigrate->migrateNextBatch(!empty($_POST['start']));
     }
     catch (Exception $exception) {
       // The network data is still intact and the partial local copies do no harm: in network mode
@@ -368,19 +394,20 @@ class H5P_Network_Admin {
       );
     }
 
+    if (!$progress['done']) {
+      // More blogs to work through, so client calls again.
+      wp_send_json_success(
+        array(
+          'phase'      => $progress['phase'],
+          'percentage' => $progress['percentage'],
+          'done'       => false,
+          'nonce'      => wp_create_nonce('h5p_network_ajax'),
+        )
+      );
+    }
+
     $this->set_network_mode(false);
-
-    try {
-      $demigrate->removeNetworkData();
-
-      // The network tables are gone, so the network schema version is meaningless.
-      delete_site_option('h5p_network_db_version');
-    }
-    catch (Exception $exception) {
-      // The site is already local, so leftover network data is inert: log and go on.
-      error_log('H5P local demigration cleanup failed: ' . $exception->getMessage());
-    }
-
+    $demigrate->finish();
     $demigrate->createCachedAssetsUnlessDisabled('H5P local demigration: ');
 
     wp_send_json_success();
@@ -533,6 +560,49 @@ class H5P_Network_Admin {
     }
 
     wp_send_json_success(array('saved' => $affected));
+  }
+
+  /**
+   * Run a migration request while holding the migration lock, or refuse it if another one holds it.
+   *
+   * A database lock, so two requests (double click, a second admin) never run migration batches at once. The
+   * database releases it when the request ends, even after a fatal error; the explicit release covers callers
+   * that go on, like tests.
+   *
+   * @param callable $body Request body; ends the request itself.
+   */
+  private function with_migration_lock(callable $body) {
+    global $wpdb;
+
+    $name = $wpdb->base_prefix . 'h5p_network_migration';
+    if ($wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, 0)', $name)) !== '1') {
+      wp_send_json_error(
+        array(
+          'message'    => __('Another migration request is still running. Please try again in a moment.', 'h5p'),
+          'rolledBack' => true,
+        ),
+        H5PCommons::HTTP_OK
+      );
+    }
+
+    try {
+      $body();
+    }
+    finally {
+      $wpdb->query($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $name));
+    }
+  }
+
+  /**
+   * Refuse the request while a migration in the other direction is in flight, as the two would undo each other.
+   *
+   * @param H5P_Network_Migration_State $other State of the migration in the other direction.
+   * @param string $message Why the request is refused.
+   */
+  private function refuse_while_in_flight(H5P_Network_Migration_State $other, $message) {
+    if ($other->exists()) {
+      wp_send_json_error(array('message' => $message, 'rolledBack' => true), H5PCommons::HTTP_OK);
+    }
   }
 
   /**

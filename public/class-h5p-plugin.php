@@ -1992,6 +1992,7 @@ class H5P_Plugin {
     delete_site_option('h5p_network_enabled');
     delete_site_option('h5p_network_db_version');
     delete_site_option(H5P_Network_Migrate_To_Network::STATE_OPTION);
+    delete_site_option(H5P_Network_Migrate_To_Local::STATE_OPTION);
 
     self::recursive_unlink(H5PCommons::get_h5p_network_path());
   }

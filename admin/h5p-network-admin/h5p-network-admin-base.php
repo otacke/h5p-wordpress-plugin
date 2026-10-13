@@ -153,7 +153,8 @@ abstract class H5P_Network_Admin_Base {
   /**
    * Create cached assets for all H5P content on all blogs, unless asset aggregation is disabled.
    *
-   * Never fails: cached assets are created lazily when content is viewed, so a failure is only logged.
+   * Never fails: cached assets are created lazily when content is viewed, so a failure is only logged. Limited
+   * to one batch time budget, as it runs in the request that finishes the migration.
    *
    * @param string $log_prefix Prefix of the error log entry.
    */
@@ -163,7 +164,7 @@ abstract class H5P_Network_Admin_Base {
     }
 
     try {
-      $this->createCachedAssets();
+      $this->createCachedAssets(microtime(true) + static::BATCH_TIMEOUT);
     }
     catch (Exception $exception) {
       error_log($log_prefix . $exception->getMessage());
@@ -175,16 +176,27 @@ abstract class H5P_Network_Admin_Base {
    *
    * Must run after network mode flag matches target level, since storage and table names resolve at call
    * time. Idempotent: uses same code path as viewing content, so existing cached assets stay untouched.
+   * Stops at the deadline: whatever is left is created when the content is first viewed.
+   *
+   * @param float|null $deadline microtime(true) after which no further content is processed, or null for none.
    */
-  public function createCachedAssets() {
-    H5PCommons::for_each_blog(function () {
+  public function createCachedAssets($deadline = null) {
+    H5PCommons::for_each_blog(function () use ($deadline) {
       global $wpdb;
 
-      $core = H5P_Plugin::get_instance()->get_h5p_instance('core');
       $table_contents = H5PCommons::build_full_db_table_name_singlesite('h5p_contents');
+      if (!H5PCommons::table_exists($table_contents)) {
+        return; // Blog does not use H5P.
+      }
+
+      $core = H5P_Plugin::get_instance()->get_h5p_instance('core');
       $content_ids = $wpdb->get_col("SELECT id FROM {$table_contents}");
 
       foreach ($content_ids as $content_id) {
+        if ($deadline !== null && microtime(true) > $deadline) {
+          return H5PCommons::STOP_ITERATION;
+        }
+
         $dependencies = $core->loadContentDependencies($content_id, 'preloaded');
         $core->getDependenciesFiles($dependencies);
       }

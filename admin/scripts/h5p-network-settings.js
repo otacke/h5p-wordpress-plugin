@@ -116,11 +116,15 @@
     setButtonBusy(button, true);
 
     // The migration works through the blogs in batches, so keep calling until
-    // the server reports it is done.
-    const runBatch = (nonce) => {
+    // the server reports it is done. The first call says so, so a new run
+    // never resumes an abandoned one.
+    const runBatch = (nonce, start = false) => {
       const formData = new FormData();
       formData.append('action', action);
       formData.append('nonce', nonce);
+      if (start) {
+        formData.append('start', '1');
+      }
 
       fetch(props.ajaxPath, {
         method: 'POST',
@@ -159,7 +163,7 @@
         });
     };
 
-    runBatch(props.nonce);
+    runBatch(props.nonce, true);
   };
 
   /**
