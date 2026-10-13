@@ -617,6 +617,14 @@ class H5PContentAdmin {
       return FALSE;
     }
 
+    // Core only hides restricted content types in the editor, so content uploaded, pasted or posted with them
+    // must be refused here.
+    $restricted = H5P_Library_Restrictions::find_introduced_restricted($content['library'], $params->params, $oldLibrary, $oldParams);
+    if (!empty($restricted)) {
+      H5P_Plugin_Admin::set_error(H5P_Library_Restrictions::get_refusal_message($restricted));
+      return FALSE;
+    }
+
     // Set disabled features
     $this->get_disabled_content_features($core, $content);
 
@@ -1077,8 +1085,60 @@ class H5PContentAdmin {
     $filePath = $_FILES['h5p']['tmp_name'];
     $editor = $this->get_h5peditor_instance();
     $contentId = filter_input(INPUT_POST, 'contentId', FILTER_SANITIZE_NUMBER_INT);
+
+    $restricted = $this->find_restricted_in_upload($filePath, $contentId);
+    if (!empty($restricted)) {
+      H5PCore::ajaxError(H5P_Library_Restrictions::get_refusal_message($restricted), 'RESTRICTED_LIBRARY');
+      exit;
+    }
+
     $editor->ajax->action(H5PEditorEndpoints::LIBRARY_UPLOAD, $token, $filePath, $contentId);
     exit;
+  }
+
+  /**
+   * Find restricted library versions an uploaded package would newly add to the content being edited.
+   *
+   * Only tells the author early: handle_content_creation() refuses saving them anyway. A package that cannot be
+   * read is left to core, which reports it as invalid.
+   *
+   * @param string   $file_path  Path of the uploaded .h5p file.
+   * @param int|null $content_id Content being edited, empty for new content.
+   * @return string[] Titles of the restricted versions, as H5P_Library_Restrictions::find_introduced_restricted().
+   */
+  private function find_restricted_in_upload($file_path, $content_id) {
+    if (empty($file_path) || !class_exists('ZipArchive')) {
+      return array();
+    }
+
+    $zip = new ZipArchive();
+    if ($zip->open($file_path) !== TRUE) {
+      return array();
+    }
+    $h5p_json = json_decode((string) $zip->getFromName('h5p.json'), TRUE);
+    $content_json = $zip->getFromName('content/content.json');
+    $zip->close();
+
+    if (!is_array($h5p_json) || $content_json === FALSE) {
+      return array();
+    }
+
+    $old_library = NULL;
+    $old_params = NULL;
+    if (!empty($content_id)) {
+      $old_content = H5P_Plugin::get_instance()->get_content($content_id);
+      if (is_array($old_content) && $this->current_user_can_edit($old_content)) {
+        $old_library = $old_content['library'];
+        $old_params = $old_content['params'];
+      }
+    }
+
+    return H5P_Library_Restrictions::find_introduced_restricted(
+      H5P_Library_Restrictions::get_package_main_library($h5p_json),
+      $content_json,
+      $old_library,
+      $old_params
+    );
   }
 
   /**

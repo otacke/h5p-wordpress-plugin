@@ -8,6 +8,9 @@
  * Network mode therefore keeps one row per restricted library version and blog in its own network table
  * and ignores the restricted column, which migration to network level clears.
  *
+ * Also checks content against the restrictions in either mode, since core only uses them to hide content types
+ * in the editor and never refuses to save content using them.
+ *
  * @package   H5P
  * @license   MIT
  * @link      http://h5p.org
@@ -66,6 +69,145 @@ class H5P_Library_Restrictions {
     $blog_id = (int) get_current_blog_id();
 
     return "EXISTS(SELECT 1 FROM {$table} hlr WHERE hlr.library_id = {$alias}.id AND hlr.blog_id = {$blog_id})";
+  }
+
+  /**
+   * Get library versions the current user may not use on the current blog.
+   *
+   * Users who may create restricted content, as core's CREATE_RESTRICTED permission maps it, get none.
+   *
+   * @return string[] Titles of restricted versions, keyed by "machineName major.minor".
+   */
+  public static function get_restricted_for_current_blog() {
+    global $wpdb;
+
+    if (H5P_Network_Mode::current_user_can_manage_libraries()) {
+      return array();
+    }
+
+    $table_libraries = H5P_Tables::build_full_db_table_name('h5p_libraries');
+    $restricted = self::restricted_column_sql('hl');
+
+    $restricted_libraries = array();
+    foreach ($wpdb->get_results(
+      "SELECT hl.name, hl.title, hl.major_version, hl.minor_version, {$restricted} AS restricted
+         FROM {$table_libraries} hl
+       HAVING restricted = 1"
+    ) as $library) {
+      $restricted_libraries["{$library->name} {$library->major_version}.{$library->minor_version}"] =
+        "{$library->title} {$library->major_version}.{$library->minor_version}";
+    }
+
+    return $restricted_libraries;
+  }
+
+  /**
+   * Find restricted library versions that content would newly use, as main library or as sub-content.
+   *
+   * Versions the content used before are not reported, so content using a version restricted later stays editable.
+   *
+   * @param array|string      $main_library     Main library, as array with machineName or name, majorVersion and
+   *                                            minorVersion, or as "machineName major.minor".
+   * @param array|object|string|null $params    Content parameters, decoded or as JSON.
+   * @param array|string|null $old_main_library Main library before the change, null for new content.
+   * @param array|object|string|null $old_params Content parameters before the change, null for new content.
+   * @return string[] Titles of the restricted versions newly used, empty if none.
+   */
+  public static function find_introduced_restricted($main_library, $params, $old_main_library = null, $old_params = null) {
+    $restricted = self::get_restricted_for_current_blog();
+    if (empty($restricted)) {
+      return array();
+    }
+
+    $used = self::collect_libraries($main_library, $params);
+    $used_before = $old_main_library === null ? array() : self::collect_libraries($old_main_library, $old_params);
+
+    return array_values(array_intersect_key($restricted, array_diff_key($used, $used_before)));
+  }
+
+  /**
+   * Get the main library of an H5P package from its h5p.json.
+   *
+   * h5p.json names the main library without version, so the version comes from its preloaded dependency entry.
+   *
+   * @param array $h5p_json Decoded h5p.json, as associative array.
+   * @return string "machineName major.minor", or empty string if h5p.json does not tell.
+   */
+  public static function get_package_main_library($h5p_json) {
+    if (empty($h5p_json['mainLibrary']) || empty($h5p_json['preloadedDependencies'])) {
+      return '';
+    }
+
+    foreach ((array) $h5p_json['preloadedDependencies'] as $dependency) {
+      if (isset($dependency['machineName'], $dependency['majorVersion'], $dependency['minorVersion'])
+        && $dependency['machineName'] === $h5p_json['mainLibrary']) {
+        return "{$dependency['machineName']} " . (int) $dependency['majorVersion'] . '.' . (int) $dependency['minorVersion'];
+      }
+    }
+
+    return '';
+  }
+
+  /**
+   * Build the message refusing restricted library versions.
+   *
+   * @param string[] $titles Titles of the restricted versions, as find_introduced_restricted() returns them.
+   * @return string
+   */
+  public static function get_refusal_message($titles) {
+    return sprintf(
+      /* translators: %s: comma separated content types with versions, e.g. "Multiple Choice 1.16" */
+      __('Content using %s cannot be added on this site, as it is restricted.', 'h5p'),
+      implode(', ', $titles)
+    );
+  }
+
+  /**
+   * Collect the library versions content uses: its main library and the library of every sub-content.
+   *
+   * @param array|string             $main_library See find_introduced_restricted().
+   * @param array|object|string|null $params       See find_introduced_restricted().
+   * @return true[] Keyed by "machineName major.minor".
+   */
+  private static function collect_libraries($main_library, $params) {
+    $libraries = array();
+
+    if (is_array($main_library)) {
+      $name = isset($main_library['machineName']) ? $main_library['machineName'] : (isset($main_library['name']) ? $main_library['name'] : '');
+      $main_library = "{$name} " . (int) $main_library['majorVersion'] . '.' . (int) $main_library['minorVersion'];
+    }
+    $libraries[$main_library] = true;
+
+    if (is_string($params)) {
+      $params = json_decode($params);
+    }
+    self::collect_sub_content_libraries($params, $libraries);
+
+    return $libraries;
+  }
+
+  /**
+   * Walk content parameters and record the library of every sub-content, which is a string "library" property.
+   *
+   * @param mixed  $value     Parameters, or part of them.
+   * @param true[] $libraries Recorded libraries, keyed by "machineName major.minor", updated in place.
+   */
+  private static function collect_sub_content_libraries($value, &$libraries) {
+    if (!is_array($value) && !is_object($value)) {
+      return;
+    }
+
+    foreach ($value as $key => $item) {
+      if ($key === 'library' && is_string($item)) {
+        // Same pattern as H5PCore::libraryFromString(), and keyed the same way as the restricted versions.
+        if (preg_match('/^([\w0-9\-\.]{1,255})[\-\ ]([0-9]{1,5})\.([0-9]{1,5})$/i', $item, $matches)) {
+          $libraries["{$matches[1]} " . (int) $matches[2] . '.' . (int) $matches[3]] = true;
+        }
+      }
+      else {
+        self::collect_sub_content_libraries($item, $libraries);
+      }
+    }
   }
 
   /**

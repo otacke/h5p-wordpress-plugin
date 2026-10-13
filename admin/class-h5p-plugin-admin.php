@@ -607,6 +607,18 @@ class H5P_Plugin_Admin {
           }
         }
 
+        $restricted = H5P_Library_Restrictions::find_introduced_restricted(
+          H5P_Library_Restrictions::get_package_main_library($validator->h5pC->mainJsonData),
+          $validator->h5pC->contentJsonData,
+          isset($content['library']) ? $content['library'] : NULL,
+          isset($content['params']) ? $content['params'] : NULL
+        );
+        if (!empty($restricted)) {
+          $interface->setErrorMessage(H5P_Library_Restrictions::get_refusal_message($restricted));
+          H5PCore::deleteFileTree($tmpDir);
+          return FALSE;
+        }
+
         if (empty($content['metadata']) || empty($content['metadata']['title'])) {
           // Fix for legacy content upload to work.
           // Fetch title from h5p.json or use a default string if not available
