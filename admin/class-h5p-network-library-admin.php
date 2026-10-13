@@ -3,40 +3,12 @@
  * H5P Network Library Admin class
  *
  * Library management in network mode: libraries are shared network wide, content lives on each blog.
- * Overrides only the seams that touch per-blog content tables, fanning out via H5PCommons::for_each_blog().
+ * Only the content upgrade and the cache rebuild are reachable in network mode (the blog Libraries page is not
+ * registered there); they fan out over every blog via H5PCommons::for_each_blog().
  *
  * @package H5P_Plugin_Admin
  */
 class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
-
-  /**
-   * Content count per library across all blogs.
-   *
-   * @var array|null Keyed by library id.
-   */
-  private $library_content_counts = NULL;
-
-  /**
-   * Libraries page lives in the network admin.
-   *
-   * @since 1.18.0
-   * @param string $query Admin page query string.
-   * @return string
-   */
-  protected function libraries_page_url($query) {
-    return network_admin_url($query);
-  }
-
-  /**
-   * Content URL points at the blog the content lives on.
-   *
-   * @since 1.18.0
-   * @param object $content Row with id and blog_id.
-   * @return string
-   */
-  protected function get_content_url($content) {
-    return get_admin_url($content->blog_id, 'admin.php?page=h5p&task=show&id=' . $content->id);
-  }
 
   /**
    * Upgrades script lives in the shared network folder.
@@ -50,65 +22,6 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
       'path' => H5PCommons::get_h5p_network_path() . $suffix,
       'url' => H5PCommons::get_h5p_network_url() . $suffix,
     );
-  }
-
-  /**
-   * List content that uses given library, across all blogs.
-   *
-   * @since 1.18.0
-   * @param object $library Library to list content for.
-   * @return array Rows with id, title and blog_id.
-   */
-  protected function get_contents_using_library($library) {
-    $contents = array();
-
-    H5PCommons::for_each_blog(function ($blog_id) use (&$contents, $library) {
-      global $wpdb;
-
-      $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
-      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-
-      if (!H5PCommons::table_exists($table_contents_libraries) || !H5PCommons::table_exists($table_contents)) {
-        return; // Blog has no H5P content tables yet.
-      }
-
-      $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT DISTINCT hc.id, hc.title
-          FROM {$table_contents_libraries} hcl
-          JOIN {$table_contents} hc ON hcl.content_id = hc.id
-          WHERE hcl.library_id = %d
-          ORDER BY hc.title",
-        $library->id
-      ));
-
-      foreach ($rows as $row) {
-        $row->blog_id = $blog_id;
-        $contents[] = $row;
-      }
-    });
-
-    return $contents;
-  }
-
-  /**
-   * Count content that uses given library, across all blogs.
-   *
-   * Counted once per request for every library at once, because the library admin list asks about each in
-   * turn and switching blogs is not cheap. $skipped is ignored: ajax_upgrade_progress() skips per blog.
-   *
-   * @since 1.18.0
-   * @param int $library_id Id of library to count content for.
-   * @param string|null $skipped Comma separated content ids to exclude (cannot be handled in network mode), or NULL.
-   * @return int
-   */
-  protected function get_num_content_using_library($library_id, $skipped = NULL) {
-    if ($this->library_content_counts === NULL) {
-      $this->library_content_counts = H5P_Network_Library_Helpers::get_content_counts();
-    }
-
-    return isset($this->library_content_counts[(int) $library_id])
-      ? $this->library_content_counts[(int) $library_id]
-      : 0;
   }
 
   /**
@@ -278,6 +191,22 @@ class H5PNetworkLibraryAdmin extends H5PLibraryAdmin {
           ',"metadata":' . \H5PMetadata::toJSON($content) . '}';
       }
     });
+  }
+
+  /**
+   * Refuse the blog level restriction toggle.
+   *
+   * In network mode, restrictions are set per blog on the network restrictions page, and the restricted column of
+   * the shared libraries table is not used, so toggling it would silently do nothing.
+   *
+   * @since 1.18.0
+   */
+  public function ajax_restrict_access() {
+    $this->require_manage_libraries();
+
+    status_header(H5PCommons::HTTP_FORBIDDEN);
+    print __('Restrictions are managed on the H5P Network Restrictions page.', $this->plugin_slug);
+    exit;
   }
 
   /**

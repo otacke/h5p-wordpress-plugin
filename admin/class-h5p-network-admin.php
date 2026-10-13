@@ -462,21 +462,6 @@ class H5P_Network_Admin {
   }
 
   /**
-   * Delete every deletable library version, and those that become deletable by that, until the time is up.
-   *
-   * See H5P_Network_Library_Deletion::delete_deletable_libraries().
-   *
-   * @param float $deadline microtime(TRUE) after which no new pass is started.
-   * @param bool $dry_run Only record what would be deleted, for testing the passes on real data.
-   *
-   * @return array With 'deleted', the names and versions deleted, and 'more', whether time ran out
-   *               while the last pass still deleted something.
-   */
-  public function delete_deletable_libraries($deadline, $dry_run = false) {
-    return $this->deletion->delete_deletable_libraries($deadline, $dry_run);
-  }
-
-  /**
    * Handle AJAX request to delete every deletable library version, one time budget at a time.
    *
    * Answers 'more' while the page should repeat the request.
@@ -485,7 +470,7 @@ class H5P_Network_Admin {
     $this->verify_request(true);
 
     wp_send_json_success(
-      $this->delete_deletable_libraries(microtime(TRUE) + self::BATCH_TIMEOUT)
+      $this->deletion->delete_deletable_libraries(microtime(TRUE) + self::BATCH_TIMEOUT)
     );
   }
 
@@ -504,19 +489,6 @@ class H5P_Network_Admin {
   }
 
   /**
-   * Install one content type from the H5P Hub.
-   *
-   * See H5P_Network_Library_Installer::install_hub_library().
-   *
-   * @param string $machine_name
-   *
-   * @return array With 'status' and 'messages'.
-   */
-  public function install_hub_library($machine_name) {
-    return $this->installer->install_hub_library($machine_name);
-  }
-
-  /**
    * Handle AJAX request to install one content type from the H5P Hub.
    *
    * Always answers success, with the outcome in the data: a failed item is data for the bulk queue,
@@ -530,7 +502,7 @@ class H5P_Network_Admin {
 
     $machine_name = filter_input(INPUT_POST, 'machineName', FILTER_SANITIZE_SPECIAL_CHARS);
 
-    wp_send_json_success($this->install_hub_library($machine_name));
+    wp_send_json_success($this->installer->install_hub_library($machine_name));
   }
 
   /**

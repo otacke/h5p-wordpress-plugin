@@ -41,8 +41,8 @@ if (is_admin()) {
   add_action('plugins_loaded', array('H5P_Plugin_Admin', 'get_instance'));
 }
 
-// Network Level Functionality
-if (is_multisite()) {
+// Network Level Functionality: network admin pages and their AJAX handlers (admin-ajax.php counts as admin).
+if (is_multisite() && is_admin()) {
   add_action('plugins_loaded', function () {
     new H5P_Network_Admin();
   });

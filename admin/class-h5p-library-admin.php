@@ -229,10 +229,7 @@ class H5PLibraryAdmin {
         $usage = $interface->getLibraryUsage($library->id, $not_cached ? TRUE : FALSE);
         if ($library->runnable) {
           $upgrades = $core->getUpgrades($library, $versions);
-          $upgradeUrl = empty($upgrades) ? FALSE : TRUE;
-          if ($upgradeUrl) {
-            $upgradeUrl = $this->libraries_page_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . $this->libraries_page_url('admin.php?page=h5p_libraries'));
-          }
+          $upgradeUrl = empty($upgrades) ? FALSE : admin_url('admin.php?page=h5p_libraries&task=upgrade&id=' . $library->id . '&destination=' . admin_url('admin.php?page=h5p_libraries'));
 
           $restricted = ($library->restricted ? TRUE : FALSE);
           $restricted_url = admin_url('admin-ajax.php?action=h5p_restrict_library' .
@@ -247,11 +244,7 @@ class H5PLibraryAdmin {
           $restricted_url = NULL;
         }
 
-        $detailsUrlBase = $this->libraries_page_url('admin.php?page=h5p_libraries&task=show&id=');
-
-        $deleteUrlBase = $this->libraries_page_url('admin.php?page=h5p_libraries&task=delete&id=');
-
-        $contents_count = $this->get_num_content_using_library($library->id);
+        $contents_count = $interface->getNumContent($library->id);
         $settings['libraryList']['listData'][] = array(
           'title' => $library->title . ' (' . H5PCore::libraryVersion($library) . ')',
           'restricted' => $restricted,
@@ -260,8 +253,8 @@ class H5PLibraryAdmin {
           'numContentDependencies' => $usage['content'] < 1 ? '' : $usage['content'],
           'numLibraryDependencies' => $usage['libraries'] === 0 ? '' : $usage['libraries'],
           'upgradeUrl' => $upgradeUrl,
-          'detailsUrl' => "{$detailsUrlBase}{$library->id}",
-          'deleteUrl' => "{$deleteUrlBase}{$library->id}",
+          'detailsUrl' => admin_url('admin.php?page=h5p_libraries&task=show&id=' . $library->id),
+          'deleteUrl' => admin_url('admin.php?page=h5p_libraries&task=delete&id=' . $library->id)
         );
 
         $i++;
@@ -418,11 +411,22 @@ class H5PLibraryAdmin {
     }
     else {
       // List content which uses this library
-      $contents = $this->get_contents_using_library($library);
+      global $wpdb;
+      $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
+      $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
+      $contents = $wpdb->get_results($wpdb->prepare(
+          "SELECT DISTINCT hc.id, hc.title
+            FROM {$table_contents_libraries} hcl
+            JOIN {$table_contents} hc ON hcl.content_id = hc.id
+            WHERE hcl.library_id = %d
+            ORDER BY hc.title",
+          $library->id
+        )
+      );
       foreach ($contents as $content) {
         $settings['libraryInfo']['content'][] = array(
           'title' => $content->title,
-          'url' => $this->get_content_url($content),
+          'url' => admin_url('admin.php?page=h5p&task=show&id=' . $content->id),
         );
       }
     }
@@ -443,64 +447,6 @@ class H5PLibraryAdmin {
   }
 
   /**
-   * List content on current blog that uses given library.
-   *
-   * Each returned row is tagged with its blog id so callers can build URL that points at right site.
-   * Single-site implementation only ever sees one blog; network variant overrides to fan out over every blog.
-   *
-   * @since 1.18.0
-   * @param object $library Library to list content for.
-   * @return array Rows with id, title and blog_id.
-   */
-  protected function get_contents_using_library($library) {
-    global $wpdb;
-
-    $table_contents_libraries = H5PCommons::build_full_db_table_name('h5p_contents_libraries');
-    $table_contents = H5PCommons::build_full_db_table_name('h5p_contents');
-    $contents = $wpdb->get_results($wpdb->prepare(
-        "SELECT DISTINCT hc.id, hc.title
-          FROM {$table_contents_libraries} hcl
-          JOIN {$table_contents} hc ON hcl.content_id = hc.id
-          WHERE hcl.library_id = %d
-          ORDER BY hc.title",
-        $library->id
-      )
-    );
-
-    foreach ($contents as $content) {
-      $content->blog_id = get_current_blog_id();
-    }
-
-    return $contents;
-  }
-
-  /**
-   * Build admin URL for the libraries page.
-   *
-   * The network variant overrides this to point at the network admin.
-   *
-   * @since 1.18.0
-   * @param string $query Admin page query string.
-   * @return string
-   */
-  protected function libraries_page_url($query) {
-    return admin_url($query);
-  }
-
-  /**
-   * Build admin URL for viewing piece of content.
-   *
-   * The network variant overrides this to point at the blog the content lives on.
-   *
-   * @since 1.18.0
-   * @param object $content Row with id and blog_id.
-   * @return string
-   */
-  protected function get_content_url($content) {
-    return admin_url('admin.php?page=h5p&task=show&id=' . $content->id);
-  }
-
-  /**
    * Get path and URL of the upgrades.js file of a library, wherever libraries are stored.
    *
    * The network variant overrides this to point at the shared network folder.
@@ -516,23 +462,6 @@ class H5PLibraryAdmin {
       'path' => $plugin->get_h5p_path() . $suffix,
       'url' => $plugin->get_h5p_url() . $suffix,
     );
-  }
-
-  /**
-   * Count content on current blog that uses given library.
-   *
-   * Single-site implementation counts one blog; network variant overrides to sum over every blog.
-   *
-   * @since 1.18.0
-   * @param int $library_id Library to count content for.
-   * @param string|null $skipped Comma separated content ids to exclude, or NULL.
-   * @return int
-   */
-  protected function get_num_content_using_library($library_id, $skipped = NULL) {
-    $plugin = H5P_Plugin::get_instance();
-    $interface = $plugin->get_h5p_instance('interface');
-
-    return $interface->getNumContent($library_id, $skipped);
   }
 
   /**
@@ -570,7 +499,8 @@ class H5PLibraryAdmin {
     }
 
     // Get num of contents that can be upgraded
-    $contents = $this->get_num_content_using_library($library->id);
+    $interface = H5P_Plugin::get_instance()->get_h5p_instance('interface');
+    $contents = $interface->getNumContent($library->id);
     if (!$contents) {
       H5P_Plugin_Admin::set_error(__("There's no content instances to upgrade.", $this->plugin_slug));
       return NULL;
@@ -728,7 +658,8 @@ class H5PLibraryAdmin {
     }
 
     // Get number of contents for this library
-    $out->left = $this->get_num_content_using_library($library_id, $skipped);
+    $interface = H5P_Plugin::get_instance()->get_h5p_instance('interface');
+    $out->left = $interface->getNumContent($library_id, $skipped);
 
     if ($out->left) {
       // Fragment is fully expanded by prepare, so it can be embedded in the prepared query below.
