@@ -419,7 +419,7 @@ msgstr ""
 
 #: admin/class-h5p-network-admin.php:945
 msgid "License"
-msgstr ""
+msgstr "رخصة"
 
 #: admin/class-h5p-network-admin.php:969
 #, fuzzy, php-format
@@ -444,7 +444,7 @@ msgstr "إلغاء"
 
 #: admin/class-h5p-network-admin.php:999
 msgid "Close"
-msgstr ""
+msgstr "اغلاق"
 
 #: admin/class-h5p-network-admin.php:1000 admin/views/libraries.php:45
 #: admin/views/network-libraries-bulk.php:49

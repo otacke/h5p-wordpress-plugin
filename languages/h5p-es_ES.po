@@ -422,7 +422,7 @@ msgstr ""
 
 #: admin/class-h5p-network-admin.php:945
 msgid "License"
-msgstr ""
+msgstr "Licencia"
 
 #: admin/class-h5p-network-admin.php:969
 #, fuzzy, php-format
@@ -447,7 +447,7 @@ msgstr ""
 
 #: admin/class-h5p-network-admin.php:999
 msgid "Close"
-msgstr ""
+msgstr "Cerrar"
 
 #: admin/class-h5p-network-admin.php:1000 admin/views/libraries.php:45
 #: admin/views/network-libraries-bulk.php:49
@@ -1706,7 +1706,7 @@ msgstr "No se pudo encontrar contenido H5P con ficha: %s."
 
 #: public/class-h5p-wordpress.php:767
 msgid "Invalid json in semantics for %library"
-msgstr ""
+msgstr "Fichero semantics.JSON no válido en %library"
 
 #. Plugin Name of the plugin/theme
 msgid "H5P"

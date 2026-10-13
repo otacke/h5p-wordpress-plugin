@@ -423,7 +423,7 @@ msgstr ""
 
 #: admin/class-h5p-network-admin.php:945
 msgid "License"
-msgstr ""
+msgstr "Licència"
 
 #: admin/class-h5p-network-admin.php:969
 #, fuzzy, php-format
@@ -448,7 +448,7 @@ msgstr "Anul·la"
 
 #: admin/class-h5p-network-admin.php:999
 msgid "Close"
-msgstr ""
+msgstr "Tanca"
 
 #: admin/class-h5p-network-admin.php:1000 admin/views/libraries.php:45
 #: admin/views/network-libraries-bulk.php:49
@@ -676,14 +676,15 @@ msgstr ""
 
 #: admin/class-h5p-network-admin.php:1476
 msgid "The chosen content type is invalid."
-msgstr ""
+msgstr "El tipus de contingut escollit no és vàlid."
 
 #: admin/class-h5p-network-admin.php:1487
-#, fuzzy
 msgid ""
 "You do not have permission to install content types. Contact the "
 "administrator of your site."
-msgstr "No teniu autorització per gestionar els tipus de contingut H5P."
+msgstr ""
+"No teniu permís per instal·lar nous tipus de contingut. Contacteu "
+"l'administrador del lloc."
 
 #: admin/class-h5p-network-admin.php:1543
 msgid "The content type could not be downloaded. Please try again."
@@ -1651,7 +1652,7 @@ msgstr "No es troba el contingut H5P: %s."
 
 #: public/class-h5p-wordpress.php:767
 msgid "Invalid json in semantics for %library"
-msgstr ""
+msgstr "Error de json en la semàntica de la biblioteca %library"
 
 #. Plugin Name of the plugin/theme
 msgid "H5P"

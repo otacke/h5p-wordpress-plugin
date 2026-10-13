@@ -419,7 +419,7 @@ msgstr ""
 
 #: admin/class-h5p-network-admin.php:945
 msgid "License"
-msgstr ""
+msgstr "Lisens"
 
 #: admin/class-h5p-network-admin.php:969
 #, fuzzy, php-format
@@ -444,7 +444,7 @@ msgstr "Avbryt"
 
 #: admin/class-h5p-network-admin.php:999
 msgid "Close"
-msgstr ""
+msgstr "Lukk"
 
 #: admin/class-h5p-network-admin.php:1000 admin/views/libraries.php:45
 #: admin/views/network-libraries-bulk.php:49
@@ -672,14 +672,15 @@ msgstr ""
 
 #: admin/class-h5p-network-admin.php:1476
 msgid "The chosen content type is invalid."
-msgstr ""
+msgstr "Den valgte innholdstypen er ugyldig."
 
 #: admin/class-h5p-network-admin.php:1487
-#, fuzzy
 msgid ""
 "You do not have permission to install content types. Contact the "
 "administrator of your site."
-msgstr "Du har ikke lov til å administrere H5P-innholdstyper."
+msgstr ""
+"Du har ikke tillatelse til å installere innholdstyper. Kontakt "
+"innehaveren av nettstedet."
 
 #: admin/class-h5p-network-admin.php:1543
 msgid "The content type could not be downloaded. Please try again."
@@ -1694,7 +1695,7 @@ msgstr "Kan ikke finne H5P-innhold med lenkenavn: %s."
 
 #: public/class-h5p-wordpress.php:767
 msgid "Invalid json in semantics for %library"
-msgstr ""
+msgstr "Ugyldig JSON i semantikken til %library"
 
 #. Plugin Name of the plugin/theme
 msgid "H5P"

@@ -417,7 +417,7 @@ msgstr ""
 
 #: admin/class-h5p-network-admin.php:945
 msgid "License"
-msgstr ""
+msgstr "Лицензия"
 
 #: admin/class-h5p-network-admin.php:969
 #, fuzzy, php-format
@@ -444,7 +444,7 @@ msgstr ""
 
 #: admin/class-h5p-network-admin.php:999
 msgid "Close"
-msgstr ""
+msgstr "Закрыть"
 
 #: admin/class-h5p-network-admin.php:1000 admin/views/libraries.php:45
 #: admin/views/network-libraries-bulk.php:49
@@ -1612,7 +1612,7 @@ msgstr "Не удается найти содержимое H5P с slug: %s."
 
 #: public/class-h5p-wordpress.php:767
 msgid "Invalid json in semantics for %library"
-msgstr ""
+msgstr "Недопустимый json в семантике для %library"
 
 #. Plugin Name of the plugin/theme
 msgid "H5P"
