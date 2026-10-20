@@ -1241,6 +1241,11 @@ msgstr ""
 msgid "Update %1$s"
 msgstr ""
 
+#: admin/views/network-libraries-installed.php:94
+#: admin/views/network-libraries-installed.php:136
+msgid "Not available"
+msgstr ""
+
 #: admin/views/network-libraries-installed.php:111
 #, php-format
 msgid "Upgrade contents using %1$s"

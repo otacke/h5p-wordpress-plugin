@@ -118,8 +118,7 @@
             justify-content: flex-start;
           }
 
-          &:focus-visible,
-          &:focus {
+          &:focus-visible {
             outline: 2px solid transparent;
             box-shadow: 0 0 0 var(--wp-admin-border-width-focus, 1.5px) var(--wp-admin-theme-color);
           }
@@ -166,6 +165,18 @@
             &.h5p-icon-button-disabled {
               opacity: 0.4;
               cursor: default;
+
+              /* Keep the look of WordPress' resting .button state. */
+              &:hover {
+                background: transparent;
+                border-color: var(--wp-admin-theme-color, #3858e9);
+                color: var(--wp-admin-theme-color, #3858e9);
+              }
+
+              /* WordPress shows focus on mouse click, too, but disabled buttons should only show keyboard focus. */
+              &:focus:not(:focus-visible) {
+                box-shadow: none;
+              }
             }
 
             .dashicons {

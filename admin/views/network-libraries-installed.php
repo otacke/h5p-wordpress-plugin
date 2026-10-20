@@ -89,6 +89,10 @@
             );
             include __DIR__ . '/network-libraries-icon-button.php';
           }
+          else {
+            // Screen readers would otherwise just announce the cell as blank.
+            print '<span class="screen-reader-text">' . esc_html__('Not available', 'h5p') . '</span>';
+          }
           ?>
         </div>
 
@@ -126,6 +130,10 @@
               );
             }
             include __DIR__ . '/network-libraries-icon-button.php';
+          }
+          else {
+            // Screen readers would otherwise just announce the cell as blank.
+            print '<span class="screen-reader-text">' . esc_html__('Not available', 'h5p') . '</span>';
           }
           ?>
         </div>
