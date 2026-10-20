@@ -1160,10 +1160,6 @@ msgstr "Aggiornamento contenuto libreria"
 msgid "Bulk actions"
 msgstr "Azioni"
 
-#: admin/views/network-libraries-icon-button.php:25
-msgid "Not available yet"
-msgstr ""
-
 #: admin/views/network-libraries-installed.php:15
 msgid "No libraries installed."
 msgstr ""

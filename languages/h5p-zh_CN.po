@@ -1139,10 +1139,6 @@ msgstr "升级内容"
 msgid "Bulk actions"
 msgstr "Actions"
 
-#: admin/views/network-libraries-icon-button.php:25
-msgid "Not available yet"
-msgstr ""
-
 #: admin/views/network-libraries-installed.php:15
 msgid "No libraries installed."
 msgstr ""

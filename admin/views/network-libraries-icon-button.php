@@ -16,9 +16,9 @@ $disabled = !empty($button['disabled']);
   type="button"
   class="button h5p-icon-button<?php print $disabled ? ' h5p-icon-button-disabled' : ''; ?>"
   aria-label="<?php print esc_attr($button['label']); ?>"
+  title="<?php print esc_attr($button['label']); ?>"
   <?php if ($disabled): ?>
     aria-disabled="true"
-    title="<?php esc_attr_e('Not available yet', 'h5p'); ?>"
   <?php endif; ?>
   <?php foreach ((isset($button['data']) ? $button['data'] : array()) as $key => $value): ?>
     data-<?php print esc_attr($key); ?>="<?php print esc_attr($value); ?>"
