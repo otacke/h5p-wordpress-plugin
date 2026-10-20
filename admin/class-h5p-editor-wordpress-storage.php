@@ -222,6 +222,20 @@ class H5PEditorWordPressStorage implements H5peditorStorage {
   }
 
   /**
+   * Marks a file for cleanup at a later point.
+   * 
+   * @param string $path
+   */
+  public static function markFileForCleanupRaw($path) {
+    global $wpdb;
+
+    // Keep track of temporary files so they can be cleaned up later.
+    $wpdb->insert(H5PCommons::build_full_db_table_name('h5p_tmpfiles'),
+      array('path' => $path, 'created_at' => time()),
+      array('%s', '%d'));
+  }
+
+  /**
    * Marks a file for later cleanup, useful when files are not instantly cleaned
    * up. E.g. for files that are uploaded through the editor.
    *
@@ -249,10 +263,7 @@ class H5PEditorWordPressStorage implements H5peditorStorage {
     // Add filename to path
     $path .= '/' . $file->getName();
 
-    // Keep track of temporary files so they can be cleaned up later.
-    $wpdb->insert(H5PCommons::build_full_db_table_name('h5p_tmpfiles'),
-      array('path' => $path, 'created_at' => time()),
-      array('%s', '%d'));
+    self::markFileForCleanupRaw($path);
 
     // Clear cached value for dirsize.
     delete_transient('dirsize_cache');
